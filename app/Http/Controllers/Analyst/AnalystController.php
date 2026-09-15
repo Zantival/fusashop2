@@ -13,14 +13,21 @@ class AnalystController extends Controller
 {
     public function dashboard()
     {
-        $totalSales     = OrderItem::selectRaw('SUM(quantity * price) as total')->value('total') ?? 0;
+        $totalSales     = (float) (OrderItem::selectRaw('SUM(quantity * price) as total')->value('total') ?? 0);
         $totalOrders    = Order::count();
-        $totalConsumers = User::where('role','consumer')->count();
-        $totalMerchants = User::where('role','merchant')->count();
+        $totalMerchants = User::where('role', 'merchant')->count();
+        $totalConsumers = User::where('role', 'consumer')->count();
+        $averageTicket  = $totalOrders > 0 ? round($totalSales / $totalOrders) : 0;
 
-        $monthlySales   = Order::selectRaw('MONTH(created_at) as month, SUM(total) as total')
-                               ->whereYear('created_at', date('Y'))
-                               ->groupBy('month')->orderBy('month')->get();
+        if (DB::getDriverName() === 'sqlite') {
+            $monthlySales = Order::selectRaw("cast(strftime('%m', created_at) as integer) as month, SUM(total) as total")
+                                   ->whereYear('created_at', date('Y'))
+                                   ->groupBy('month')->orderBy('month')->get();
+        } else {
+            $monthlySales = Order::selectRaw('MONTH(created_at) as month, SUM(total) as total')
+                                   ->whereYear('created_at', date('Y'))
+                                   ->groupBy('month')->orderBy('month')->get();
+        }
         $ordersByStatus = Order::selectRaw('status, COUNT(*) as count')->groupBy('status')->get();
 
         $salesByCompany = OrderItem::join('products', 'products.id', '=', 'order_items.product_id')
@@ -35,12 +42,194 @@ class AnalystController extends Controller
                                    ->with('product')->get();
         $recentUsers    = User::latest()->take(5)->get();
         
-        $pendingKyc = CompanyProfile::where('kyc_status', 'pending')->with('user')->latest()->take(5)->get();
+        $pendingKyc     = CompanyProfile::where('kyc_status', 'pending')->with('user')->latest()->take(5)->get();
         $pendingBanners = \App\Models\BannerRequest::where('status', 'pending')->with('user')->latest()->take(5)->get();
 
+        // Recent Order Activity Feed
+        $recentOrdersFeed = Order::with(['user', 'items.product'])->latest()->take(6)->get();
+
+        // All Merchants for Directory Tab & Benchmarking
+        $merchantsDirectory = User::where('role', 'merchant')
+            ->with(['companyProfile', 'products'])
+            ->latest()
+            ->get();
+
+        foreach ($merchantsDirectory as $m) {
+            if (!$m->companyProfile) {
+                $pCat = $m->products->first()->category ?? 'Comercio Minorista';
+                $m->companyProfile()->create([
+                    'company_name'  => $m->name,
+                    'business_type' => $pCat,
+                    'address'       => 'Fusagasugá',
+                    'phone'         => $m->phone ?? 'Sin teléfono',
+                    'rut_path'      => '',
+                    'kyc_status'    => 'approved',
+                ]);
+                $m->load('companyProfile');
+            }
+        }
+
+        // Dynamic Sector Census Calculation from Real E-commerce Database
+        $sectorDefinitions = [
+            'tecnologia' => [
+                'key'      => 'tecnologia',
+                'title'    => 'Tecnología & Servicios Digitales',
+                'keywords' => ['tecnologia', 'tecnología', 'electrónica', 'electronica', 'digital', 'software', 'sistemas', 'tecnologico', 'tecnológico'],
+            ],
+            'gastronomia' => [
+                'key'      => 'gastronomia',
+                'title'    => 'Gastronomía & Restaurantes',
+                'keywords' => ['gastronomia', 'gastronomía', 'restaurantes', 'restaurante', 'alimentos', 'comida', 'bebidas', 'café', 'cafe'],
+            ],
+            'comercio' => [
+                'key'      => 'comercio',
+                'title'    => 'Comercio Minorista & Tiendas',
+                'keywords' => ['comercio', 'ropa', 'tiendas', 'tienda', 'moda', 'calzado', 'deportes', 'accesorios'],
+            ],
+            'servicios' => [
+                'key'      => 'servicios',
+                'title'    => 'Servicios Profesionales & Hogar',
+                'keywords' => ['servicios', 'servicio', 'hogar', 'decoración', 'decoracion', 'muebles', 'mantenimiento', 'consultoría', 'consultoria'],
+            ],
+            'agropecuario' => [
+                'key'      => 'agropecuario',
+                'title'    => 'Agropecuario & Fincas Productoras',
+                'keywords' => ['agropecuario', 'fincas', 'finca', 'agrícola', 'agricola', 'ganadería', 'ganaderia', 'campo', 'cultivo', 'productora'],
+            ],
+        ];
+
+        $classifyText = function($text) use ($sectorDefinitions) {
+            if (!$text) return 'comercio';
+            $textLower = mb_strtolower($text, 'UTF-8');
+            foreach ($sectorDefinitions as $sKey => $def) {
+                foreach ($def['keywords'] as $kw) {
+                    if ($kw !== 'mipyme' && $kw !== 'general' && str_contains($textLower, $kw)) {
+                        return $sKey;
+                    }
+                }
+            }
+            return 'comercio';
+        };
+
+        // 1. Count Real Merchants per Sector
+        $sectorCounts = [
+            'tecnologia'   => 0,
+            'gastronomia'  => 0,
+            'comercio'     => 0,
+            'servicios'    => 0,
+            'agropecuario' => 0,
+        ];
+
+        $merchantsForCensus = User::where('role', 'merchant')->with(['companyProfile', 'products'])->get();
+        foreach ($merchantsForCensus as $m) {
+            $bType = $m->companyProfile->business_type ?? '';
+            $assignedSector = null;
+
+            if ($bType && !str_contains(mb_strtolower($bType, 'UTF-8'), 'mipyme fusagasugá')) {
+                $assignedSector = $classifyText($bType);
+            }
+
+            if (!$assignedSector && $m->products->count() > 0) {
+                $productCats = $m->products->pluck('category')->filter()->toArray();
+                if (!empty($productCats)) {
+                    $countsBySector = [];
+                    foreach ($productCats as $cat) {
+                        $sec = $classifyText($cat);
+                        $countsBySector[$sec] = ($countsBySector[$sec] ?? 0) + 1;
+                    }
+                    arsort($countsBySector);
+                    $assignedSector = array_key_first($countsBySector);
+                }
+            }
+
+            if (!$assignedSector) $assignedSector = 'comercio';
+            $sectorCounts[$assignedSector]++;
+        }
+
+        // 2. Sum Real Sales per Sector from OrderItems
+        $sectorSales = [
+            'tecnologia'   => 0.0,
+            'gastronomia'  => 0.0,
+            'comercio'     => 0.0,
+            'servicios'    => 0.0,
+            'agropecuario' => 0.0,
+        ];
+
+        $allOrderItems = OrderItem::with('product.merchant.companyProfile')->get();
+        foreach ($allOrderItems as $item) {
+            if (!$item->product) continue;
+            $cat = $item->product->category ?? '';
+            $bType = $item->product->merchant->companyProfile->business_type ?? '';
+
+            $sKey = $classifyText($cat);
+            if ($bType && !str_contains(mb_strtolower($bType, 'UTF-8'), 'mipyme fusagasugá')) {
+                $sKey = $classifyText($bType);
+            }
+
+            $sectorSales[$sKey] += (float) ($item->quantity * $item->price);
+        }
+
+        $totalCensusCount = array_sum($sectorCounts);
+        $totalRealSales = array_sum($sectorSales);
+
+        $sectorCensus = [];
+        foreach ($sectorDefinitions as $sKey => $def) {
+            $count = $sectorCounts[$sKey];
+            $realSales = $sectorSales[$sKey];
+
+            $presencePct = $totalCensusCount > 0 ? round(($count / $totalCensusCount) * 100, 1) : 0;
+            $salesPct    = $totalRealSales > 0 ? round(($realSales / $totalRealSales) * 100, 1) : 0;
+
+            $status = 'medio';
+            $badgeText = '🟡 Medio';
+            $badgeClass = 'bg-amber-100 text-amber-800';
+            $barColor = 'bg-amber-500';
+            $boxClass = 'bg-surface-container-low border border-outline-variant/15';
+
+            if ($salesPct >= 25.0 || $presencePct >= 40.0) {
+                $status = 'lider';
+                $badgeText = '🟢 Líder';
+                $badgeClass = 'bg-[#6efcb9]/40 text-[#006c47]';
+                $barColor = 'bg-[#006c47]';
+            } elseif ($salesPct >= 10.0 || $presencePct >= 15.0) {
+                $status = 'estable';
+                $badgeText = '🟢 Estable';
+                $badgeClass = 'bg-emerald-100 text-emerald-800';
+                $barColor = 'bg-emerald-600';
+            } elseif ($count === 0 && $realSales === 0) {
+                $status = 'sin_actividad';
+                $badgeText = '⚪ Sin Registros';
+                $badgeClass = 'bg-slate-100 text-slate-600 border border-slate-200';
+                $barColor = 'bg-slate-300';
+            }
+
+            if ($presencePct > 15.0 && $salesPct < 5.0) {
+                $status = 'critico';
+                $badgeText = '🔴 Alerta Crítica';
+                $badgeClass = 'bg-rose-200 text-rose-900 border border-rose-300 animate-pulse';
+                $barColor = 'bg-rose-600';
+                $boxClass = 'bg-rose-50 border border-rose-200';
+            }
+
+            $sectorCensus[] = [
+                'key'          => $sKey,
+                'title'        => $def['title'],
+                'count'        => $count,
+                'presence_pct' => $presencePct,
+                'real_sales'   => $realSales,
+                'sales_pct'    => $salesPct,
+                'status'       => $status,
+                'badge_text'   => $badgeText,
+                'badge_class'  => $badgeClass,
+                'bar_color'    => $barColor,
+                'box_class'    => $boxClass,
+            ];
+        }
+
         return view('analyst.dashboard', compact(
-            'totalSales','totalOrders','totalConsumers','totalMerchants',
-            'monthlySales','salesByCompany','ordersByStatus','topProducts','recentUsers','pendingKyc', 'pendingBanners'
+            'totalSales','totalOrders','totalConsumers','totalMerchants','averageTicket',
+            'monthlySales','salesByCompany','ordersByStatus','topProducts','recentUsers','pendingKyc', 'pendingBanners',
+            'recentOrdersFeed', 'merchantsDirectory', 'sectorCensus'
         ));
     }
 
