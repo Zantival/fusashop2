@@ -43,7 +43,9 @@ Route::get('/email/verify', function () {
 
 Route::get('/email/verify/{id}/{hash}', function (\Illuminate\Foundation\Auth\EmailVerificationRequest $request) {
     $request->fulfill();
-    return redirect()->route('consumer.home'); // Redirige según el rol si es necesario, home redirigirá al dash adecuado
+    // Flash para mostrar mensaje de bienvenida al primer ingreso tras verificar
+    session()->flash('welcome_new_user', true);
+    return redirect()->route('consumer.home');
 })->middleware(['auth', 'signed'])->name('verification.verify');
 
 Route::post('/email/verification-notification', function (\Illuminate\Http\Request $request) {

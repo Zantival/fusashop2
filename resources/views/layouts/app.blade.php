@@ -20,7 +20,7 @@
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <script src="{{ asset('assets/js/bootstrap.js') }}"></script>
 <script src="{{ asset('assets/js/app.js') }}" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js" defer></script>
+<script src="{{ asset('assets/js/alpine.min.js') }}" defer></script>
 <style>
   [x-cloak] { display: none !important; visibility: hidden !important; }
   @keyframes pulse {
@@ -363,37 +363,37 @@ tailwind.config={darkMode:"class",theme:{extend:{colors:{"primary":"#006c47","pr
 
 <main class="flex-1 mt-16">
   @if(session('success'))
-    <div x-data="{show:true}" x-cloak x-show="show" 
+    <div x-data="{show:true}" x-cloak x-show="show" style="display: none;"
          x-transition:enter="transition ease-out duration-300" 
          x-transition:enter-start="opacity-0 translate-x-10" 
          x-transition:enter-end="opacity-100 translate-x-0" 
          x-transition:leave="transition ease-in duration-200" 
          x-transition:leave-start="opacity-100 translate-x-0" 
          x-transition:leave-end="opacity-0 translate-x-10" 
-         x-init="setTimeout(() => show = false, 4000)" 
+         x-init="style.display=''; setTimeout(() => show = false, 4000)" 
          class="fixed top-20 right-4 z-[80] bg-white rounded-xl shadow-lg border border-surface-container p-4 flex items-center gap-3 max-w-sm">
       <div class="w-8 h-8 bg-[#6efcb9]/30 rounded-full flex items-center justify-center shrink-0">
         <span class="material-symbols-outlined text-primary text-[18px]">check_circle</span>
       </div>
       <p class="text-sm font-semibold text-on-surface">{{ session('success') }}</p>
-      <button @click="show=false" class="ml-auto text-on-surface-variant hover:text-on-surface"><span class="material-symbols-outlined text-[18px]">close</span></button>
+      <button @click="show=false" onclick="this.parentElement.style.display='none'" class="ml-auto text-on-surface-variant hover:text-on-surface"><span class="material-symbols-outlined text-[18px]">close</span></button>
     </div>
   @endif
   @if(session('error'))
-    <div x-data="{show:true}" x-cloak x-show="show" 
+    <div x-data="{show:true}" x-cloak x-show="show" style="display: none;"
          x-transition:enter="transition ease-out duration-300" 
          x-transition:enter-start="opacity-0 translate-x-10" 
          x-transition:enter-end="opacity-100 translate-x-0" 
          x-transition:leave="transition ease-in duration-200" 
          x-transition:leave-start="opacity-100 translate-x-0" 
          x-transition:leave-end="opacity-0 translate-x-10" 
-         x-init="setTimeout(() => show = false, 5000)" 
+         x-init="style.display=''; setTimeout(() => show = false, 5000)" 
          class="fixed top-20 right-4 z-[80] bg-white rounded-xl shadow-lg border border-[#ba1a1a]/20 p-4 flex items-center gap-3 max-w-sm">
       <div class="w-8 h-8 bg-[#ffdad6] rounded-full flex items-center justify-center shrink-0">
         <span class="material-symbols-outlined text-[#ba1a1a] text-[18px]">error</span>
       </div>
       <p class="text-sm font-semibold text-on-surface">{{ session('error') }}</p>
-      <button @click="show=false" class="ml-auto text-on-surface-variant hover:text-[#ba1a1a]"><span class="material-symbols-outlined text-[18px]">close</span></button>
+      <button @click="show=false" onclick="this.parentElement.style.display='none'" class="ml-auto text-on-surface-variant hover:text-[#ba1a1a]"><span class="material-symbols-outlined text-[18px]">close</span></button>
     </div>
   @endif
   @yield('content')

@@ -2,6 +2,82 @@
 @section('title','Inicio')
 @section('content')
 
+{{-- ── Banner de Bienvenida (solo aparece una vez al verificar correo) ── --}}
+@if(session('welcome_new_user'))
+@php $nombreBienvenida = auth()->user()->name ?? 'amigo/a'; @endphp
+<div id="welcome-overlay" class="fixed inset-0 z-[9999] flex items-center justify-center p-4" style="background:rgba(0,0,0,0.55);backdrop-filter:blur(6px);">
+  <div id="welcome-card" class="relative bg-white rounded-3xl shadow-2xl max-w-md w-full p-8 text-center overflow-hidden"
+       style="animation:welcomePop .5s cubic-bezier(.34,1.56,.64,1) both;">
+    {{-- Fondo decorativo --}}
+    <div class="absolute inset-0 pointer-events-none overflow-hidden rounded-3xl">
+      <div style="position:absolute;top:-60px;right:-60px;width:200px;height:200px;border-radius:50%;background:radial-gradient(circle,#6efcb9 0%,transparent 70%);opacity:.35;"></div>
+      <div style="position:absolute;bottom:-40px;left:-40px;width:160px;height:160px;border-radius:50%;background:radial-gradient(circle,#00b67a 0%,transparent 70%);opacity:.25;"></div>
+    </div>
+
+    {{-- Confetti emoji animado --}}
+    <div class="text-5xl mb-4" style="animation:bounce 1s ease infinite alternate;">🎉</div>
+
+    {{-- Título --}}
+    <h2 class="text-2xl font-black text-[#1b1c1c] mb-1" style="font-family:'Manrope',sans-serif;">
+      ¡Hola, {{ $nombreBienvenida }}!
+    </h2>
+    <p class="text-[#006c47] font-extrabold text-base mb-3">¡Bienvenido/a a FusaShop! 🛍️</p>
+
+    {{-- Mensaje --}}
+    <p class="text-[#3c4a41] text-sm leading-relaxed mb-6">
+      Estamos muy felices de que seas parte de nuestra comunidad. Aquí encontrarás
+      los mejores productos de comerciantes locales de Fusagasugá. ¡Explora, compra y disfruta!
+    </p>
+
+    {{-- Barra de progreso auto-cierre --}}
+    <div class="w-full bg-gray-100 rounded-full h-1 mb-5 overflow-hidden">
+      <div id="welcome-progress" class="h-1 rounded-full" style="background:linear-gradient(90deg,#00b67a,#6efcb9);width:100%;animation:shrinkBar 6s linear forwards;"></div>
+    </div>
+
+    {{-- Botones --}}
+    <div class="flex gap-3 justify-center">
+      <a href="{{ route('consumer.catalog') }}"
+         class="inline-flex items-center gap-2 px-5 py-2.5 bg-[#006c47] text-white font-bold rounded-xl text-sm hover:bg-[#004d33] transition-colors no-underline shadow-md">
+        <span class="material-symbols-outlined text-sm">storefront</span>
+        Explorar tienda
+      </a>
+      <button onclick="closeWelcome()"
+              class="inline-flex items-center gap-2 px-5 py-2.5 bg-gray-100 text-[#3c4a41] font-bold rounded-xl text-sm hover:bg-gray-200 transition-colors border-0 cursor-pointer">
+        Ir al inicio
+      </button>
+    </div>
+  </div>
+</div>
+
+<style>
+@keyframes welcomePop {
+  0%   { opacity:0; transform: scale(.7) translateY(40px); }
+  100% { opacity:1; transform: scale(1) translateY(0); }
+}
+@keyframes shrinkBar {
+  from { width: 100%; }
+  to   { width: 0%; }
+}
+@keyframes bounce {
+  from { transform: translateY(0); }
+  to   { transform: translateY(-10px); }
+}
+</style>
+<script>
+function closeWelcome() {
+  const overlay = document.getElementById('welcome-overlay');
+  const card = document.getElementById('welcome-card');
+  card.style.animation = 'none';
+  card.style.transition = 'opacity .3s, transform .3s';
+  card.style.opacity = '0';
+  card.style.transform = 'scale(.9)';
+  setTimeout(() => overlay.remove(), 320);
+}
+// Auto-cierre después de 6 segundos
+setTimeout(closeWelcome, 6000);
+</script>
+@endif
+
 @php
   // Map category names to Material Symbols icons
   $iconMap = [
