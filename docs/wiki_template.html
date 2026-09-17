@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FusaShop — Wiki técnica</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<style>
+:root{
+  --bg:#0f1115;--panel:#161a21;--panel2:#1c2129;--ink:#e6eaf0;--muted:#98a2b3;
+  --accent:#4c8dff;--accent-soft:#1d2b45;--border:#262d38;--code:#11151c;--ok:#3fb950;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font:15.5px/1.7 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+.topbar{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:18px;padding:12px 22px;background:rgba(15,17,21,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--border)}
+.brand{display:flex;align-items:center;gap:10px;font-weight:650;letter-spacing:.2px}
+.brand .dot{width:10px;height:10px;border-radius:50%;background:var(--accent);box-shadow:0 0 12px var(--accent)}
+.brand small{display:block;color:var(--muted);font-weight:400;font-size:12px}
+.search{margin-left:auto;position:relative;width:min(420px,45vw)}
+.search input{width:100%;padding:9px 12px 9px 34px;border-radius:9px;border:1px solid var(--border);background:var(--panel);color:var(--ink);font-size:14px;outline:none}
+.search input:focus{border-color:var(--accent)}
+.search::before{content:"⌕";position:absolute;left:11px;top:6px;color:var(--muted);font-size:17px}
+.results{position:absolute;top:44px;left:0;right:0;background:var(--panel2);border:1px solid var(--border);border-radius:10px;max-height:60vh;overflow:auto;display:none;box-shadow:0 18px 40px rgba(0,0,0,.45)}
+.results a{display:block;padding:10px 13px;border-bottom:1px solid var(--border);color:var(--ink)}
+.results a:last-child{border-bottom:0}
+.results a:hover{background:var(--accent-soft);text-decoration:none}
+.results small{display:block;color:var(--muted);font-size:12.5px}
+.layout{display:flex;gap:26px;max-width:1400px;margin:0 auto;padding:24px}
+aside{position:sticky;top:70px;flex:0 0 280px;align-self:flex-start;max-height:calc(100vh - 96px);overflow:auto;background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:14px}
+aside h3{margin:6px 8px 10px;font-size:11.5px;letter-spacing:.11em;text-transform:uppercase;color:var(--muted)}
+.nav-item{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;color:#c7d0dd;font-size:14.2px}
+.nav-item:hover{background:var(--panel2);text-decoration:none}
+.nav-item.active{background:var(--accent-soft);color:#fff;font-weight:600}
+.nav-item .icon,.card .icon{color:var(--accent);font-size:13px;width:16px;text-align:center}
+main{flex:1 1 auto;min-width:0;background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:30px 40px}
+main h1{margin:0 0 22px;font-size:30px;letter-spacing:-.3px}
+main h2{margin-top:36px;font-size:21px;border-bottom:1px solid var(--border);padding-bottom:8px}
+main h3{margin-top:26px;font-size:17px;color:#cfd8e5}
+p,li{color:#d3dae5}
+code{background:var(--code);color:#9fd0ff;padding:1.5px 6px;border-radius:5px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px}
+pre{background:var(--code);border:1px solid var(--border);border-radius:10px;padding:16px 18px;overflow:auto}
+pre code{background:none;color:#d7e2f0;padding:0;font-size:13px;line-height:1.55}
+table{border-collapse:collapse;width:100%;margin:16px 0;font-size:14px;display:block;overflow-x:auto}
+th,td{border:1px solid var(--border);padding:9px 12px;text-align:left;vertical-align:top}
+th{background:var(--panel2);color:#e9eef6}
+tr:nth-child(even) td{background:#12161d}
+blockquote{margin:18px 0;padding:12px 16px;border-left:3px solid #d29922;background:#1e1a10;color:#e8d9b0;border-radius:0 8px 8px 0}
+hr{border:0;border-top:1px solid var(--border);margin:30px 0}
+.diagram{margin:0 0 26px;padding:16px;background:var(--panel2);border:1px solid var(--border);border-radius:12px}
+.diagram figcaption{color:var(--muted);font-size:12.5px;text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px}
+.mermaid{background:none;border:0;text-align:center}
+.intro{color:#c8d2e0;font-size:16px}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px;margin-top:26px}
+.card{display:block;padding:16px;border:1px solid var(--border);border-radius:11px;background:var(--panel2);color:var(--ink)}
+.card:hover{border-color:var(--accent);text-decoration:none;transform:translateY(-2px);transition:.15s}
+.card strong{display:block;margin:8px 0 4px;font-size:15px}
+.card em{color:var(--muted);font-style:normal;font-size:13px}
+.pager{display:flex;justify-content:space-between;gap:12px;margin-top:44px;padding-top:18px;border-top:1px solid var(--border);font-size:14px}
+footer{max-width:1400px;margin:0 auto;padding:0 24px 34px;color:var(--muted);font-size:12.8px}
+@media (max-width:1000px){.layout{flex-direction:column}aside{position:static;width:100%;flex:none;max-height:none}main{padding:22px}.search{width:auto;flex:1}}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <a class="brand" href="#inicio">
+    <span class="dot"></span>
+    <span>FusaShop Wiki<small>Zantival/fusashop2 · Laravel 12</small></span>
+  </a>
+  <div class="search">
+    <input id="q" type="search" placeholder="Buscar en la documentación…" autocomplete="off">
+    <div class="results" id="results"></div>
+  </div>
+</div>
+
+<div class="layout">
+  <aside>
+    <h3>Secciones</h3>
+    <a class="nav-item" data-slug="inicio" href="#inicio"><span class="icon">⌂</span>Inicio</a>
+    __NAV__
+    <h3 style="margin-top:16px">Enlaces</h3>
+    <a class="nav-item" href="https://github.com/Zantival/fusashop2" target="_blank"><span class="icon">↗</span>Repositorio</a>
+    <a class="nav-item" href="MANUAL_TECNICO.md"><span class="icon">↗</span>Manual en Markdown</a>
+  </aside>
+  <main id="content">
+    __PAGES__
+  </main>
+</div>
+<footer>Wiki generada desde <code>docs/MANUAL_TECNICO.md</code> con <code>docs/build_wiki.py</code>.</footer>
+
+<script>
+mermaid.initialize({startOnLoad:false,theme:"dark",themeVariables:{background:"#1c2129",primaryColor:"#1d2b45",primaryTextColor:"#e6eaf0",primaryBorderColor:"#4c8dff",lineColor:"#6b7a90",fontSize:"14px"}});
+
+const INDEX = __INDEX__;
+const pages = [...document.querySelectorAll('.page')];
+const navItems = [...document.querySelectorAll('.nav-item[data-slug]')];
+
+function show(slug){
+  const page = document.getElementById(slug) ? slug : 'inicio';
+  pages.forEach(p => p.hidden = (p.id !== page));
+  navItems.forEach(n => n.classList.toggle('active', n.dataset.slug === page));
+  const pending = [...document.querySelectorAll(`#${page} .mermaid:not([data-processed])`)];
+  if(pending.length) mermaid.run({nodes: pending});
+  window.scrollTo({top:0,behavior:'instant'});
+}
+function current(){ return (location.hash || '#inicio').slice(1); }
+window.addEventListener('hashchange', () => show(current()));
+show(current());
+
+const q = document.getElementById('q');
+const results = document.getElementById('results');
+q.addEventListener('input', () => {
+  const term = q.value.trim().toLowerCase();
+  if(term.length < 2){ results.style.display = 'none'; results.innerHTML = ''; return; }
+  const hits = [];
+  for(const page of INDEX){
+    const inTitle = page.title.toLowerCase().includes(term);
+    const sub = page.subtitles.find(s => s.toLowerCase().includes(term));
+    const pos = page.text.indexOf(term);
+    if(inTitle || sub || pos >= 0){
+      const snippet = pos >= 0 ? '…' + page.text.slice(Math.max(0, pos - 60), pos + 90).trim() + '…' : (sub || '');
+      hits.push({slug: page.slug, title: page.title, snippet, score: inTitle ? 0 : (sub ? 1 : 2)});
+    }
+  }
+  hits.sort((a,b) => a.score - b.score);
+  results.innerHTML = hits.length
+    ? hits.slice(0,8).map(h => `<a href="#${h.slug}"><strong>${h.title}</strong><small>${h.snippet.replace(/</g,'&lt;')}</small></a>`).join('')
+    : '<a><small>Sin resultados</small></a>';
+  results.style.display = 'block';
+});
+q.addEventListener('keydown', e => { if(e.key === 'Escape'){ q.value=''; results.style.display='none'; } });
+document.addEventListener('click', e => { if(!e.target.closest('.search')) results.style.display = 'none'; });
+results.addEventListener('click', () => { results.style.display = 'none'; q.value = ''; });
+</script>
+</body>
+</html>

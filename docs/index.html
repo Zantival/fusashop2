@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FusaShop — Wiki técnica</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<style>
+:root{
+  --bg:#0f1115;--panel:#161a21;--panel2:#1c2129;--ink:#e6eaf0;--muted:#98a2b3;
+  --accent:#4c8dff;--accent-soft:#1d2b45;--border:#262d38;--code:#11151c;--ok:#3fb950;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font:15.5px/1.7 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+.topbar{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:18px;padding:12px 22px;background:rgba(15,17,21,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--border)}
+.brand{display:flex;align-items:center;gap:10px;font-weight:650;letter-spacing:.2px}
+.brand .dot{width:10px;height:10px;border-radius:50%;background:var(--accent);box-shadow:0 0 12px var(--accent)}
+.brand small{display:block;color:var(--muted);font-weight:400;font-size:12px}
+.search{margin-left:auto;position:relative;width:min(420px,45vw)}
+.search input{width:100%;padding:9px 12px 9px 34px;border-radius:9px;border:1px solid var(--border);background:var(--panel);color:var(--ink);font-size:14px;outline:none}
+.search input:focus{border-color:var(--accent)}
+.search::before{content:"⌕";position:absolute;left:11px;top:6px;color:var(--muted);font-size:17px}
+.results{position:absolute;top:44px;left:0;right:0;background:var(--panel2);border:1px solid var(--border);border-radius:10px;max-height:60vh;overflow:auto;display:none;box-shadow:0 18px 40px rgba(0,0,0,.45)}
+.results a{display:block;padding:10px 13px;border-bottom:1px solid var(--border);color:var(--ink)}
+.results a:last-child{border-bottom:0}
+.results a:hover{background:var(--accent-soft);text-decoration:none}
+.results small{display:block;color:var(--muted);font-size:12.5px}
+.layout{display:flex;gap:26px;max-width:1400px;margin:0 auto;padding:24px}
+aside{position:sticky;top:70px;flex:0 0 280px;align-self:flex-start;max-height:calc(100vh - 96px);overflow:auto;background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:14px}
+aside h3{margin:6px 8px 10px;font-size:11.5px;letter-spacing:.11em;text-transform:uppercase;color:var(--muted)}
+.nav-item{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;color:#c7d0dd;font-size:14.2px}
+.nav-item:hover{background:var(--panel2);text-decoration:none}
+.nav-item.active{background:var(--accent-soft);color:#fff;font-weight:600}
+.nav-item .icon,.card .icon{color:var(--accent);font-size:13px;width:16px;text-align:center}
+main{flex:1 1 auto;min-width:0;background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:30px 40px}
+main h1{margin:0 0 22px;font-size:30px;letter-spacing:-.3px}
+main h2{margin-top:36px;font-size:21px;border-bottom:1px solid var(--border);padding-bottom:8px}
+main h3{margin-top:26px;font-size:17px;color:#cfd8e5}
+p,li{color:#d3dae5}
+code{background:var(--code);color:#9fd0ff;padding:1.5px 6px;border-radius:5px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px}
+pre{background:var(--code);border:1px solid var(--border);border-radius:10px;padding:16px 18px;overflow:auto}
+pre code{background:none;color:#d7e2f0;padding:0;font-size:13px;line-height:1.55}
+table{border-collapse:collapse;width:100%;margin:16px 0;font-size:14px;display:block;overflow-x:auto}
+th,td{border:1px solid var(--border);padding:9px 12px;text-align:left;vertical-align:top}
+th{background:var(--panel2);color:#e9eef6}
+tr:nth-child(even) td{background:#12161d}
+blockquote{margin:18px 0;padding:12px 16px;border-left:3px solid #d29922;background:#1e1a10;color:#e8d9b0;border-radius:0 8px 8px 0}
+hr{border:0;border-top:1px solid var(--border);margin:30px 0}
+.diagram{margin:0 0 26px;padding:16px;background:var(--panel2);border:1px solid var(--border);border-radius:12px}
+.diagram figcaption{color:var(--muted);font-size:12.5px;text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px}
+.mermaid{background:none;border:0;text-align:center}
+.intro{color:#c8d2e0;font-size:16px}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px;margin-top:26px}
+.card{display:block;padding:16px;border:1px solid var(--border);border-radius:11px;background:var(--panel2);color:var(--ink)}
+.card:hover{border-color:var(--accent);text-decoration:none;transform:translateY(-2px);transition:.15s}
+.card strong{display:block;margin:8px 0 4px;font-size:15px}
+.card em{color:var(--muted);font-style:normal;font-size:13px}
+.pager{display:flex;justify-content:space-between;gap:12px;margin-top:44px;padding-top:18px;border-top:1px solid var(--border);font-size:14px}
+footer{max-width:1400px;margin:0 auto;padding:0 24px 34px;color:var(--muted);font-size:12.8px}
+@media (max-width:1000px){.layout{flex-direction:column}aside{position:static;width:100%;flex:none;max-height:none}main{padding:22px}.search{width:auto;flex:1}}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <a class="brand" href="#inicio">
+    <span class="dot"></span>
+    <span>FusaShop Wiki<small>Zantival/fusashop2 · Laravel 12</small></span>
+  </a>
+  <div class="search">
+    <input id="q" type="search" placeholder="Buscar en la documentación…" autocomplete="off">
+    <div class="results" id="results"></div>
+  </div>
+</div>
+
+<div class="layout">
+  <aside>
+    <h3>Secciones</h3>
+    <a class="nav-item" data-slug="inicio" href="#inicio"><span class="icon">⌂</span>Inicio</a>
+    <a class="nav-item" data-slug="informacion-general" href="#informacion-general"><span class="icon">◆</span>1. Información general</a><a class="nav-item" data-slug="arquitectura" href="#arquitectura"><span class="icon">▣</span>2. Arquitectura</a><a class="nav-item" data-slug="instalacion-y-ejecucion" href="#instalacion-y-ejecucion"><span class="icon">▶</span>3. Instalación y ejecución</a><a class="nav-item" data-slug="rutas" href="#rutas"><span class="icon">↗</span>4. Rutas</a><a class="nav-item" data-slug="modelo-de-datos" href="#modelo-de-datos"><span class="icon">▤</span>5. Modelo de datos</a><a class="nav-item" data-slug="flujos-funcionales" href="#flujos-funcionales"><span class="icon">⇄</span>6. Flujos funcionales</a><a class="nav-item" data-slug="scripts-python" href="#scripts-python"><span class="icon">∑</span>7. Scripts Python</a><a class="nav-item" data-slug="seguridad" href="#seguridad"><span class="icon">⛨</span>8. Seguridad</a><a class="nav-item" data-slug="pruebas-y-calidad" href="#pruebas-y-calidad"><span class="icon">✓</span>9. Pruebas y calidad</a><a class="nav-item" data-slug="mantenimiento" href="#mantenimiento"><span class="icon">⚙</span>10. Mantenimiento</a>
+    <h3 style="margin-top:16px">Enlaces</h3>
+    <a class="nav-item" href="https://github.com/Zantival/fusashop2" target="_blank"><span class="icon">↗</span>Repositorio</a>
+    <a class="nav-item" href="MANUAL_TECNICO.md"><span class="icon">↗</span>Manual en Markdown</a>
+  </aside>
+  <main id="content">
+    <section class="page" id="inicio" hidden><h1>FusaShop — Wiki técnica</h1><div class="intro"><p>Plataforma de comercio electrónico local (Fusagasugá) construida sobre Laravel 12 con vistas Blade, Tailwind CSS, Alpine.js y scripts auxiliares en Python para analítica.</p></div><div class="cards"><a class="card" href="#informacion-general"><span class="icon">◆</span><strong>1. Información general</strong><em>Roles del sistema</em></a><a class="card" href="#arquitectura"><span class="icon">▣</span><strong>2. Arquitectura</strong><em>Estructura de directorios</em></a><a class="card" href="#instalacion-y-ejecucion"><span class="icon">▶</span><strong>3. Instalación y ejecución</strong><em>Requisitos, Instalación local, Usuarios de prueba (seeder)</em></a><a class="card" href="#rutas"><span class="icon">↗</span><strong>4. Rutas</strong><em>4.1 Web (`routes/web.php`), 4.2 API (`routes/api.php`, Sanctum)</em></a><a class="card" href="#modelo-de-datos"><span class="icon">▤</span><strong>5. Modelo de datos</strong><em>Ver sección</em></a><a class="card" href="#flujos-funcionales"><span class="icon">⇄</span><strong>6. Flujos funcionales</strong><em>6.1 Registro y autenticación, 6.2 Onboarding y KYC del comerciante, 6.3 Compra (checkout)</em></a><a class="card" href="#scripts-python"><span class="icon">∑</span><strong>7. Scripts Python</strong><em>Ver sección</em></a><a class="card" href="#seguridad"><span class="icon">⛨</span><strong>8. Seguridad</strong><em>Ver sección</em></a><a class="card" href="#pruebas-y-calidad"><span class="icon">✓</span><strong>9. Pruebas y calidad</strong><em>Ver sección</em></a><a class="card" href="#mantenimiento"><span class="icon">⚙</span><strong>10. Mantenimiento</strong><em>Ver sección</em></a></div></section><section class="page" id="informacion-general" hidden><h1>1. Información general</h1><table>
+<thead>
+<tr>
+<th>Elemento</th>
+<th>Valor</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Nombre del proyecto</td>
+<td>FusaShop (<code>fusashop/platform</code>)</td>
+</tr>
+<tr>
+<td>Repositorio</td>
+<td><code>Zantival/fusashop2</code></td>
+</tr>
+<tr>
+<td>Framework backend</td>
+<td>Laravel 12 (PHP ^8.2)</td>
+</tr>
+<tr>
+<td>Autenticación API</td>
+<td>Laravel Sanctum 4</td>
+</tr>
+<tr>
+<td>Login social</td>
+<td>Laravel Socialite 5 (Google, Facebook)</td>
+</tr>
+<tr>
+<td>Frontend</td>
+<td>Blade + Tailwind CSS 4 + Alpine.js 3 + Chart.js 4</td>
+</tr>
+<tr>
+<td>Build de assets</td>
+<td>Vite 5 / Tailwind CLI</td>
+</tr>
+<tr>
+<td>Base de datos</td>
+<td>MySQL 8 (soporta SQLite para desarrollo)</td>
+</tr>
+<tr>
+<td>Correo</td>
+<td>Resend / Mailgun / SMTP (driver <code>log</code> en local)</td>
+</tr>
+<tr>
+<td>Pagos</td>
+<td>PayU LatAm (WebCheckout)</td>
+</tr>
+<tr>
+<td>Analítica auxiliar</td>
+<td>Python 3 (<code>python/analytics.py</code>, <code>python/ml_analyzer.py</code>)</td>
+</tr>
+<tr>
+<td>Idioma/zona</td>
+<td><code>es</code> / <code>America/Bogota</code></td>
+</tr>
+</tbody>
+</table>
+<h3>Roles del sistema</h3>
+<table>
+<thead>
+<tr>
+<th>Rol</th>
+<th>Valor en BD</th>
+<th>Alcance</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Cliente</td>
+<td><code>consumer</code></td>
+<td>Catálogo, carrito, checkout, pedidos, reseñas, fidelización, PQRS, chat</td>
+</tr>
+<tr>
+<td>Comerciante (MiPyme)</td>
+<td><code>merchant</code></td>
+<td>Perfil de empresa + KYC, productos, inventario, pedidos, reseñas, finanzas, banners</td>
+</tr>
+<tr>
+<td>Administrador / Analista</td>
+<td><code>analyst</code></td>
+<td>Usuarios, KYC, pedidos, pagos, banners, reportes, PQRS, análisis ML</td>
+</tr>
+</tbody>
+</table><nav class="pager"><span></span><a href="#arquitectura">2. Arquitectura →</a></nav></section><section class="page" id="arquitectura" hidden><h1>2. Arquitectura</h1><figure class="diagram"><figcaption>Vista general de capas</figcaption><pre class="mermaid">flowchart TD
+    B[&quot;Navegador&lt;br/&gt;Blade + Tailwind + Alpine + Chart.js&quot;] --&gt;|sesion web| W[&quot;routes/web.php&quot;]
+    M[&quot;Cliente API / movil&quot;] --&gt;|token Sanctum| A[&quot;routes/api.php&quot;]
+    W --&gt; MW[&quot;Middleware&lt;br/&gt;SecurityHeaders / auth / verified / role / EnsureKycApproved&quot;]
+    A --&gt; MW
+    MW --&gt; C[&quot;Controladores&lt;br/&gt;Auth, Consumer, Merchant, Analyst, Chat, PQRS, Payment, Api&quot;]
+    C --&gt; E[&quot;Modelos Eloquent&quot;]
+    C --&gt; S[&quot;PayUService&quot;]
+    C --&gt; P[&quot;Procesos Python&lt;br/&gt;symfony/process&quot;]
+    E --&gt; DB[(&quot;MySQL / SQLite&quot;)]
+    S --&gt; PU[&quot;PayU WebCheckout&quot;]
+    PU --&gt;|webhook| C
+    C --&gt; N[&quot;Notificaciones BD + correo&quot;]
+    C --&gt; ST[&quot;Storage local&lt;br/&gt;storage/app/public&quot;]</pre></figure><figure class="diagram"><figcaption>Control de acceso por rol</figcaption><pre class="mermaid">flowchart LR
+    U[&quot;Usuario autenticado&quot;] --&gt; R{&quot;role&quot;}
+    R --&gt;|consumer| CN[&quot;/shop/cart, checkout, orders, reviews&quot;]
+    R --&gt;|merchant| K{&quot;kyc_status&quot;}
+    R --&gt;|analyst| AD[&quot;/admin/*&quot;]
+    K --&gt;|pending o rejected| PF[&quot;/merchant/profile&lt;br/&gt;acceso bloqueado&quot;]
+    K --&gt;|approved| MD[&quot;/merchant/dashboard, products, orders, finances&quot;]</pre></figure><pre><code>Navegador (Blade + Tailwind + Alpine + Chart.js)
+        │  HTTP (sesión web)                 │ HTTP (token Sanctum)
+        ▼                                    ▼
+routes/web.php                        routes/api.php
+        │                                    │
+        ▼                                    ▼
+Middleware: SecurityHeaders → auth → verified → role → EnsureKycApproved
+        │
+        ▼
+Controladores (Auth, Consumer, Merchant, Analyst, Chat, PQRS, Payment, Api)
+        │                    │                         │
+        ▼                    ▼                         ▼
+Modelos Eloquent      Servicios (PayUService)   Procesos Python (symfony/process)
+        │                    │
+        ▼                    ▼
+   MySQL / SQLite      PayU WebCheckout ──webhook──► PaymentController@webhook
+        │
+        ▼
+Notificaciones (BD + correo), Eventos/Listeners, Storage local (`storage/app/public`)
+</code></pre>
+<p>Patrón: MVC clásico de Laravel, sin capa de repositorios. La lógica de negocio vive en los controladores; <code>App\Services\PayUService</code> es el único servicio dedicado.</p>
+<h3>Estructura de directorios</h3>
+<pre><code>app/
+  Events/           ProductOutOfStock, MessageSent
+  Listeners/        NotifySellerOutOfStock
+  Mail/             OrderReceipt (mailable del recibo de compra)
+  Models/           User, Product, Order, OrderItem, Cart, CartItem, Review,
+                    CompanyProfile, Coupon, Message, PQRS, LoyaltyPoint,
+                    GlobalBanner, BannerRequest, PasswordResetOfflineRequest
+  Notifications/    14 notificaciones (pedidos, KYC, PQRS, chat, banners, stock…)
+  Services/         PayUService
+  Http/
+    Controllers/    Auth/, Consumer/, Merchant/, Analyst/, Api, Chat, PQRS, Payment
+    Middleware/     SecurityHeaders, RoleMiddleware, EnsureKycApproved, CheckCookieConsent
+bootstrap/app.php   Registro de rutas, middleware y manejo de excepciones
+config/             app, auth, cache, database, filesystems, logging, sanctum, services, session
+database/
+  migrations/       Esquema completo (ver §5)
+  seeders/          DatabaseSeeder (usuarios demo, 10 productos, 1 pedido)
+public/             Front controller y assets compilados (`public/assets/css/app.css`)
+python/             analytics.py (reportes CLI), ml_analyzer.py (scoring de comercios)
+resources/views/    Blade agrupado por rol: consumer/, merchant/, analyst/, auth/, chat/, pqrs/…
+routes/             web.php, api.php, console.php
+tests/              PHPUnit (tests/Feature, tests/Unit)
+Dockerfile          Imagen de producción PHP 8.2 + Apache con build de assets en Node 20
+Tickets/            Copia parcial/histórica del esqueleto del proyecto (no se ejecuta)
+</code></pre><nav class="pager"><a href="#informacion-general">← 1. Información general</a><a href="#instalacion-y-ejecucion">3. Instalación y ejecución →</a></nav></section><section class="page" id="instalacion-y-ejecucion" hidden><h1>3. Instalación y ejecución</h1><h3>Requisitos</h3>
+<ul>
+<li>PHP 8.2+ con extensiones <code>pdo_mysql</code>, <code>mbstring</code>, <code>zip</code>, <code>exif</code>, <code>bcmath</code>, <code>gd</code></li>
+<li>Composer 2</li>
+<li>Node.js 20+ y npm</li>
+<li>MySQL 8 (o SQLite para desarrollo)</li>
+<li>Python 3 (opcional, para los reportes y el análisis ML del panel de administrador)</li>
+</ul>
+<h3>Instalación local</h3>
+<pre><code class="language-bash">composer install
+npm install
+cp .env.example .env
+php artisan key:generate
+php artisan migrate
+php artisan db:seed
+php artisan storage:link      # expone storage/app/public
+npm run build                 # compila Tailwind a public/assets/css/app.css
+php artisan serve             # http://localhost:8000
+</code></pre>
+<p>Durante el desarrollo del CSS: <code>npm run css:watch</code>.</p>
+<h3>Usuarios de prueba (seeder)</h3>
+<table>
+<thead>
+<tr>
+<th>Rol</th>
+<th>Correo</th>
+<th>Contraseña</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>analyst</td>
+<td><code>admin@fusashop.com</code></td>
+<td><code>password123</code></td>
+</tr>
+<tr>
+<td>merchant</td>
+<td><code>tienda@fusashop.com</code></td>
+<td><code>password123</code></td>
+</tr>
+<tr>
+<td>merchant</td>
+<td><code>tech@fusashop.com</code></td>
+<td><code>password123</code></td>
+</tr>
+<tr>
+<td>consumer</td>
+<td><code>juan@fusashop.com</code></td>
+<td><code>password123</code></td>
+</tr>
+<tr>
+<td>consumer</td>
+<td><code>maria@fusashop.com</code></td>
+<td><code>password123</code></td>
+</tr>
+</tbody>
+</table>
+<h3>Variables de entorno relevantes</h3>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Descripción</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>APP_NAME</code>, <code>APP_ENV</code>, <code>APP_KEY</code>, <code>APP_DEBUG</code>, <code>APP_URL</code></td>
+<td>Configuración base de Laravel</td>
+</tr>
+<tr>
+<td><code>APP_LOCALE=es</code>, <code>APP_TIMEZONE=America/Bogota</code></td>
+<td>Localización</td>
+</tr>
+<tr>
+<td><code>DB_CONNECTION</code>, <code>DB_HOST</code>, <code>DB_PORT</code>, <code>DB_DATABASE</code>, <code>DB_USERNAME</code>, <code>DB_PASSWORD</code></td>
+<td>Conexión a base de datos</td>
+</tr>
+<tr>
+<td><code>SESSION_DRIVER</code>, <code>CACHE_STORE</code>, <code>QUEUE_CONNECTION</code>, <code>FILESYSTEM_DISK</code></td>
+<td>Infraestructura (por defecto <code>file</code>/<code>sync</code>/<code>local</code>)</td>
+</tr>
+<tr>
+<td><code>MAIL_MAILER</code>, <code>MAIL_FROM_ADDRESS</code>, <code>MAIL_FROM_NAME</code>, <code>RESEND_API_KEY</code>, <code>MAILGUN_*</code></td>
+<td>Envío de correo</td>
+</tr>
+<tr>
+<td><code>GOOGLE_CLIENT_ID</code> / <code>GOOGLE_CLIENT_SECRET</code></td>
+<td>Login con Google (callback <code>{APP_URL}/auth/google/callback</code>)</td>
+</tr>
+<tr>
+<td><code>FACEBOOK_CLIENT_ID</code> / <code>FACEBOOK_CLIENT_SECRET</code></td>
+<td>Login con Facebook (callback <code>{APP_URL}/auth/facebook/callback</code>)</td>
+</tr>
+<tr>
+<td><code>SERVICES_PAYU_*</code> (<code>merchant_id</code>, <code>api_key</code>, <code>account_id</code>, <code>test</code>)</td>
+<td>Credenciales PayU; sin ellas se usan las de sandbox</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>En entorno <code>local</code>, <code>AppServiceProvider</code> fuerza <code>Mail::alwaysTo('garzonzanti@gmail.com')</code> para que el modo de prueba de Resend acepte los envíos. Debe revisarse antes de cualquier despliegue real.</p>
+</blockquote>
+<h3>Despliegue</h3>
+<ul>
+<li><strong>Docker</strong>: el <code>Dockerfile</code> construye los assets con Node 20, instala dependencias con <code>composer install --no-dev --optimize-autoloader</code>, genera <code>APP_KEY</code>, crea el enlace <code>public/storage</code> y sirve con Apache (<code>mpm_prefork</code>) apuntando a <code>public/</code>.</li>
+<li><strong>PaaS</strong>: README recomienda Railway, Render, Heroku o DigitalOcean App Platform. <code>vercel.json</code> solo contempla el build estático de assets, no la app PHP.</li>
+<li>Tras desplegar: <code>php artisan migrate --force</code>, <code>php artisan storage:link</code>, <code>php artisan config:cache route:cache view:cache</code>.</li>
+<li>Endpoint de salud: <code>GET /up</code>.</li>
+</ul><nav class="pager"><a href="#arquitectura">← 2. Arquitectura</a><a href="#rutas">4. Rutas →</a></nav></section><section class="page" id="rutas" hidden><h1>4. Rutas</h1><h3>4.1 Web (<code>routes/web.php</code>)</h3>
+<p><strong>Público</strong></p>
+<table>
+<thead>
+<tr>
+<th>Método</th>
+<th>Ruta</th>
+<th>Acción</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GET</td>
+<td><code>/</code></td>
+<td>Redirige a <code>consumer.home</code></td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/privacidad</code></td>
+<td>Política de privacidad</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/cookie-consent</code></td>
+<td>Guarda el consentimiento en sesión y cookie permanente</td>
+</tr>
+<tr>
+<td>GET/POST</td>
+<td><code>/login</code>, <code>/register</code></td>
+<td>Autenticación (throttle 5/min)</td>
+</tr>
+<tr>
+<td>GET/POST</td>
+<td><code>/forgot-password-offline</code></td>
+<td>Solicitud de reseteo manual atendida por un analista</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/auth/{provider}/redirect</code> y <code>/callback</code></td>
+<td>Login social (Google/Facebook)</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/shop</code>, <code>/shop/catalog</code>, <code>/shop/product/{id}</code></td>
+<td>Home, catálogo con filtros y ficha de producto</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/shop/directory</code>, <code>/shop/directory/brand/{id}</code></td>
+<td>Directorio de comercios aprobados y perfil de marca</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/files/{disk}/{path}</code></td>
+<td>Servidor local de archivos de <code>storage/app/public</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Autenticado (cualquier rol)</strong>: <code>/notifications</code> (+ <code>read</code>, <code>read-all</code>), <code>/account/profile</code>, <code>/chat</code> (<code>show</code>, <code>poll</code>, <code>store</code>, <code>destroy</code>), <code>/pqrs</code> (<code>create</code>, <code>store</code>, <code>show</code>), verificación de correo (<code>/email/verify…</code>), <code>POST /logout</code>.</p>
+<p><strong>Cliente</strong> (<code>auth</code> + <code>verified</code> + <code>role:consumer</code>, prefijo <code>/shop</code>): <code>cart</code>, <code>cart/add</code>, <code>cart/item/{item}</code> (PATCH/DELETE), <code>checkout</code> (GET/POST), <code>orders</code>, <code>orders/{id}/receipt</code>, <code>product/{id}/review</code>.</p>
+<p><strong>Comerciante</strong> (<code>auth</code> + <code>verified</code> + <code>role:merchant</code>, prefijo <code>/merchant</code>):
+- Sin KYC aprobado: <code>profile</code> (GET/POST), <code>support/contact</code>.
+- Con KYC aprobado (<code>EnsureKycApproved</code>): <code>dashboard</code>, <code>store/edit</code>, <code>products</code> (CRUD), <code>inventory</code> (GET/POST), <code>orders</code> y <code>orders/{order}/status</code>, <code>reviews</code> y <code>reviews/{review}/reply</code>, <code>finances</code>, <code>banner-request</code> (GET/POST).</p>
+<p><strong>Administrador</strong> (<code>auth</code> + <code>role:analyst</code>, prefijo <code>/admin</code>): <code>dashboard</code>, <code>users</code> (CRUD, <code>toggle-block</code>, <code>rut</code>, <code>kyc</code>), <code>orders</code>, <code>payments</code>, <code>sales-report-print</code>, <code>run-ml</code>, <code>banners</code> (alta, toggle, borrado, logo global), <code>banner-requests/{id}</code> y <code>approve</code>, <code>reviews-report</code>, <code>pqrs</code> y <code>pqrs/{pqrs}/reply</code>.</p>
+<h3>4.2 API (<code>routes/api.php</code>, Sanctum)</h3>
+<table>
+<thead>
+<tr>
+<th>Método</th>
+<th>Ruta</th>
+<th>Auth</th>
+<th>Descripción</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>POST</td>
+<td><code>/api/login</code></td>
+<td>No</td>
+<td>Devuelve token Sanctum</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/register</code></td>
+<td>No</td>
+<td>Alta de cliente + token</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/products</code></td>
+<td>No</td>
+<td>Listado de productos activos</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/products/{id}</code></td>
+<td>No</td>
+<td>Detalle de producto</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/logout</code></td>
+<td>Sí</td>
+<td>Revoca el token</td>
+</tr>
+<tr>
+<td>GET/POST</td>
+<td><code>/api/cart</code></td>
+<td>Sí</td>
+<td>Consulta y alta de ítems</td>
+</tr>
+<tr>
+<td>DELETE</td>
+<td><code>/api/cart/{item}</code></td>
+<td>Sí</td>
+<td>Elimina ítem</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/orders</code></td>
+<td>Sí</td>
+<td>Pedidos del usuario</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/analytics</code></td>
+<td>Sí</td>
+<td>Ventas mensuales y por categoría (<code>AnalystController@analyticsData</code>)</td>
+</tr>
+</tbody>
+</table><nav class="pager"><a href="#instalacion-y-ejecucion">← 3. Instalación y ejecución</a><a href="#modelo-de-datos">5. Modelo de datos →</a></nav></section><section class="page" id="modelo-de-datos" hidden><h1>5. Modelo de datos</h1><figure class="diagram"><figcaption>Entidades principales</figcaption><pre class="mermaid">erDiagram
+    USERS ||--o| CARTS : tiene
+    USERS ||--o{ ORDERS : realiza
+    USERS ||--o| COMPANY_PROFILES : posee
+    USERS ||--o{ PRODUCTS : vende
+    USERS ||--o{ REVIEWS : escribe
+    USERS ||--o{ LOYALTY_POINTS : acumula
+    USERS ||--o{ P_Q_R_S : radica
+    USERS ||--o{ MESSAGES : envia
+    USERS ||--o{ BANNER_REQUESTS : solicita
+    CARTS ||--o{ CART_ITEMS : contiene
+    PRODUCTS ||--o{ CART_ITEMS : referencia
+    PRODUCTS ||--o{ ORDER_ITEMS : referencia
+    PRODUCTS ||--o{ REVIEWS : recibe
+    ORDERS ||--o{ ORDER_ITEMS : agrupa
+    PRODUCTS ||--o{ COUPONS : &quot;&quot;
+    BANNER_REQUESTS ||--o| GLOBAL_BANNERS : aprueba</pre></figure><p>Tablas principales (ver <code>database/migrations/</code>):</p>
+<table>
+<thead>
+<tr>
+<th>Tabla</th>
+<th>Campos destacados</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>users</code></td>
+<td><code>name</code>, <code>email</code> único, <code>password</code> (nullable por login social), <code>role</code> enum(<code>consumer</code>,<code>merchant</code>,<code>analyst</code>), <code>phone</code>, <code>address</code>, <code>avatar</code>, <code>is_blocked</code>, <code>email_verified_at</code></td>
+</tr>
+<tr>
+<td><code>company_profiles</code></td>
+<td><code>merchant_id</code>→users, <code>company_name</code>, <code>business_type</code>, <code>phone</code>, <code>rut_path</code>, <code>camara_comercio_path</code>, <code>logo_path</code>, <code>banners_path</code> (json), <code>description</code>, <code>address</code>, <code>whatsapp</code>, <code>google_maps_url</code>, <code>latitude</code>, <code>longitude</code>, <code>employee_count</code>, <code>kyc_status</code> enum(<code>pending</code>,<code>approved</code>,<code>rejected</code>), <code>kyc_notes</code></td>
+</tr>
+<tr>
+<td><code>products</code></td>
+<td><code>merchant_id</code>, <code>name</code>, <code>slug</code> único, <code>description</code>, <code>price</code> decimal(10,2), <code>stock</code>, <code>category</code>, <code>image</code>, <code>images</code> (json), <code>available_options</code> (json), <code>specifications</code> (json), <code>is_active</code>; índices en <code>category+is_active</code> y <code>merchant_id</code></td>
+</tr>
+<tr>
+<td><code>carts</code> / <code>cart_items</code></td>
+<td>Carrito 1–1 por usuario; ítems con <code>quantity</code>, <code>selected_options</code> (json), único <code>cart_id+product_id</code></td>
+</tr>
+<tr>
+<td><code>orders</code></td>
+<td><code>user_id</code>, <code>total</code>, <code>discount</code>, <code>points_used</code>, <code>points_earned</code>, <code>status</code> enum(<code>pending</code>,<code>processing</code>,<code>shipped</code>,<code>delivered</code>,<code>cancelled</code>), <code>shipping_address</code>, <code>payment_method</code>, <code>payment_status</code> enum(<code>pending</code>,<code>paid</code>,<code>failed</code>), <code>notes</code></td>
+</tr>
+<tr>
+<td><code>order_items</code></td>
+<td><code>order_id</code>, <code>product_id</code> (restrict), <code>quantity</code>, <code>price</code>, <code>selected_options</code> (json)</td>
+</tr>
+<tr>
+<td><code>reviews</code></td>
+<td><code>product_id</code>, <code>user_id</code>, <code>rating</code> 1–5, <code>comment</code>, <code>merchant_reply</code>, <code>replied_at</code></td>
+</tr>
+<tr>
+<td><code>loyalty_points</code></td>
+<td><code>user_id</code>, <code>merchant_id</code>, <code>points</code> (saldo por comercio)</td>
+</tr>
+<tr>
+<td><code>coupons</code></td>
+<td><code>merchant_id</code>, <code>code</code> único, <code>type</code> (<code>fixed</code>/<code>percentage</code>), <code>value</code>, <code>min_order_amount</code>, <code>expires_at</code>, <code>usage_limit</code>, <code>used_count</code>, <code>is_active</code></td>
+</tr>
+<tr>
+<td><code>messages</code></td>
+<td><code>sender_id</code>, <code>receiver_id</code>, <code>product_id</code> nullable, <code>content</code>, <code>is_read</code></td>
+</tr>
+<tr>
+<td><code>p_q_r_s</code></td>
+<td><code>user_id</code>, <code>type</code> enum(<code>peticion</code>,<code>queja</code>,<code>reclamo</code>,<code>sugerencia</code>), <code>subject</code>, <code>content</code>, <code>status</code> enum(<code>pending</code>,<code>in_review</code>,<code>resolved</code>,<code>closed</code>), <code>admin_response</code>, <code>resolved_at</code></td>
+</tr>
+<tr>
+<td><code>global_banners</code></td>
+<td><code>title</code>, <code>image_path</code>, <code>link_url</code>, <code>is_active</code>, <code>sort_order</code></td>
+</tr>
+<tr>
+<td><code>banner_requests</code></td>
+<td><code>user_id</code>, <code>image_path</code>, <code>payment_proof_path</code>, <code>status</code>, <code>cost</code>, <code>notes</code></td>
+</tr>
+<tr>
+<td><code>password_reset_offline_requests</code></td>
+<td><code>email</code>, <code>status</code> (<code>pending</code>/<code>resolved</code>)</td>
+</tr>
+<tr>
+<td><code>notifications</code></td>
+<td>Tabla estándar de Laravel (uuid, <code>notifiable</code>, <code>data</code>, <code>read_at</code>)</td>
+</tr>
+<tr>
+<td><code>personal_access_tokens</code>, <code>sessions</code>, <code>cache</code>, <code>password_reset_tokens</code></td>
+<td>Infraestructura de Laravel/Sanctum</td>
+</tr>
+</tbody>
+</table>
+<p>Relaciones Eloquent clave: <code>User hasMany Product (merchant_id)</code>, <code>User hasOne Cart</code>, <code>User hasOne CompanyProfile</code>, <code>User hasMany Order</code>, <code>Order hasMany OrderItem</code>, <code>Product hasMany Review</code>, <code>Cart hasMany CartItem</code>.</p><nav class="pager"><a href="#rutas">← 4. Rutas</a><a href="#flujos-funcionales">6. Flujos funcionales →</a></nav></section><section class="page" id="flujos-funcionales" hidden><h1>6. Flujos funcionales</h1><figure class="diagram"><figcaption>Proceso de compra (checkout)</figcaption><pre class="mermaid">sequenceDiagram
+    participant C as Cliente
+    participant CC as ConsumerController
+    participant DB as Base de datos
+    participant M as Comerciante
+    C-&gt;&gt;CC: POST /shop/checkout
+    CC-&gt;&gt;CC: Validar direccion y metodo de pago
+    CC-&gt;&gt;DB: Calcular total y puntos disponibles
+    CC-&gt;&gt;CC: Aplicar descuento (1 punto = $50)
+    CC-&gt;&gt;DB: Crear order + order_items (transaccion)
+    CC-&gt;&gt;DB: Descontar stock
+    CC--&gt;&gt;M: ProductOutOfStock si stock = 0
+    CC-&gt;&gt;DB: Acumular puntos (1 punto por $1.000)
+    CC--&gt;&gt;M: NewOrderNotification
+    CC-&gt;&gt;DB: Vaciar y eliminar carrito
+    CC--&gt;&gt;C: Redirect a /shop/orders</pre></figure><figure class="diagram"><figcaption>Onboarding y KYC del comerciante</figcaption><pre class="mermaid">stateDiagram-v2
+    [*] --&gt; SinPerfil
+    SinPerfil --&gt; Pendiente: envia perfil + RUT + camara de comercio
+    Pendiente --&gt; Aprobado: analista aprueba
+    Pendiente --&gt; Rechazado: analista rechaza
+    Rechazado --&gt; Pendiente: corrige documentos
+    Aprobado --&gt; [*]: acceso completo al panel
+    note right of Pendiente
+        EnsureKycApproved bloquea
+        el panel del comerciante
+    end note</pre></figure><h3>6.1 Registro y autenticación</h3>
+<ol>
+<li><code>AuthController@register</code> valida (contraseña mínima de 8, rol <code>consumer</code> o <code>merchant</code>), crea el usuario, crea el carrito si es cliente y dispara <code>Registered</code> → correo de verificación personalizado (definido en <code>AppServiceProvider</code>), <code>WelcomeNotification</code> y <code>NewUserNotification</code> a los analistas.</li>
+<li><code>redirectByRole()</code> envía a verificación de correo si falta, y luego a <code>merchant.profile</code> / <code>merchant.dashboard</code>, <code>analyst.dashboard</code> o <code>consumer.home</code>.</li>
+<li>En login se bloquea el acceso si <code>is_blocked</code> es verdadero; los intentos están limitados a 5 por minuto.</li>
+<li><code>User::hasVerifiedEmail()</code> devuelve <code>true</code> siempre para el rol <code>analyst</code> (omite la verificación para administradores).</li>
+<li>Recuperación de contraseña: no hay flujo automático por correo; <code>PasswordResetOfflineRequest</code> registra la solicitud y notifica a los analistas para gestión manual.</li>
+<li>Login social vía <code>SocialAuthController</code> (Google/Facebook) usando <code>provider</code>/<code>provider_id</code>.</li>
+</ol>
+<h3>6.2 Onboarding y KYC del comerciante</h3>
+<ol>
+<li>El comerciante completa <code>merchant/profile</code>: datos de empresa, RUT en PDF (obligatorio), Cámara de Comercio, logo, banners, dirección y coordenadas.</li>
+<li>El perfil queda con <code>kyc_status = pending</code> y se notifica a los analistas (<code>NewMerchantProfileNotification</code>).</li>
+<li><code>EnsureKycApproved</code> bloquea todo el panel del comerciante mientras el estado no sea <code>approved</code>, redirigiendo a <code>merchant.profile</code> con el mensaje correspondiente.</li>
+<li>El analista revisa el RUT (<code>/admin/users/{user}/rut</code>) y aprueba o rechaza (<code>/admin/users/{user}/kyc</code>), lo que dispara <code>KycDecisionNotification</code>.</li>
+</ol>
+<h3>6.3 Compra (checkout)</h3>
+<p><code>ConsumerController@checkoutProcess</code>:</p>
+<ol>
+<li>Valida dirección de envío y método de pago (<code>card</code>, <code>transfer</code>, <code>cash</code>).</li>
+<li>Calcula el total del carrito y, si el cliente usa puntos, aplica el descuento con la equivalencia <strong>1 punto = $50 COP</strong>, descontando los saldos de <code>loyalty_points</code> por comercio.</li>
+<li>Dentro de una transacción: crea el pedido (<code>payment_status = paid</code>, <code>status = pending</code>), crea los ítems, descuenta stock y lanza <code>ProductOutOfStock</code> cuando el stock llega a 0 (listener <code>NotifySellerOutOfStock</code>).</li>
+<li>Acumula puntos nuevos: <strong>1 punto por cada $1.000</strong> del subtotal neto por comercio.</li>
+<li>Notifica a cada comerciante involucrado (<code>NewOrderNotification</code>), vacía y elimina el carrito.</li>
+<li>Redirige a <code>consumer.orders</code>; el recibo se consulta en <code>/shop/orders/{id}/receipt</code>.</li>
+</ol>
+<h3>6.4 Pagos con PayU</h3>
+<ul>
+<li><code>PayUService</code> construye los parámetros de WebCheckout y la firma <code>md5(apiKey~merchantId~referenceCode~amount~currency)</code> con referencia <code>ORDER-{id}-{timestamp}</code> y moneda COP; por defecto usa el sandbox de PayU.</li>
+<li><code>PaymentController@response</code> interpreta <code>transactionState</code> (4 aprobado, 6 rechazado, 7/104 pendiente-error) y muestra <code>payment.result</code>.</li>
+<li><code>PaymentController@webhook</code> recibe la confirmación servidor-a-servidor, extrae el id del pedido de la referencia, marca <code>paid</code>/<code>failed</code> y envía el recibo por correo (<code>OrderReceipt</code>).</li>
+<li><strong>Nota de estado</strong>: <code>routes/web.php</code> no declara actualmente las rutas <code>payment.response</code> ni <code>payment.webhook</code> que <code>PayUService</code> referencia, y el checkout marca los pedidos como pagados directamente. La pasarela está implementada pero no conectada al flujo de compra.</li>
+</ul>
+<h3>6.5 Fidelización</h3>
+<p><code>loyalty_points</code> guarda un saldo por par cliente–comercio. Se gana 1 punto por cada $1.000 de compra neta en ese comercio y se canjea a razón de $50 por punto en el checkout. El perfil del cliente y el recibo muestran los saldos vigentes.</p>
+<h3>6.6 Reseñas</h3>
+<p>Solo puede calificar quien tenga un pedido en estado <code>delivered</code> que contenga el producto (validación en <code>productDetail</code> y <code>productReview</code>; en caso contrario, HTTP 403). El comerciante responde desde <code>merchant/reviews</code>, y el analista consulta el informe consolidado en <code>/admin/reviews-report</code>.</p>
+<h3>6.7 Chat y PQRS</h3>
+<ul>
+<li>Chat interno 1–1 basado en la tabla <code>messages</code> con <em>polling</em> (<code>GET /chat/{user}/poll</code>); existe el evento <code>MessageSent</code> y la notificación <code>NewMessageNotification</code>. Los enlaces "Contactar soporte" de cliente y comerciante abren un chat con el primer analista disponible.</li>
+<li>PQRS: el usuario crea la solicitud (<code>peticion</code>, <code>queja</code>, <code>reclamo</code>, <code>sugerencia</code>), los analistas la reciben (<code>NewPQRSNotification</code>), responden desde <code>/admin/pqrs</code> y el usuario recibe <code>PQRSResponseNotification</code>.</li>
+</ul>
+<h3>6.8 Publicidad (banners)</h3>
+<p>El comerciante sube una imagen y el comprobante de pago (<code>banner_requests</code>); el analista revisa, asigna el costo y aprueba, creando un <code>global_banner</code> visible en la portada. El gasto aprobado se descuenta en el módulo de finanzas del comerciante.</p>
+<h3>6.9 Panel del comerciante</h3>
+<ul>
+<li><strong>Dashboard</strong>: total de productos, agotados, ventas acumuladas, pedidos pendientes, últimos pedidos y reseñas, calificación promedio.</li>
+<li><strong>Inventario</strong>: actualización masiva de stock y alerta de productos con stock ≤ 5.</li>
+<li><strong>Finanzas</strong>: ventas brutas, descuentos por puntos prorrateados, inversión en publicidad aprobada e ingreso real (<code>brutas − puntos − publicidad</code>).</li>
+<li><strong>Pedidos</strong>: cambio de estado con notificación <code>OrderStatusChanged</code> al cliente.</li>
+</ul>
+<h3>6.10 Panel del analista</h3>
+<p>Métricas globales (ventas, pedidos, ticket promedio, usuarios por rol), ventas mensuales (consulta compatible con MySQL y SQLite), pedidos por estado, ventas por empresa, productos más vendidos, censo por sectores económicos, KYC y banners pendientes, gestión de usuarios (incluye bloqueo), pagos, reporte de ventas imprimible y análisis ML.</p>
+<p><code>AnalystController@runMl</code> arma un JSON con <code>merchant_id</code>, <code>company_name</code>, <code>total_sales</code> y <code>avg_rating</code>, lo envía por STDIN a <code>python/ml_analyzer.py</code> mediante <code>symfony/process</code>, y muestra la clasificación devuelta (<code>Top</code>/<code>Average</code>/<code>Low Performer</code>, más <code>anomaly_detected</code>). Requiere <code>python3</code> disponible en el servidor.</p><nav class="pager"><a href="#modelo-de-datos">← 5. Modelo de datos</a><a href="#scripts-python">7. Scripts Python →</a></nav></section><section class="page" id="scripts-python" hidden><h1>7. Scripts Python</h1><table>
+<thead>
+<tr>
+<th>Script</th>
+<th>Uso</th>
+<th>Descripción</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>python/analytics.py</code></td>
+<td><code>python3 python/analytics.py --report ventas\|usuarios\|productos\|all --output json\|csv</code></td>
+<td>Reportes CLI directos contra MySQL (<code>--host</code>, <code>--db</code>, <code>--user</code>, <code>--password</code>). Si faltan <code>mysql-connector-python</code> o la conexión, devuelve datos de demostración.</td>
+</tr>
+<tr>
+<td><code>python/ml_analyzer.py</code></td>
+<td>STDIN/STDOUT JSON</td>
+<td>Scoring heurístico por comercio: <code>score = ventas*0.4 + rating*6</code>, clasificación en tres niveles y bandera de anomalía. No es un modelo entrenado.</td>
+</tr>
+</tbody>
+</table><nav class="pager"><a href="#flujos-funcionales">← 6. Flujos funcionales</a><a href="#seguridad">8. Seguridad →</a></nav></section><section class="page" id="seguridad" hidden><h1>8. Seguridad</h1><ul>
+<li><strong>Headers</strong> (<code>SecurityHeaders</code>, aplicado globalmente): <code>X-Frame-Options: DENY</code>, <code>X-Content-Type-Options: nosniff</code>, <code>X-XSS-Protection</code>, HSTS en HTTPS y una CSP que permite CDNs específicas (jsDelivr, unpkg, Google Fonts, Nominatim, OSRM).</li>
+<li><strong>Autorización por rol</strong>: middleware <code>role:</code> con verificación de pertenencia; <code>EnsureKycApproved</code> para el panel comercial; comprobaciones de propiedad en carrito, productos y pedidos (HTTP 403).</li>
+<li><strong>Validación y saneamiento</strong>: validación en todos los formularios; <code>strip_tags()</code> sobre textos libres (perfil, dirección, comentarios).</li>
+<li><strong>Rate limiting</strong>: 5 intentos/min en login y registro, 6/min en reenvío de verificación.</li>
+<li><strong>Sesión y contraseñas</strong>: regeneración de sesión al iniciar/cerrar, hash bcrypt (12 rondas), mínimo 8 caracteres, bloqueo de cuentas (<code>is_blocked</code>).</li>
+<li><strong>Cookies</strong>: banner de consentimiento y middleware <code>CheckCookieConsent</code>.</li>
+<li><strong>Archivos</strong>: subidas restringidas por tipo y tamaño (RUT PDF ≤ 2 MB, imágenes ≤ 3 MB); <code>PostTooLargeException</code> se traduce a un mensaje amigable.</li>
+<li><strong>Puntos a reforzar antes de producción</strong>: retirar el <code>Mail::alwaysTo</code> de desarrollo, mover las credenciales PayU de sandbox a variables de entorno obligatorias, validar la firma del webhook de PayU y revisar la ruta <code>/files/{disk}/{path}</code> (sirve archivos desde <code>storage/app/public</code> a partir de parámetros de la URL).</li>
+</ul><nav class="pager"><a href="#scripts-python">← 7. Scripts Python</a><a href="#pruebas-y-calidad">9. Pruebas y calidad →</a></nav></section><section class="page" id="pruebas-y-calidad" hidden><h1>9. Pruebas y calidad</h1><pre><code class="language-bash">php artisan test        # PHPUnit (phpunit.xml usa SQLite en memoria)
+php artisan route:list  # Verificar rutas registradas
+</code></pre>
+<p>Actualmente solo existe <code>tests/Feature/ExampleTest.php</code>; no hay cobertura de los flujos de negocio (checkout, KYC, fidelización), lo que constituye la principal deuda técnica del proyecto.</p><nav class="pager"><a href="#seguridad">← 8. Seguridad</a><a href="#mantenimiento">10. Mantenimiento →</a></nav></section><section class="page" id="mantenimiento" hidden><h1>10. Mantenimiento</h1><table>
+<thead>
+<tr>
+<th>Tarea</th>
+<th>Comando</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Nueva migración</td>
+<td><code>php artisan make:migration nombre</code></td>
+</tr>
+<tr>
+<td>Aplicar migraciones</td>
+<td><code>php artisan migrate</code> (<code>--force</code> en producción)</td>
+</tr>
+<tr>
+<td>Recargar datos demo</td>
+<td><code>php artisan migrate:fresh --seed</code></td>
+</tr>
+<tr>
+<td>Limpiar cachés</td>
+<td><code>php artisan optimize:clear</code></td>
+</tr>
+<tr>
+<td>Cachear para producción</td>
+<td><code>php artisan config:cache &amp;&amp; php artisan route:cache &amp;&amp; php artisan view:cache</code></td>
+</tr>
+<tr>
+<td>Recompilar CSS</td>
+<td><code>npm run build</code></td>
+</tr>
+<tr>
+<td>Enlace de almacenamiento</td>
+<td><code>php artisan storage:link</code></td>
+</tr>
+<tr>
+<td>Logs</td>
+<td><code>storage/logs/laravel.log</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Notas de mantenimiento</strong></p>
+<ul>
+<li>El directorio <code>Tickets/</code> contiene una copia parcial del esqueleto del proyecto y no participa en la ejecución.</li>
+<li>Módulo de cupones: existen <code>Coupon</code>, <code>Merchant\CouponController</code>, las vistas y la tabla <code>coupons</code>, pero no hay rutas registradas, por lo que la funcionalidad está inactiva.</li>
+<li><code>QUEUE_CONNECTION=sync</code>: correos y notificaciones se envían en la misma petición. Para producción conviene configurar una cola (<code>database</code>/<code>redis</code>) y ejecutar <code>php artisan queue:work</code>.</li>
+<li><code>BROADCAST_CONNECTION=log</code>: el chat funciona por <em>polling</em>; para tiempo real habría que configurar un driver de broadcasting.</li>
+</ul><nav class="pager"><a href="#pruebas-y-calidad">← 9. Pruebas y calidad</a></nav></section>
+  </main>
+</div>
+<footer>Wiki generada desde <code>docs/MANUAL_TECNICO.md</code> con <code>docs/build_wiki.py</code>.</footer>
+
+<script>
+mermaid.initialize({startOnLoad:false,theme:"dark",themeVariables:{background:"#1c2129",primaryColor:"#1d2b45",primaryTextColor:"#e6eaf0",primaryBorderColor:"#4c8dff",lineColor:"#6b7a90",fontSize:"14px"}});
+
+const INDEX = [{"slug": "informacion-general", "title": "1. Información general", "subtitles": ["Roles del sistema"], "text": " elemento valor nombre del proyecto fusashop ( fusashop/platform ) repositorio zantival/fusashop2 framework backend laravel 12 (php ^8.2) autenticación api laravel sanctum 4 login social laravel socialite 5 (google, facebook) frontend blade + tailwind css 4 + alpine.js 3 + chart.js 4 build de assets vite 5 / tailwind cli base de datos mysql 8 (soporta sqlite para desarrollo) correo resend / mailgun / smtp (driver log en local) pagos payu latam (webcheckout) analítica auxiliar python 3 ( python/analytics.py , python/ml_analyzer.py ) idioma/zona es / america/bogota roles del sistema rol valor en bd alcance cliente consumer catálogo, carrito, checkout, pedidos, reseñas, fidelización, pqrs, chat comerciante (mipyme) merchant perfil de empresa + kyc, productos, inventario, pedidos, reseñas, finanzas, banners administrador / analista analyst usuarios, kyc, pedidos, pagos, banners, reportes, pqrs, análisis ml "}, {"slug": "arquitectura", "title": "2. Arquitectura", "subtitles": ["Estructura de directorios"], "text": " navegador (blade + tailwind + alpine + chart.js) │ http (sesión web) │ http (token sanctum) ▼ ▼ routes/web.php routes/api.php │ │ ▼ ▼ middleware: securityheaders → auth → verified → role → ensurekycapproved │ ▼ controladores (auth, consumer, merchant, analyst, chat, pqrs, payment, api) │ │ │ ▼ ▼ ▼ modelos eloquent servicios (payuservice) procesos python (symfony/process) │ │ ▼ ▼ mysql / sqlite payu webcheckout ──webhook──► paymentcontroller@webhook │ ▼ notificaciones (bd + correo), eventos/listeners, storage local ( storage/app/public ) patrón: mvc clásico de laravel, sin capa de repositorios. la lógica de negocio vive en los controladores; app\\services\\payuservice es el único servicio dedicado. estructura de directorios app/ events/ productoutofstock, messagesent listeners/ notifyselleroutofstock mail/ orderreceipt (mailable del recibo de compra) models/ user, product, order, orderitem, cart, cartitem, review, companyprofile, coupon, message, pqrs, loyaltypoint, globalbanner, bannerrequest, passwordresetofflinerequest notifications/ 14 notificaciones (pedidos, kyc, pqrs, chat, banners, stock…) services/ payuservice http/ controllers/ auth/, consumer/, merchant/, analyst/, api, chat, pqrs, payment middleware/ securityheaders, rolemiddleware, ensurekycapproved, checkcookieconsent bootstrap/app.php registro de rutas, middleware y manejo de excepciones config/ app, auth, cache, database, filesystems, logging, sanctum, services, session database/ migrations/ esquema completo (ver §5) seeders/ databaseseeder (usuarios demo, 10 productos, 1 pedido) public/ front controller y assets compilados ( public/assets/css/app.css ) python/ analytics.py (reportes cli), ml_analyzer.py (scoring de comercios) resources/views/ blade agrupado por rol: consumer/, merchant/, analyst/, auth/, chat/, pqrs/… routes/ web.php, api.php, console.php tests/ phpunit (tests/feature, tests/unit) dockerfile imagen de producción php 8.2 + apache con build de assets en node 20 tickets/ copia parcial/histórica del esqueleto del proyecto (no se ejecuta) "}, {"slug": "instalacion-y-ejecucion", "title": "3. Instalación y ejecución", "subtitles": ["Requisitos", "Instalación local", "Usuarios de prueba (seeder)", "Variables de entorno relevantes", "Despliegue"], "text": " requisitos php 8.2+ con extensiones pdo_mysql , mbstring , zip , exif , bcmath , gd composer 2 node.js 20+ y npm mysql 8 (o sqlite para desarrollo) python 3 (opcional, para los reportes y el análisis ml del panel de administrador) instalación local bash composer install npm install cp .env.example .env php artisan key:generate php artisan migrate php artisan db:seed php artisan storage:link expone storage/app/public npm run build compila tailwind a public/assets/css/app.css php artisan serve http://localhost:8000 durante el desarrollo del css: npm run css:watch . usuarios de prueba (seeder) rol correo contraseña analyst admin@fusashop.com password123 merchant tienda@fusashop.com password123 merchant tech@fusashop.com password123 consumer juan@fusashop.com password123 consumer maria@fusashop.com password123 variables de entorno relevantes variable descripción app_name , app_env , app_key , app_debug , app_url configuración base de laravel app_locale=es , app_timezone=america/bogota localización db_connection , db_host , db_port , db_database , db_username , db_password conexión a base de datos session_driver , cache_store , queue_connection , filesystem_disk infraestructura (por defecto file / sync / local ) mail_mailer , mail_from_address , mail_from_name , resend_api_key , mailgun_ envío de correo google_client_id / google_client_secret login con google (callback {app_url}/auth/google/callback ) facebook_client_id / facebook_client_secret login con facebook (callback {app_url}/auth/facebook/callback ) services_payu_ ( merchant_id , api_key , account_id , test ) credenciales payu; sin ellas se usan las de sandbox en entorno local , appserviceprovider fuerza mail::alwaysto('garzonzanti@gmail.com') para que el modo de prueba de resend acepte los envíos. debe revisarse antes de cualquier despliegue real. despliegue docker : el dockerfile construye los assets con node 20, instala dependencias con composer install no dev optimize autoloader , genera app_key , crea el enlace public/storage y sirve con apache ( mpm_prefork ) apuntando a public/ . paas : readme recomienda railway, render, heroku o digitalocean app platform. vercel.json solo contempla el build estático de assets, no la app php. tras desplegar: php artisan migrate force , php artisan storage:link , php artisan config:cache route:cache view:cache . endpoint de salud: get /up ."}, {"slug": "rutas", "title": "4. Rutas", "subtitles": ["4.1 Web (`routes/web.php`)", "4.2 API (`routes/api.php`, Sanctum)"], "text": " 4.1 web ( routes/web.php ) público método ruta acción get / redirige a consumer.home get /privacidad política de privacidad post /cookie consent guarda el consentimiento en sesión y cookie permanente get/post /login , /register autenticación (throttle 5/min) get/post /forgot password offline solicitud de reseteo manual atendida por un analista get /auth/{provider}/redirect y /callback login social (google/facebook) get /shop , /shop/catalog , /shop/product/{id} home, catálogo con filtros y ficha de producto get /shop/directory , /shop/directory/brand/{id} directorio de comercios aprobados y perfil de marca get /files/{disk}/{path} servidor local de archivos de storage/app/public autenticado (cualquier rol) : /notifications (+ read , read all ), /account/profile , /chat ( show , poll , store , destroy ), /pqrs ( create , store , show ), verificación de correo ( /email/verify… ), post /logout . cliente ( auth + verified + role:consumer , prefijo /shop ): cart , cart/add , cart/item/{item} (patch/delete), checkout (get/post), orders , orders/{id}/receipt , product/{id}/review . comerciante ( auth + verified + role:merchant , prefijo /merchant ): sin kyc aprobado: profile (get/post), support/contact . con kyc aprobado ( ensurekycapproved ): dashboard , store/edit , products (crud), inventory (get/post), orders y orders/{order}/status , reviews y reviews/{review}/reply , finances , banner request (get/post). administrador ( auth + role:analyst , prefijo /admin ): dashboard , users (crud, toggle block , rut , kyc ), orders , payments , sales report print , run ml , banners (alta, toggle, borrado, logo global), banner requests/{id} y approve , reviews report , pqrs y pqrs/{pqrs}/reply . 4.2 api ( routes/api.php , sanctum) método ruta auth descripción post /api/login no devuelve token sanctum post /api/register no alta de cliente + token get /api/products no listado de productos activos get /api/products/{id} no detalle de producto post /api/logout sí revoca el token get/post /api/cart sí consulta y alta de ítems delete /api/cart/{item} sí elimina ítem get /api/orders sí pedidos del usuario get /api/analytics sí ventas mensuales y por categoría ( analystcontroller@analyticsdata ) "}, {"slug": "modelo-de-datos", "title": "5. Modelo de datos", "subtitles": [], "text": "tablas principales (ver database/migrations/ ): tabla campos destacados users name , email único, password (nullable por login social), role enum( consumer , merchant , analyst ), phone , address , avatar , is_blocked , email_verified_at company_profiles merchant_id →users, company_name , business_type , phone , rut_path , camara_comercio_path , logo_path , banners_path (json), description , address , whatsapp , google_maps_url , latitude , longitude , employee_count , kyc_status enum( pending , approved , rejected ), kyc_notes products merchant_id , name , slug único, description , price decimal(10,2), stock , category , image , images (json), available_options (json), specifications (json), is_active ; índices en category+is_active y merchant_id carts / cart_items carrito 1–1 por usuario; ítems con quantity , selected_options (json), único cart_id+product_id orders user_id , total , discount , points_used , points_earned , status enum( pending , processing , shipped , delivered , cancelled ), shipping_address , payment_method , payment_status enum( pending , paid , failed ), notes order_items order_id , product_id (restrict), quantity , price , selected_options (json) reviews product_id , user_id , rating 1–5, comment , merchant_reply , replied_at loyalty_points user_id , merchant_id , points (saldo por comercio) coupons merchant_id , code único, type ( fixed / percentage ), value , min_order_amount , expires_at , usage_limit , used_count , is_active messages sender_id , receiver_id , product_id nullable, content , is_read p_q_r_s user_id , type enum( peticion , queja , reclamo , sugerencia ), subject , content , status enum( pending , in_review , resolved , closed ), admin_response , resolved_at global_banners title , image_path , link_url , is_active , sort_order banner_requests user_id , image_path , payment_proof_path , status , cost , notes password_reset_offline_requests email , status ( pending / resolved ) notifications tabla estándar de laravel (uuid, notifiable , data , read_at ) personal_access_tokens , sessions , cache , password_reset_tokens infraestructura de laravel/sanctum relaciones eloquent clave: user hasmany product (merchant_id) , user hasone cart , user hasone companyprofile , user hasmany order , order hasmany orderitem , product hasmany review , cart hasmany cartitem ."}, {"slug": "flujos-funcionales", "title": "6. Flujos funcionales", "subtitles": ["6.1 Registro y autenticación", "6.2 Onboarding y KYC del comerciante", "6.3 Compra (checkout)", "6.4 Pagos con PayU", "6.5 Fidelización", "6.6 Reseñas", "6.7 Chat y PQRS", "6.8 Publicidad (banners)", "6.9 Panel del comerciante", "6.10 Panel del analista"], "text": " 6.1 registro y autenticación 1. authcontroller@register valida (contraseña mínima de 8, rol consumer o merchant ), crea el usuario, crea el carrito si es cliente y dispara registered → correo de verificación personalizado (definido en appserviceprovider ), welcomenotification y newusernotification a los analistas. 2. redirectbyrole() envía a verificación de correo si falta, y luego a merchant.profile / merchant.dashboard , analyst.dashboard o consumer.home . 3. en login se bloquea el acceso si is_blocked es verdadero; los intentos están limitados a 5 por minuto. 4. user::hasverifiedemail() devuelve true siempre para el rol analyst (omite la verificación para administradores). 5. recuperación de contraseña: no hay flujo automático por correo; passwordresetofflinerequest registra la solicitud y notifica a los analistas para gestión manual. 6. login social vía socialauthcontroller (google/facebook) usando provider / provider_id . 6.2 onboarding y kyc del comerciante 1. el comerciante completa merchant/profile : datos de empresa, rut en pdf (obligatorio), cámara de comercio, logo, banners, dirección y coordenadas. 2. el perfil queda con kyc_status = pending y se notifica a los analistas ( newmerchantprofilenotification ). 3. ensurekycapproved bloquea todo el panel del comerciante mientras el estado no sea approved , redirigiendo a merchant.profile con el mensaje correspondiente. 4. el analista revisa el rut ( /admin/users/{user}/rut ) y aprueba o rechaza ( /admin/users/{user}/kyc ), lo que dispara kycdecisionnotification . 6.3 compra (checkout) consumercontroller@checkoutprocess : 1. valida dirección de envío y método de pago ( card , transfer , cash ). 2. calcula el total del carrito y, si el cliente usa puntos, aplica el descuento con la equivalencia 1 punto = $50 cop , descontando los saldos de loyalty_points por comercio. 3. dentro de una transacción: crea el pedido ( payment_status = paid , status = pending ), crea los ítems, descuenta stock y lanza productoutofstock cuando el stock llega a 0 (listener notifyselleroutofstock ). 4. acumula puntos nuevos: 1 punto por cada $1.000 del subtotal neto por comercio. 5. notifica a cada comerciante involucrado ( newordernotification ), vacía y elimina el carrito. 6. redirige a consumer.orders ; el recibo se consulta en /shop/orders/{id}/receipt . 6.4 pagos con payu payuservice construye los parámetros de webcheckout y la firma md5(apikey~merchantid~referencecode~amount~currency) con referencia order {id} {timestamp} y moneda cop; por defecto usa el sandbox de payu. paymentcontroller@response interpreta transactionstate (4 aprobado, 6 rechazado, 7/104 pendiente error) y muestra payment.result . paymentcontroller@webhook recibe la confirmación servidor a servidor, extrae el id del pedido de la referencia, marca paid / failed y envía el recibo por correo ( orderreceipt ). nota de estado : routes/web.php no declara actualmente las rutas payment.response ni payment.webhook que payuservice referencia, y el checkout marca los pedidos como pagados directamente. la pasarela está implementada pero no conectada al flujo de compra. 6.5 fidelización loyalty_points guarda un saldo por par cliente–comercio. se gana 1 punto por cada $1.000 de compra neta en ese comercio y se canjea a razón de $50 por punto en el checkout. el perfil del cliente y el recibo muestran los saldos vigentes. 6.6 reseñas solo puede calificar quien tenga un pedido en estado delivered que contenga el producto (validación en productdetail y productreview ; en caso contrario, http 403). el comerciante responde desde merchant/reviews , y el analista consulta el informe consolidado en /admin/reviews report . 6.7 chat y pqrs chat interno 1–1 basado en la tabla messages con polling ( get /chat/{user}/poll ); existe el evento messagesent y la notificación newmessagenotification . los enlaces \"contactar soporte\" de cliente y comerciante abren un chat con el primer analista disponible. pqrs: el usuario crea la solicitud ( peticion , queja , reclamo , sugerencia ), los analistas la reciben ( newpqrsnotification ), responden desde /admin/pqrs y el usuario recibe pqrsresponsenotification . 6.8 publicidad (banners) el comerciante sube una imagen y el comprobante de pago ( banner_requests ); el analista revisa, asigna el costo y aprueba, creando un global_banner visible en la portada. el gasto aprobado se descuenta en el módulo de finanzas del comerciante. 6.9 panel del comerciante dashboard : total de productos, agotados, ventas acumuladas, pedidos pendientes, últimos pedidos y reseñas, calificación promedio. inventario : actualización masiva de stock y alerta de productos con stock ≤ 5. finanzas : ventas brutas, descuentos por puntos prorrateados, inversión en publicidad aprobada e ingreso real ( brutas − puntos − publicidad ). pedidos : cambio de estado con notificación orderstatuschanged al cliente. 6.10 panel del analista métricas globales (ventas, pedidos, ticket promedio, usuarios por rol), ventas mensuales (consulta compatible con mysql y sqlite), pedidos por estado, ventas por empresa, productos más vendidos, censo por sectores económicos, kyc y banners pendientes, gestión de usuarios (incluye bloqueo), pagos, reporte de ventas imprimible y análisis ml. analystcontroller@runml arma un json con merchant_id , company_name , total_sales y avg_rating , lo envía por stdin a python/ml_analyzer.py mediante symfony/process , y muestra la clasificación devuelta ( top / average / low performer , más anomaly_detected ). requiere python3 disponible en el servidor."}, {"slug": "scripts-python", "title": "7. Scripts Python", "subtitles": [], "text": " script uso descripción python/analytics.py python3 python/analytics.py report ventas\\ usuarios\\ productos\\ all output json\\ csv reportes cli directos contra mysql ( host , db , user , password ). si faltan mysql connector python o la conexión, devuelve datos de demostración. python/ml_analyzer.py stdin/stdout json scoring heurístico por comercio: score = ventas 0.4 + rating 6 , clasificación en tres niveles y bandera de anomalía. no es un modelo entrenado. "}, {"slug": "seguridad", "title": "8. Seguridad", "subtitles": [], "text": " headers ( securityheaders , aplicado globalmente): x frame options: deny , x content type options: nosniff , x xss protection , hsts en https y una csp que permite cdns específicas (jsdelivr, unpkg, google fonts, nominatim, osrm). autorización por rol : middleware role: con verificación de pertenencia; ensurekycapproved para el panel comercial; comprobaciones de propiedad en carrito, productos y pedidos (http 403). validación y saneamiento : validación en todos los formularios; strip_tags() sobre textos libres (perfil, dirección, comentarios). rate limiting : 5 intentos/min en login y registro, 6/min en reenvío de verificación. sesión y contraseñas : regeneración de sesión al iniciar/cerrar, hash bcrypt (12 rondas), mínimo 8 caracteres, bloqueo de cuentas ( is_blocked ). cookies : banner de consentimiento y middleware checkcookieconsent . archivos : subidas restringidas por tipo y tamaño (rut pdf ≤ 2 mb, imágenes ≤ 3 mb); posttoolargeexception se traduce a un mensaje amigable. puntos a reforzar antes de producción : retirar el mail::alwaysto de desarrollo, mover las credenciales payu de sandbox a variables de entorno obligatorias, validar la firma del webhook de payu y revisar la ruta /files/{disk}/{path} (sirve archivos desde storage/app/public a partir de parámetros de la url)."}, {"slug": "pruebas-y-calidad", "title": "9. Pruebas y calidad", "subtitles": [], "text": " bash php artisan test phpunit (phpunit.xml usa sqlite en memoria) php artisan route:list verificar rutas registradas actualmente solo existe tests/feature/exampletest.php ; no hay cobertura de los flujos de negocio (checkout, kyc, fidelización), lo que constituye la principal deuda técnica del proyecto."}, {"slug": "mantenimiento", "title": "10. Mantenimiento", "subtitles": [], "text": " tarea comando nueva migración php artisan make:migration nombre aplicar migraciones php artisan migrate ( force en producción) recargar datos demo php artisan migrate:fresh seed limpiar cachés php artisan optimize:clear cachear para producción php artisan config:cache && php artisan route:cache && php artisan view:cache recompilar css npm run build enlace de almacenamiento php artisan storage:link logs storage/logs/laravel.log notas de mantenimiento el directorio tickets/ contiene una copia parcial del esqueleto del proyecto y no participa en la ejecución. módulo de cupones: existen coupon , merchant\\couponcontroller , las vistas y la tabla coupons , pero no hay rutas registradas, por lo que la funcionalidad está inactiva. queue_connection=sync : correos y notificaciones se envían en la misma petición. para producción conviene configurar una cola ( database / redis ) y ejecutar php artisan queue:work . broadcast_connection=log : el chat funciona por polling ; para tiempo real habría que configurar un driver de broadcasting."}];
+const pages = [...document.querySelectorAll('.page')];
+const navItems = [...document.querySelectorAll('.nav-item[data-slug]')];
+
+function show(slug){
+  const page = document.getElementById(slug) ? slug : 'inicio';
+  pages.forEach(p => p.hidden = (p.id !== page));
+  navItems.forEach(n => n.classList.toggle('active', n.dataset.slug === page));
+  const pending = [...document.querySelectorAll(`#${page} .mermaid:not([data-processed])`)];
+  if(pending.length) mermaid.run({nodes: pending});
+  window.scrollTo({top:0,behavior:'instant'});
+}
+function current(){ return (location.hash || '#inicio').slice(1); }
+window.addEventListener('hashchange', () => show(current()));
+show(current());
+
+const q = document.getElementById('q');
+const results = document.getElementById('results');
+q.addEventListener('input', () => {
+  const term = q.value.trim().toLowerCase();
+  if(term.length < 2){ results.style.display = 'none'; results.innerHTML = ''; return; }
+  const hits = [];
+  for(const page of INDEX){
+    const inTitle = page.title.toLowerCase().includes(term);
+    const sub = page.subtitles.find(s => s.toLowerCase().includes(term));
+    const pos = page.text.indexOf(term);
+    if(inTitle || sub || pos >= 0){
+      const snippet = pos >= 0 ? '…' + page.text.slice(Math.max(0, pos - 60), pos + 90).trim() + '…' : (sub || '');
+      hits.push({slug: page.slug, title: page.title, snippet, score: inTitle ? 0 : (sub ? 1 : 2)});
+    }
+  }
+  hits.sort((a,b) => a.score - b.score);
+  results.innerHTML = hits.length
+    ? hits.slice(0,8).map(h => `<a href="#${h.slug}"><strong>${h.title}</strong><small>${h.snippet.replace(/</g,'&lt;')}</small></a>`).join('')
+    : '<a><small>Sin resultados</small></a>';
+  results.style.display = 'block';
+});
+q.addEventListener('keydown', e => { if(e.key === 'Escape'){ q.value=''; results.style.display='none'; } });
+document.addEventListener('click', e => { if(!e.target.closest('.search')) results.style.display = 'none'; });
+results.addEventListener('click', () => { results.style.display = 'none'; q.value = ''; });
+</script>
+</body>
+</html>
