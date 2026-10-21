@@ -86,6 +86,7 @@ class SocialAuthController extends Controller
                         Mail::to($user->email)->send(new VerifyEmailCodeMail($user, $code));
                     } catch (\Throwable $e) {
                         Log::error('Error enviando código de verificación al login con Google: ' . $e->getMessage());
+                        session()->flash('verification-email-error', 'No se pudo enviar a tu correo. Configura un remitente y dominio verificados en Resend y solicita un nuevo código.');
                     }
                 }
                 return redirect()->route('verification.notice');

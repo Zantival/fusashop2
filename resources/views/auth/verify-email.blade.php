@@ -56,24 +56,26 @@
         get code() { return this.digits.join(''); },
         handleInput(index, event) {
             const val = event.target.value.replace(/[^0-9]/g, '');
+            const inputs = this.$el.querySelectorAll('.otp-input');
             if (val.length > 1) {
                 // Si el usuario pegó el código completo
+                this.digits = ['', '', '', '', '', ''];
                 const chars = val.slice(0, 6).split('');
                 chars.forEach((c, i) => {
                     if (i < 6) this.digits[i] = c;
                 });
                 const nextFocus = Math.min(chars.length, 5);
-                this.$refs['digit' + nextFocus]?.focus();
+                inputs[nextFocus]?.focus();
                 return;
             }
             this.digits[index] = val;
             if (val && index < 5) {
-                this.$refs['digit' + (index + 1)]?.focus();
+                inputs[index + 1]?.focus();
             }
         },
         handleKeyDown(index, event) {
             if (event.key === 'Backspace' && !this.digits[index] && index > 0) {
-                this.$refs['digit' + (index - 1)]?.focus();
+                this.$el.querySelectorAll('.otp-input')[index - 1]?.focus();
             }
         },
         handlePaste(event) {
@@ -84,7 +86,7 @@
                     this.digits[i] = c;
                 });
                 const targetIdx = Math.min(pasteData.length, 5);
-                this.$refs['digit' + targetIdx]?.focus();
+                this.$el.querySelectorAll('.otp-input')[targetIdx]?.focus();
             }
         }
     }">
@@ -122,6 +124,16 @@
         </div>
       @endif
 
+      @if (session('verification-email-error'))
+        <div class="mb-6 p-4 bg-rose-50 border border-rose-200 rounded-2xl flex items-start gap-3" role="alert">
+          <span class="material-symbols-outlined text-rose-600 text-xl mt-0.5">error</span>
+          <div>
+            <p class="text-sm text-rose-900 font-bold">No pudimos enviar el código</p>
+            <p class="text-xs text-rose-700 mt-0.5">{{ session('verification-email-error') }}</p>
+          </div>
+        </div>
+      @endif
+
       @if ($errors->has('code'))
         <div class="mb-6 p-4 bg-rose-50 border border-rose-200 rounded-2xl flex items-start gap-3">
           <span class="material-symbols-outlined text-rose-600 text-xl mt-0.5">error</span>
@@ -144,13 +156,12 @@
           
           <!-- 6-digit visual inputs -->
           <div class="flex items-center justify-center gap-2 sm:gap-3" @paste="handlePaste($event)">
-            <template x-for="(d, i) in 6" :key="i">
+            <template x-for="(d, i) in digits" :key="i">
               <input type="text"
                      inputmode="numeric"
                      pattern="[0-9]*"
                      maxlength="1"
                      :value="digits[i]"
-                     :x-ref="'digit' + i"
                      @input="handleInput(i, $event)"
                      @keydown="handleKeyDown(i, $event)"
                      class="otp-input"

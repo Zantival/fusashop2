@@ -56,6 +56,7 @@ class AuthController extends Controller
                         Mail::to($user->email)->send(new VerifyEmailCodeMail($user, $code));
                     } catch (\Throwable $e) {
                         Log::error('Error enviando código de verificación al login: ' . $e->getMessage());
+                        session()->flash('verification-email-error', 'Revisa la configuración y el remitente verificado de Resend; luego solicita un nuevo código.');
                     }
                 }
                 return redirect()->route('verification.notice');
@@ -143,9 +144,15 @@ class AuthController extends Controller
             );
         }
 
+        $verificationEmailSent = false;
         try {
-            // Enviar correo con el código de 6 dígitos con diseño oficial FusaShop
             Mail::to($user->email)->send(new VerifyEmailCodeMail($user, $code));
+            $verificationEmailSent = true;
+        } catch (\Throwable $e) {
+            Log::error('Error enviando código de verificación durante el registro: ' . $e->getMessage());
+        }
+
+        try {
             $user->notify(new WelcomeNotification());
 
             // Notificar a los analistas sobre la nueva cuenta
@@ -160,7 +167,10 @@ class AuthController extends Controller
         Auth::login($user);
         $request->session()->regenerate();
 
-        return redirect()->route('verification.notice');
+        $response = redirect()->route('verification.notice');
+        return $verificationEmailSent
+            ? $response->with('status', 'verification-code-sent')
+            : $response->with('verification-email-error', 'No se pudo enviar a tu correo. Configura un remitente y dominio verificados en Resend y vuelve a reenviar el código.');
     }
 
     public function verifyEmailCode(Request $request)
@@ -212,6 +222,7 @@ class AuthController extends Controller
             Mail::to($user->email)->send(new VerifyEmailCodeMail($user, $code));
         } catch (\Throwable $e) {
             Log::error('Error reenviando código de verificación: ' . $e->getMessage());
+            return back()->with('verification-email-error', 'No se pudo enviar a tu correo. Configura un remitente y dominio verificados en Resend y vuelve a intentarlo.');
         }
 
         return back()->with('status', 'verification-code-sent');
