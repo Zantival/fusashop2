@@ -109,7 +109,12 @@
           Ingresa tu código de 6 números
         </h1>
         <p class="text-slate-600 text-sm mt-2 leading-relaxed">
-          Enviamos un código de seguridad al correo <strong class="text-slate-900 font-semibold">{{ auth()->user()->email }}</strong>. Revisa tu bandeja de entrada o spam y digítalo a continuación.
+          @if (app()->environment('local') && config('mail.always_to'))
+            En local, el código de prueba se envía al correo configurado para Resend: <strong class="text-slate-900 font-semibold">{{ config('mail.always_to') }}</strong>.
+          @else
+            Enviamos un código de seguridad al correo <strong class="text-slate-900 font-semibold">{{ auth()->user()->email }}</strong>.
+          @endif
+          Revisa tu bandeja de entrada o spam y digítalo a continuación.
         </p>
       </div>
 

@@ -40,4 +40,7 @@ return [
         'name' => env('MAIL_FROM_NAME', 'FusaShop'),
     ],
 
+    // Destinatario opcional para pruebas locales con el remitente de prueba de Resend.
+    'always_to' => env('MAIL_ALWAYS_TO'),
+
 ];

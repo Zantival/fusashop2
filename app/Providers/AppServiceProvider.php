@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -14,6 +15,11 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Paginator::useTailwind();
+
+        // En local, permite dirigir correos de prueba al correo dueño de la cuenta Resend.
+        if (app()->environment('local') && filled(config('mail.always_to'))) {
+            Mail::alwaysTo(config('mail.always_to'), 'FusaShop Dev');
+        }
 
         VerifyEmail::toMailUsing(function (object $notifiable, string $url) {
             $nombre = $notifiable->name ?? 'usuario';
