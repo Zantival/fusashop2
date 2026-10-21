@@ -21,14 +21,12 @@
     @php
       $approvedBanners         = $bannerPayments->where('status','approved')->count();
       $totalMerchants          = $merchantAccounts->count();
-      $merchantAccountFee      = 80000;  // Cuota fija por apertura de espacio comercial
-      $totalMerchantRevenue    = $merchantAccounts->count() * $merchantAccountFee;
-      $totalGeneralRevenue     = $totalBannerRevenue + $totalMerchantRevenue;
+      $totalGeneralRevenue     = $totalBannerRevenue;
     @endphp
     @foreach([
       ['account_balance','Ingresos Totales Plataforma','$'.number_format($totalGeneralRevenue,0,',','.').' COP','text-[#006c47]','bg-[#6efcb9]/30'],
       ['payments','Ingresos por Banners','$'.number_format($totalBannerRevenue,0,',','.').' COP','text-primary','bg-primary-container/30'],
-      ['storefront','Ingresos por Cuentas','$'.number_format($totalMerchantRevenue,0,',','.').' COP','text-[#7c5800]','bg-[#ffdea8]/50'],
+      ['storefront','Comercios registrados',$totalMerchants.' comercios','text-[#7c5800]','bg-[#ffdea8]/50'],
       ['campaign','Banners Publicados',$approvedBanners.' activos','text-tertiary','bg-tertiary-container/30'],
     ] as [$icon,$label,$val,$col,$bg])
     <div class="bg-surface-container-lowest rounded-2xl p-5 shadow-card">
@@ -39,6 +37,11 @@
       <p class="text-on-surface-variant text-xs mt-1">{{ $label }}</p>
     </div>
     @endforeach
+  </div>
+
+  {{-- Configuración Exclusiva del Destino de Ingresos por Banners --}}
+  <div class="mb-10">
+    @include('analyst.partials.banner-payout-config')
   </div>
 
   {{-- ── Sección 1: Pagos de Banners ── --}}
@@ -61,10 +64,10 @@
       </div>
     @else
     <div class="overflow-x-auto">
-      <table class="w-full text-sm">
+      <table class="w-full text-sm responsive-stack-table">
         <thead class="bg-surface-container-low">
           <tr>
-            @foreach(['#','Comerciante','Correo','Tipo','Monto (COP)','Estado','Fecha','Detalle'] as $h)
+            @foreach(['#','Comerciante','Correo','Tipo','Monto (COP)','Destino del Recaudo','Estado','Fecha','Detalle'] as $h)
             <th class="px-4 py-3 text-left text-xs font-semibold text-on-surface-variant uppercase whitespace-nowrap">{{ $h }}</th>
             @endforeach
           </tr>
@@ -86,6 +89,15 @@
             <td class="px-4 py-3 text-on-surface-variant">{{ $payment['type'] }}</td>
             <td class="px-4 py-3 font-bold text-[#006c47]">${{ number_format($payment['amount'], 0, ',', '.') }}</td>
             <td class="px-4 py-3">
+              <div class="flex flex-col">
+                <span class="text-xs font-bold text-slate-800 flex items-center gap-1">
+                  <span class="material-symbols-outlined text-[13px] text-primary">account_balance</span>
+                  {{ $payment['destination_account'] ?? 'Cuenta Corporativa Central' }}
+                </span>
+                <span class="text-[10px] text-on-surface-variant font-medium">{{ $payment['destination_badge'] ?? 'FusaShop' }}</span>
+              </div>
+            </td>
+            <td class="px-4 py-3">
               <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold {{ $sCls }}">
                 <span class="material-symbols-outlined text-[13px]">{{ $sIcon }}</span> {{ $sLabel }}
               </span>
@@ -104,15 +116,15 @@
     @endif
   </div>
 
-  {{-- ── Sección 2: Pagos por Apertura de Espacios Comerciales ── --}}
+  {{-- ── Sección 2: Configuración de cobro de comerciantes ── --}}
   <div class="bg-surface-container-lowest rounded-2xl shadow-card overflow-hidden mb-10">
     <div class="px-6 py-5 border-b border-outline-variant/20 flex items-center gap-3">
       <div class="w-10 h-10 bg-[#ffdea8]/50 rounded-xl flex items-center justify-center">
         <span class="material-symbols-outlined text-[#7c5800]">store</span>
       </div>
       <div>
-        <h2 class="font-['Manrope'] font-bold text-on-background text-lg">Pagos por Apertura de Espacio Comercial</h2>
-        <p class="text-xs text-on-surface-variant">Cuota única de registro ($80,000 COP) por cada comerciante que abre su tienda en la plataforma.</p>
+        <h2 class="font-['Manrope'] font-bold text-on-background text-lg">Configuración de cobro de comerciantes</h2>
+        <p class="text-xs text-on-surface-variant">Los compradores pagan directamente a la cuenta Wompi del vendedor. Los datos bancarios registrados no ejecutan transferencias desde la plataforma.</p>
       </div>
       <span class="ml-auto px-3 py-1 bg-surface-container text-on-surface-variant text-xs font-bold rounded-full">{{ $merchantAccounts->count() }} cuentas</span>
     </div>
@@ -124,10 +136,10 @@
       </div>
     @else
     <div class="overflow-x-auto">
-      <table class="w-full text-sm">
+      <table class="w-full text-sm responsive-stack-table">
         <thead class="bg-surface-container-low">
           <tr>
-            @foreach(['#','Empresa','Propietario','Correo','Monto Pagado (COP)','Estado KYC','Fecha de Registro','Acciones'] as $h)
+            @foreach(['#','Empresa','Propietario','Correo','Datos bancarios (no transferidos)','Estado Wompi','Estado KYC','Fecha de Registro','Acciones'] as $h)
             <th class="px-4 py-3 text-left text-xs font-semibold text-on-surface-variant uppercase whitespace-nowrap">{{ $h }}</th>
             @endforeach
           </tr>
@@ -148,8 +160,23 @@
             <td class="px-4 py-3 text-on-surface-variant">{{ $account['owner'] }}</td>
             <td class="px-4 py-3 text-on-surface-variant text-xs">{{ $account['email'] }}</td>
             <td class="px-4 py-3">
-              <span class="font-bold text-[#006c47]">$80,000</span>
-              <span class="ml-1 px-1.5 py-0.5 bg-[#6efcb9]/40 text-[#006c47] text-[10px] font-bold rounded-full">PAGADO</span>
+              @if(!empty($account['has_payout']))
+                <span class="text-xs font-semibold text-[#006c47] flex items-center gap-1">
+                  <span class="material-symbols-outlined text-[13px]">payments</span>
+                  {{ $account['payout_summary'] }}
+                </span>
+              @else
+                <span class="text-[11px] text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">
+                  Pendiente configurar
+                </span>
+              @endif
+            </td>
+            <td class="px-4 py-3">
+              @if($account['direct_wompi_active'])
+                <span class="text-xs font-semibold text-[#006c47]">Wompi del comerciante</span>
+              @else
+                <span class="text-xs font-semibold text-amber-700">No configurada</span>
+              @endif
             </td>
             <td class="px-4 py-3">
               <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold {{ $kCls }}">
@@ -169,9 +196,7 @@
         </tbody>
         <tfoot class="bg-surface-container-low border-t-2 border-outline-variant/30">
           <tr>
-            <td colspan="4" class="px-4 py-3 text-right text-xs font-bold text-on-surface-variant uppercase">Total Recaudado por Cuentas:</td>
-            <td class="px-4 py-3 font-extrabold text-[#006c47] font-['Manrope'] text-base">${{ number_format($merchantAccounts->count() * 80000, 0, ',', '.') }} COP</td>
-            <td colspan="3"></td>
+            <td colspan="9" class="px-4 py-3 text-right text-xs font-bold text-on-surface-variant">No se registran cobros por apertura ni transferencias bancarias desde esta pantalla.</td>
           </tr>
         </tfoot>
       </table>
@@ -199,10 +224,10 @@
       </div>
     @else
     <div class="overflow-x-auto">
-      <table class="w-full text-sm">
+      <table class="w-full text-sm responsive-stack-table">
         <thead class="bg-surface-container-low">
           <tr>
-            @foreach(['ID','Empresa','Propietario','Correo','Estado KYC','Fecha de Registro','Acciones'] as $h)
+            @foreach(['ID','Empresa','Propietario','Correo','Método de Pago Preferido','Estado KYC','Fecha de Registro','Acciones'] as $h)
             <th class="px-4 py-3 text-left text-xs font-semibold text-on-surface-variant uppercase whitespace-nowrap">{{ $h }}</th>
             @endforeach
           </tr>
@@ -222,6 +247,18 @@
             <td class="px-4 py-3 font-semibold text-on-background">{{ $account['company_name'] }}</td>
             <td class="px-4 py-3 text-on-surface-variant">{{ $account['owner'] }}</td>
             <td class="px-4 py-3 text-on-surface-variant text-xs">{{ $account['email'] }}</td>
+            <td class="px-4 py-3">
+              @if(!empty($account['has_payout']))
+                <span class="text-xs font-semibold text-[#006c47] flex items-center gap-1">
+                  <span class="material-symbols-outlined text-[13px]">payments</span>
+                  {{ $account['payout_summary'] }}
+                </span>
+              @else
+                <span class="text-[11px] text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">
+                  Pendiente configurar
+                </span>
+              @endif
+            </td>
             <td class="px-4 py-3">
               <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold {{ $kCls }}">
                 <span class="material-symbols-outlined text-[13px]">{{ $kIcon }}</span> {{ $kLabel }}

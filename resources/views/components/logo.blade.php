@@ -32,7 +32,7 @@ $logoPath = collect(\Illuminate\Support\Facades\Storage::disk('public')->files('
 
 <a href="{{ $href }}" class="inline-flex items-center gap-2.5 group shrink-0 no-underline" title="FusaShop — El epicentro de compras del Sumapaz">
     @if($logoPath)
-        <img src="{{ route('files.serve', ['disk' => 'system', 'path' => basename($logoPath)]) }}?v={{ \Illuminate\Support\Facades\Storage::disk('public')->lastModified($logoPath) }}"
+        <img loading="lazy" decoding="async" src="{{ route('files.serve', ['disk' => 'system', 'path' => basename($logoPath)]) }}?v={{ \Illuminate\Support\Facades\Storage::disk('public')->lastModified($logoPath) }}"
              alt="Logo FusaShop"
              class="{{ $sizeClasses['logo'] }} w-auto object-contain">
     @else

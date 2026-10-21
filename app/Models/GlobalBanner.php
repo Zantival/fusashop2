@@ -10,7 +10,7 @@ class GlobalBanner extends Model
     use SoftDeletes;
 
     protected $fillable = [
-        'title', 'image_path', 'link_url', 'is_active', 'sort_order',
+        'title', 'description', 'image_path', 'link_url', 'is_active', 'sort_order',
         'starts_at', 'ends_at', 'impressions_count', 'clicks_count',
     ];
 

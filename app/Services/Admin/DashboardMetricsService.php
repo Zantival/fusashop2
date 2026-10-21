@@ -189,11 +189,13 @@ class DashboardMetricsService
             $merchantCommissions = $merchantsDirectory->map(function ($m) use ($commissionFactor, $commissionRate) {
                 $sales = (float) DB::table('order_items')
                     ->join('products', 'products.id', '=', 'order_items.product_id')
+                    ->join('orders', 'orders.id', '=', 'order_items.order_id')
+                    ->where('orders.payment_status', 'paid')
                     ->where('products.merchant_id', $m->id)
                     ->sum(DB::raw('order_items.quantity * order_items.price')) ?? 0;
                 $commission = round($sales * $commissionFactor);
-                $ordersCount = Order::whereHas('items.product', fn ($q) => $q->where('merchant_id', $m->id))->count();
-                $invoicedOrdersCount = Order::whereHas('items.product', fn ($q) => $q->where('merchant_id', $m->id))->whereNotNull('invoice_cufe')->count();
+                $ordersCount = Order::where('payment_status', 'paid')->whereHas('items.product', fn ($q) => $q->where('merchant_id', $m->id))->count();
+                $invoicedOrdersCount = Order::where('payment_status', 'paid')->whereHas('items.product', fn ($q) => $q->where('merchant_id', $m->id))->whereNotNull('invoice_cufe')->count();
 
                 return (object) [
                     'merchant'              => $m,

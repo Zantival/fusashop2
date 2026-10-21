@@ -147,27 +147,32 @@ class MerchantController extends Controller
     public function storeProfile(Request $request)
     {
         $request->validate([
-            'owner_name'           => 'required|string|max:255',
-            'company_name'         => 'required|string|max:255',
-            'business_type'        => 'required|string|max:255',
-            'phone'                => 'required|string|max:50',
-            'employee_count'       => 'nullable|integer|min:1',
-            'description'          => 'nullable|string|max:2000',
-            'rut_file'             => 'required_without:rut_exists|mimes:pdf|max:2048',
-            'camara_comercio_file' => 'required_without:camara_comercio_exists|mimes:pdf,jpg,jpeg,png|max:3072',
-            'logo'            => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
-            'banners.*'       => 'nullable|image|mimes:jpg,jpeg,png,webp|max:3072',
-            'address'         => 'nullable|string|max:255',
-            'google_maps_url' => 'nullable|url|max:500',
-            'latitude'        => 'nullable|numeric',
-            'longitude'       => 'nullable|numeric',
+            'owner_name'             => 'required|string|max:255',
+            'company_name'           => 'required|string|max:255',
+            'business_type'          => 'required|string|max:255',
+            'phone'                  => 'required|string|max:50',
+            'employee_count'         => 'nullable|integer|min:1',
+            'description'            => 'nullable|string|max:2000',
+            'rut_file'               => 'required_without:rut_exists|mimes:pdf|max:2048',
+            'camara_comercio_file'   => 'required_without:camara_comercio_exists|mimes:pdf,jpg,jpeg,png|max:3072',
+            'logo'                   => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+            'banners.*'              => 'nullable|image|mimes:jpg,jpeg,png,webp|max:3072',
+            'address'                => 'nullable|string|max:255',
+            'google_maps_url'        => 'nullable|url|max:500',
+            'latitude'               => 'nullable|numeric',
+            'longitude'              => 'nullable|numeric',
+            'wompi_public_key'       => 'nullable|string|max:120',
+            'wompi_integrity_secret' => 'nullable|string|max:120',
+            'wompi_events_secret'    => 'nullable|string|max:120',
         ]);
+
+        $payoutData = CompanyProfile::validateAndExtractPayoutData($request, false);
 
         $user = Auth::user();
         $user->update(['name' => strip_tags($request->owner_name)]);
 
         $profile = $user->companyProfile ?? new CompanyProfile(['merchant_id' => $user->id]);
-        
+
         $profile->company_name    = strip_tags($request->company_name);
         $profile->business_type   = strip_tags($request->business_type);
         $profile->phone           = strip_tags($request->phone);
@@ -177,11 +182,37 @@ class MerchantController extends Controller
         $profile->google_maps_url = strip_tags($request->google_maps_url ?? '');
         $profile->latitude        = $request->latitude;
         $profile->longitude       = $request->longitude;
-        
+
+        if (!empty($payoutData)) {
+            $profile->payout_method_type    = $payoutData['payout_method_type'];
+            $profile->payout_bank_name      = $payoutData['payout_bank_name'];
+            $profile->payout_account_type   = $payoutData['payout_account_type'];
+            $profile->payout_account_number = $payoutData['payout_account_number'];
+            $profile->payout_account_holder = $payoutData['payout_account_holder'] ?? $user->name;
+            $profile->payout_id_number      = $payoutData['payout_id_number'];
+        }
+        if ($request->has('wompi_integrity_secret')) {
+            if ($request->boolean('clear_wompi_credentials')) {
+                $profile->wompi_public_key = null;
+                $profile->wompi_integrity_secret = null;
+                $profile->wompi_events_secret = null;
+            } else {
+                if ($request->filled('wompi_integrity_secret')) {
+                    $profile->wompi_integrity_secret = strip_tags(trim((string) $request->wompi_integrity_secret));
+                }
+                if ($request->filled('wompi_events_secret')) {
+                    $profile->wompi_events_secret = strip_tags(trim((string) $request->wompi_events_secret));
+                }
+            }
+        }
+        if (!$request->boolean('clear_wompi_credentials') && $request->filled('wompi_public_key')) {
+            $profile->wompi_public_key = strip_tags(trim((string) $request->wompi_public_key));
+        }
+
         if ($request->has('whatsapp')) {
             $profile->whatsapp = preg_replace('/\D/', '', $request->whatsapp ?? '');
         }
-        
+
         if ($request->hasFile('rut_file')) {
             if ($profile->rut_path) {
                 Storage::delete($profile->rut_path);
@@ -209,9 +240,9 @@ class MerchantController extends Controller
         // Handle banner deletion checkbox FIRST to avoid deleting newly uploaded ones
         if ($request->boolean('delete_banners') && !$request->hasFile('banners')) {
             if ($profile->banners_path && is_array($profile->banners_path)) {
-                foreach ($profile->banners_path as $ob) { 
+                foreach ($profile->banners_path as $ob) {
                     $path = is_array($ob) ? ($ob['path'] ?? null) : $ob;
-                    if ($path) Storage::disk('public')->delete($path); 
+                    if ($path) Storage::disk('public')->delete($path);
                 }
             }
             $profile->banners_path = null;
@@ -220,16 +251,16 @@ class MerchantController extends Controller
         if ($request->hasFile('banners')) {
             // Delete old banners as they will be replaced
             if ($profile->banners_path && is_array($profile->banners_path)) {
-                foreach ($profile->banners_path as $ob) { 
+                foreach ($profile->banners_path as $ob) {
                     $path = is_array($ob) ? ($ob['path'] ?? null) : $ob;
-                    if ($path) Storage::disk('public')->delete($path); 
+                    if ($path) Storage::disk('public')->delete($path);
                 }
             }
-            
+
             $bannerData = [];
             $titles = $request->input('banner_titles', []);
             $subtitles = $request->input('banner_subtitles', []);
-            
+
             foreach ($request->file('banners') as $index => $banner) {
                 $path = $banner->store('merchants/banners', 'public');
                 $bannerData[] = [
@@ -278,6 +309,136 @@ class MerchantController extends Controller
         return view('merchant.store-edit', compact('profile'));
     }
 
+    public function updateStore(Request $request)
+    {
+        $request->validate([
+            'owner_name'             => 'required|string|max:255',
+            'company_name'           => 'required|string|max:255',
+            'phone'                  => 'required|string|max:50',
+            'whatsapp'               => 'nullable|string|max:50',
+            'address'                => 'nullable|string|max:255',
+            'description'            => 'nullable|string|max:2000',
+            'latitude'               => 'nullable|numeric',
+            'longitude'              => 'nullable|numeric',
+            'wompi_public_key'       => 'nullable|string|max:120',
+            'wompi_integrity_secret' => 'nullable|string|max:120',
+            'wompi_events_secret'    => 'nullable|string|max:120',
+            'payout_bank_name'       => 'nullable|string|max:100',
+            'payout_account_type'    => 'nullable|string|max:40',
+            'payout_account_number'  => 'nullable|string|max:60',
+            'payout_account_holder'  => 'nullable|string|max:150',
+            'payout_id_number'       => 'nullable|string|max:40',
+            'logo'                   => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+            'banners.*'              => 'nullable|image|mimes:jpg,jpeg,png,webp|max:3072',
+            'delete_banners'         => 'nullable|boolean',
+            'banner_titles.*'        => 'nullable|string|max:255',
+            'banner_subtitles.*'     => 'nullable|string|max:255',
+        ]);
+
+        $user = Auth::user();
+        $user->update(['name' => strip_tags($request->owner_name)]);
+
+        $profile = $user->companyProfile ?? new \App\Models\CompanyProfile(['merchant_id' => $user->id]);
+        $profile->company_name = strip_tags($request->company_name);
+        $profile->phone        = strip_tags($request->phone);
+        $profile->description  = strip_tags($request->description ?? '');
+        $profile->address      = strip_tags($request->address ?? '');
+        $profile->latitude     = $request->latitude;
+        $profile->longitude    = $request->longitude;
+
+        if ($request->filled('whatsapp')) {
+            $profile->whatsapp = preg_replace('/\D/', '', $request->whatsapp);
+        }
+
+        // Credenciales de pasarela y método de pago preferido para pagos directos al comerciante
+        $payoutData = CompanyProfile::validateAndExtractPayoutData($request, false);
+        if (!empty($payoutData)) {
+            $profile->payout_method_type    = $payoutData['payout_method_type'];
+            $profile->payout_bank_name      = $payoutData['payout_bank_name'];
+            $profile->payout_account_type   = $payoutData['payout_account_type'];
+            $profile->payout_account_number = $payoutData['payout_account_number'];
+            $profile->payout_account_holder = $payoutData['payout_account_holder'] ?? $user->name;
+            $profile->payout_id_number      = $payoutData['payout_id_number'];
+        }
+        if ($request->boolean('clear_wompi_credentials')) {
+            $profile->wompi_public_key = null;
+            $profile->wompi_integrity_secret = null;
+            $profile->wompi_events_secret = null;
+        } else {
+            if ($request->filled('wompi_public_key')) {
+                $profile->wompi_public_key = strip_tags(trim($request->wompi_public_key));
+            }
+            if ($request->filled('wompi_integrity_secret')) {
+                $profile->wompi_integrity_secret = strip_tags(trim($request->wompi_integrity_secret));
+            }
+            if ($request->filled('wompi_events_secret')) {
+                $profile->wompi_events_secret = strip_tags(trim($request->wompi_events_secret));
+            }
+        }
+
+        if ($request->hasFile('logo')) {
+            if ($profile->logo_path) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($profile->logo_path);
+            }
+            $profile->logo_path = $request->file('logo')->store('merchants/logos', 'public');
+        }
+
+        if ($request->boolean('delete_banners') && !$request->hasFile('banners')) {
+            if ($profile->banners_path && is_array($profile->banners_path)) {
+                foreach ($profile->banners_path as $ob) {
+                    $path = is_array($ob) ? ($ob['path'] ?? null) : $ob;
+                    if ($path) \Illuminate\Support\Facades\Storage::disk('public')->delete($path);
+                }
+            }
+            $profile->banners_path = null;
+        }
+
+        if ($request->hasFile('banners')) {
+            if ($profile->banners_path && is_array($profile->banners_path)) {
+                foreach ($profile->banners_path as $ob) {
+                    $path = is_array($ob) ? ($ob['path'] ?? null) : $ob;
+                    if ($path) \Illuminate\Support\Facades\Storage::disk('public')->delete($path);
+                }
+            }
+
+            $bannerData = [];
+            $titles = $request->input('banner_titles', []);
+            $subtitles = $request->input('banner_subtitles', []);
+
+            foreach ($request->file('banners') as $index => $banner) {
+                $path = $banner->store('merchants/banners', 'public');
+                $bannerData[] = [
+                    'path'     => $path,
+                    'title'    => strip_tags($titles[$index] ?? ''),
+                    'subtitle' => strip_tags($subtitles[$index] ?? ''),
+                ];
+            }
+            $profile->banners_path = $bannerData;
+        } elseif ($profile->banners_path && is_array($profile->banners_path) && !$request->boolean('delete_banners')) {
+            $titles = $request->input('banner_titles', []);
+            $subtitles = $request->input('banner_subtitles', []);
+            $updatedBanners = $profile->banners_path;
+
+            foreach($updatedBanners as $index => $b) {
+                if (is_array($b)) {
+                    $updatedBanners[$index]['title'] = strip_tags($titles[$index] ?? '');
+                    $updatedBanners[$index]['subtitle'] = strip_tags($subtitles[$index] ?? '');
+                } else {
+                    $updatedBanners[$index] = [
+                        'path' => $b,
+                        'title' => strip_tags($titles[$index] ?? ''),
+                        'subtitle' => strip_tags($subtitles[$index] ?? ''),
+                    ];
+                }
+            }
+            $profile->banners_path = $updatedBanners;
+        }
+
+        $profile->save();
+
+        return back()->with('success', 'Configuración de la tienda guardada exitosamente.');
+    }
+
     public function products()
     {
         $products = Auth::user()->products()->latest()->paginate(12);
@@ -308,6 +469,7 @@ class MerchantController extends Controller
             'discount_percent' => 'nullable|integer|min:0|max:90',
             'stock'            => 'required|integer|min:0',
             'category'         => 'required|string|max:100',
+            'type'             => 'nullable|in:product,service',
             'image'            => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
             'gallery.*'        => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
             'is_active'        => 'boolean',
@@ -345,7 +507,7 @@ class MerchantController extends Controller
                                 'name' => strip_tags($v['name']),
                                 'hex'  => strip_tags($v['hex'] ?? '#000000'),
                             ];
-                            
+
                             if ($request->hasFile("options.$index.color_values.$vIndex.image")) {
                                 $val['image'] = $request->file("options.$index.color_values.$vIndex.image")->store('products/variants', 'public');
                             }
@@ -376,6 +538,7 @@ class MerchantController extends Controller
             'discount_percent'  => $discountPercent,
             'stock'             => $data['stock'],
             'category'          => strip_tags($data['category']),
+            'type'              => $data['type'] ?? 'product',
             'image'             => $imagePath,
             'images'            => $galleryPaths,
             'available_options' => $availableOptions,
@@ -405,6 +568,7 @@ class MerchantController extends Controller
             'discount_percent' => 'nullable|integer|min:0|max:90',
             'stock'            => 'required|integer|min:0',
             'category'         => 'required|string|max:100',
+            'type'             => 'nullable|in:product,service',
             'image'            => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
             'gallery.*'        => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
             'is_active'        => 'boolean',
@@ -450,7 +614,7 @@ class MerchantController extends Controller
                                 'name' => strip_tags($v['name']),
                                 'hex'  => strip_tags($v['hex'] ?? '#000000'),
                             ];
-                            
+
                             if ($request->hasFile("options.$index.color_values.$vIndex.image")) {
                                 $val['image'] = $request->file("options.$index.color_values.$vIndex.image")->store('products/variants', 'public');
                             } elseif (!empty($v['existing_image'])) {
@@ -482,6 +646,7 @@ class MerchantController extends Controller
             'discount_percent'  => $discountPercent,
             'stock'             => $data['stock'],
             'category'          => strip_tags($data['category']),
+            'type'              => $data['type'] ?? $product->type ?? 'product',
             'image'             => $data['image'] ?? $product->image,
             'images'            => array_values($galleryPaths),
             'available_options' => $availableOptions,
@@ -555,7 +720,7 @@ class MerchantController extends Controller
                 \App\Jobs\SendOrderShippedEmail::dispatch($order->id);
             }
         }
-        
+
 
         if ($request->status === 'cancelled' && $order->stock_reserved) {
             app(\App\Services\StockService::class)->release($order->load('items'));
@@ -733,7 +898,7 @@ class MerchantController extends Controller
     public function replyToReview(Request $request, Review $review)
     {
         $request->validate(['merchant_reply' => 'required|string|max:1000']);
-        
+
         $productIds = Auth::user()->products()->pluck('id')->toArray();
         if (!in_array($review->product_id, $productIds)) {
             abort(403);
@@ -786,7 +951,7 @@ class MerchantController extends Controller
 
         $request->validate($rules, [
             'image.required'       => 'Debes adjuntar la foto o arte publicitario.',
-            'description.required' => 'Por favor indica la descripción e instrucciones para el analista.',
+            'description.required' => 'Por favor indica la descripción que se mostrará en el banner.',
             'product_ids.required' => 'Debes seleccionar al menos un producto para vincular a la promoción.',
             'product_ids.min'      => 'Selecciona al menos un producto de tu catálogo.',
             'card_number.required' => 'Ingresa el número de tarjeta para el pago seguro en línea con Wompi.',
@@ -831,17 +996,25 @@ class MerchantController extends Controller
         $cents = (int) round($cost * 100);
         $signature = $wompi->integritySignature($paymentRef, $cents, 'COP');
 
+        $activePayout = \App\Models\Setting::activeBannerPayoutSnapshot();
+
         $bannerRequest = \App\Models\BannerRequest::create([
-            'user_id'            => $merchant->id,
-            'title'              => strip_tags($request->input('title', '')),
-            'image_path'         => $imagePath,
-            'payment_proof_path' => $paymentRef,
-            'target_type'        => $targetType,
-            'selected_products'  => $selectedProductsData,
-            'target_url'         => $targetUrl,
-            'notes'              => strip_tags($request->input('description')),
-            'cost'               => $cost,
-            'status'             => 'pending',
+            'user_id'                 => $merchant->id,
+            'title'                   => strip_tags($request->input('title', '')),
+            'image_path'              => $imagePath,
+            'payment_proof_path'      => $paymentRef,
+            'target_type'             => $targetType,
+            'selected_products'       => $selectedProductsData,
+            'target_url'              => $targetUrl,
+            'notes'                   => strip_tags($request->input('description')),
+            'cost'                    => $cost,
+            'status'                  => 'pending',
+            'payout_destination_mode' => $activePayout['payout_destination_mode'] ?? 'corporate',
+            'payout_method_type'      => $activePayout['payout_method_type'] ?? 'corporate',
+            'payout_bank_name'        => $activePayout['payout_bank_name'] ?? null,
+            'payout_account_type'     => $activePayout['payout_account_type'] ?? null,
+            'payout_account_number'   => $activePayout['payout_account_number'] ?? null,
+            'payout_account_holder'   => $activePayout['payout_account_holder'] ?? null,
         ]);
 
         $analysts = \App\Models\User::where('role', 'analyst')->get();
@@ -874,7 +1047,7 @@ class MerchantController extends Controller
             ->filter(fn($n) => $n->type === \App\Notifications\OutOfStockNotification::class)
             ->each->markAsRead();
 
-        $products = Auth::user()->products()->orderBy('name')->get();
+        $products = Auth::user()->products()->orderBy('name')->paginate(20)->withQueryString();
         return view('merchant.inventory', compact('products'));
     }
 
@@ -901,11 +1074,11 @@ class MerchantController extends Controller
         $orders = Order::whereHas('items', fn($q) => $q->whereIn('product_id', $productIds))
                        ->with('items')
                        ->get();
-        
+
         $grossSales = 0;
         $pointsDiscounts = 0;
         $prodIdsArr = $productIds->toArray();
-        
+
         foreach($orders as $order) {
             $merchantTotal = 0;
             foreach($order->items as $item) {
@@ -914,7 +1087,7 @@ class MerchantController extends Controller
                 }
             }
             $grossSales += $merchantTotal;
-            
+
             $orderGross = $order->total + $order->discount;
             if($orderGross > 0) {
                 $proportion = $merchantTotal / $orderGross;
@@ -929,7 +1102,8 @@ class MerchantController extends Controller
         $lowStockProducts = $merchant->products()
                                      ->where('stock', '<=', 5)
                                      ->orderBy('stock', 'asc')
-                                     ->get();
+                                     ->paginate(10)
+                                     ->withQueryString();
 
         $realIncome = $grossSales - $pointsDiscounts - $adSpend;
 
@@ -1117,7 +1291,7 @@ class MerchantController extends Controller
 
         return response()->stream(function () use ($orderItems) {
             $handle = fopen('php://output', 'w');
-            
+
             // UTF-8 BOM para que Excel en Windows/Mac abra los caracteres con acentos sin problemas
             fputs($handle, "\xEF\xBB\xBF");
 

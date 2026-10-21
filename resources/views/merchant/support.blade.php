@@ -59,7 +59,7 @@
                class="flex items-center gap-3 p-3 rounded-xl transition-all border {{ $isSelected ? 'bg-emerald-50/90 border-emerald-300 shadow-2xs' : 'bg-slate-50/60 hover:bg-white border-slate-200/70' }}">
               <div class="relative shrink-0">
                 @if($analystItem->avatar)
-                  <img src="{{ Storage::url($analystItem->avatar) }}" alt="{{ $analystItem->name }}" class="w-10 h-10 rounded-full object-cover border-2 border-emerald-500">
+                  <img loading="lazy" decoding="async" src="{{ Storage::url($analystItem->avatar) }}" alt="{{ $analystItem->name }}" class="w-10 h-10 rounded-full object-cover border-2 border-emerald-500">
                 @else
                   <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-[#006c47] to-[#10B981] text-white font-black text-sm flex items-center justify-center">
                     {{ strtoupper(substr($analystItem->name, 0, 1)) }}

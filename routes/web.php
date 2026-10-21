@@ -42,6 +42,7 @@ Route::middleware('guest')->group(function () {
     Route::post('/register',[AuthController::class, 'register'])->name('register.post')->middleware('throttle:5,1');
     Route::get('/forgot-password-offline', [AuthController::class, 'showOfflinePasswordRequest'])->name('password.request.offline');
     Route::post('/forgot-password-offline', [AuthController::class, 'processOfflinePasswordRequest'])->name('password.offline.post');
+    Route::get('/auth/cancel', [\App\Http\Controllers\Auth\SocialAuthController::class, 'cancel'])->name('social.cancel');
     Route::get('/auth/{provider}/redirect', [\App\Http\Controllers\Auth\SocialAuthController::class, 'redirect'])->name('social.redirect');
     Route::get('/auth/{provider}/callback', [\App\Http\Controllers\Auth\SocialAuthController::class, 'callback'])->name('social.callback');
 });
@@ -266,6 +267,7 @@ Route::middleware(['auth', 'verified', 'role:merchant'])->prefix('merchant')->na
     Route::middleware([\App\Http\Middleware\EnsureKycApproved::class])->group(function() {
         Route::get('/dashboard',               [MerchantController::class, 'dashboard'])->name('dashboard');
         Route::get('/store/edit',              [MerchantController::class, 'editStore'])->name('store.edit');
+        Route::post('/store/edit',             [MerchantController::class, 'updateStore'])->name('store.update');
         Route::get('/products',                [MerchantController::class, 'products'])->name('products');
         Route::get('/inventory',               [MerchantController::class, 'inventory'])->name('inventory');
         Route::post('/inventory',              [MerchantController::class, 'updateInventory'])->name('inventory.update');
@@ -328,6 +330,7 @@ Route::middleware(['auth', 'role:analyst'])->prefix('admin')->name('analyst.')->
     Route::get('/reviews-report',                 [AnalystController::class, 'reviewsReport'])->name('reviews-report');
 
     Route::get('/banners',                        [AnalystController::class, 'banners'])->name('banners');
+    Route::post('/banners/payout-config',         [AnalystController::class, 'updateBannerPayoutConfig'])->name('banners.payout-config.update');
     Route::get('/banner-requests/{id}',           [AnalystController::class, 'bannerRequestShow'])->name('banner-requests.show');
     Route::post('/banner-requests/{id}/approve',  [AnalystController::class, 'bannerRequestApprove'])->name('banner-requests.approve');
     Route::post('/banner-requests/{id}/reject',   [AnalystController::class, 'bannerRequestReject'])->name('banner-requests.reject');
@@ -346,15 +349,35 @@ Route::middleware(['auth', 'role:analyst'])->prefix('admin')->name('analyst.')->
     Route::post('/pqrs/{pqrs}/reply',             [\App\Http\Controllers\PQRSController::class, 'adminReply'])->name('pqrs.reply');
 });
 
-// --- Servidor de Archivos Locales (Simulación de Storage público) ---
-Route::get('/files/{disk}/{path}', function (string $disk, string $path) {
-    $fullPath = storage_path("app/public/{$disk}/{$path}");
-    if (!file_exists($fullPath)) abort(404);
-    return response()->file($fullPath);
+// --- Archivos del disco público con validación de ruta, WebP y caché ---
+$servePublicFile = function (string $path) {
+    $publicRoot = realpath(storage_path('app/public'));
+    $fullPath = $publicRoot ? realpath($publicRoot . DIRECTORY_SEPARATOR . ltrim($path, '/\\')) : false;
+    $allowedPrefix = $publicRoot ? rtrim($publicRoot, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR : '';
+    if (!$fullPath || !is_file($fullPath) || !str_starts_with(strtolower($fullPath), strtolower($allowedPrefix))) {
+        abort(404);
+    }
+
+    if (str_contains(request()->header('Accept', ''), 'image/webp') && !str_ends_with(strtolower($fullPath), '.webp')) {
+        $webpPath = preg_replace('/\.(jpe?g|png)$/i', '.webp', $fullPath);
+        if ($webpPath && is_file($webpPath) && str_starts_with(strtolower(realpath($webpPath) ?: ''), strtolower($allowedPrefix))) {
+            return response()->file($webpPath, [
+                'Content-Type' => 'image/webp',
+                'Vary' => 'Accept',
+                'Cache-Control' => 'public, max-age=3600, must-revalidate',
+            ]);
+        }
+    }
+
+    return response()->file($fullPath, [
+        'Vary' => 'Accept',
+        'Cache-Control' => 'public, max-age=3600, must-revalidate',
+    ]);
+};
+
+Route::get('/files/{disk}/{path}', function (string $disk, string $path) use ($servePublicFile) {
+    return $servePublicFile($disk . '/' . $path);
 })->where('path', '.*')->name('files.serve');
 
-Route::get('/storage/{path}', function (string $path) {
-    $fullPath = storage_path("app/public/{$path}");
-    if (!file_exists($fullPath)) abort(404);
-    return response()->file($fullPath);
-})->where('path', '.*')->name('storage.serve');
+Route::get('/storage/{path}', fn (string $path) => $servePublicFile($path))
+    ->where('path', '.*')->name('storage.serve');

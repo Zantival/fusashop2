@@ -17,7 +17,8 @@
     <form method="POST" action="{{ route('consumer.checkout.process') }}" id="checkout-form" class="space-y-6">
       @csrf
 
-      {{-- 1. Dirección --}}
+      {{-- 1. Dirección de envío, solo para productos físicos --}}
+      @if($requiresShipping)
       <section class="bg-surface-container-lowest rounded-2xl p-6 shadow-[0_12px_32px_rgba(27,28,28,.06)]">
         <div class="flex items-center justify-between mb-4">
           <h2 class="font-['Manrope'] font-bold text-lg">1. Dirección de envío</h2>
@@ -38,10 +39,16 @@
 
       {{-- 2. Envío --}}
       <section class="bg-surface-container-lowest rounded-2xl p-6 shadow-[0_12px_32px_rgba(27,28,28,.06)]">
-        <h2 class="font-['Manrope'] font-bold text-lg mb-4">2. Método de envío</h2>
+        <h2 class="font-['Manrope'] font-bold text-lg mb-4">2. Envío de productos físicos</h2>
         <div id="rates" class="space-y-2 text-sm text-on-surface-variant">Cotizando envío…</div>
         <button type="button" id="requote" class="mt-3 text-primary text-sm font-semibold hover:underline">Volver a cotizar</button>
       </section>
+      @else
+      <section class="bg-emerald-50 border border-emerald-200 rounded-2xl p-6 text-emerald-900">
+        <h2 class="font-['Manrope'] font-bold text-lg mb-2">Reserva del servicio</h2>
+        <p class="text-sm">Al completar el pago reservaremos las unidades disponibles del servicio. Recibirás por correo la factura, el código de reserva y el detalle de lo adquirido.</p>
+      </section>
+      @endif
 
       {{-- 3. Facturación electrónica --}}
       <section class="bg-surface-container-lowest rounded-2xl p-6 shadow-[0_12px_32px_rgba(27,28,28,.06)]">
@@ -65,7 +72,7 @@
 
       <p class="text-xs text-on-surface-variant flex items-center gap-1">
         <span class="material-symbols-outlined text-sm">lock</span>
-        Pagarás en el checkout seguro de Wompi (tarjeta, PSE, Nequi). FusaShop no almacena datos de tu tarjeta.
+        El pago se procesa en el checkout seguro de Wompi de esta tienda (tarjeta, PSE o Nequi). FusaShop no almacena datos de tu tarjeta.
       </p>
 
       @if($availablePoints > 0)
@@ -90,7 +97,7 @@
 
       <input type="hidden" name="shipping_rate" id="shipping-rate-input" value="{{ old('shipping_rate') }}">
       <button type="submit" id="pay-btn" disabled class="w-full py-4 bg-primary-gradient text-white font-semibold rounded-xl hover:opacity-90 active:scale-95 transition-all shadow-lg shadow-primary/20 flex items-center justify-center gap-2 text-lg disabled:opacity-40 disabled:cursor-not-allowed">
-        <span class="material-symbols-outlined">lock</span> <span id="pay-label">Selecciona un envío</span>
+        <span class="material-symbols-outlined">lock</span> <span id="pay-label">{{ $requiresShipping ? 'Selecciona un envío' : 'Reservar y pagar' }}</span>
       </button>
     </form>
 
@@ -127,7 +134,11 @@
         </div>
         <div class="border-t border-outline-variant/30 pt-4 space-y-2 text-sm">
           <div class="flex justify-between"><span>Subtotal</span><span>${{ number_format($cart->total(),0,',','.') }}</span></div>
+          @if($requiresShipping)
           <div class="flex justify-between"><span>Envío</span><span id="ship-line">—</span></div>
+          @else
+          <div class="flex justify-between text-emerald-700"><span>Envío</span><span id="ship-line">No requiere</span></div>
+          @endif
           <div class="flex justify-between text-amber-700 font-medium" id="disc-row" style="display:none">
             <span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm">toll</span> Descuento FusaCoins</span>
             <span id="disc-line"></span>
@@ -150,24 +161,25 @@
   var pointValue = 100;
   var maxPointsDiscount = 50000;
   var selectedItemIds = @json($selectedItemIds ?? []);
+  var requiresShipping = @json($requiresShipping);
 
   var ratesBox = document.getElementById('rates');
   var rateInput = document.getElementById('shipping-rate-input');
   var payBtn = document.getElementById('pay-btn');
   var payLabel = document.getElementById('pay-label');
   var usePts = document.getElementById('use-points-check');
-  var selected = null;
+  var selected = requiresShipping ? null : { price: 0 };
 
   function recompute() {
     var discount = (usePts && usePts.checked) ? Math.min(points * pointValue, eligibleSubtotal, maxPointsDiscount) : 0;
     var ship = selected ? selected.price : 0;
-    document.getElementById('ship-line').textContent = selected ? fmt(ship) : '—';
+    document.getElementById('ship-line').textContent = !requiresShipping ? 'No requiere' : (selected ? fmt(ship) : '—');
     document.getElementById('disc-row').style.display = discount ? 'flex' : 'none';
     document.getElementById('disc-line').textContent = '-' + fmt(discount);
     var total = Math.max(0, subtotal - discount) + ship;
     document.getElementById('final-total').textContent = fmt(total);
-    payBtn.disabled = !selected;
-    payLabel.textContent = selected ? 'Pagar ' + fmt(total) + ' con Wompi' : 'Selecciona un envío';
+    payBtn.disabled = requiresShipping && !selected;
+    payLabel.textContent = !requiresShipping ? 'Reservar y pagar ' + fmt(total) : (selected ? 'Pagar ' + fmt(total) + ' con Wompi' : 'Selecciona un envío');
   }
 
   function render(rates) {
@@ -211,10 +223,12 @@
     } catch (e) { ratesBox.textContent = 'Error de red al cotizar el envío.'; }
   }
 
-  document.querySelectorAll('input[name=address_id]').forEach(function (r) { r.addEventListener('change', quote); });
-  document.getElementById('requote').addEventListener('click', quote);
+  if (requiresShipping) {
+    document.querySelectorAll('input[name=address_id]').forEach(function (r) { r.addEventListener('change', quote); });
+    document.getElementById('requote').addEventListener('click', quote);
+  }
   if (usePts) usePts.addEventListener('change', recompute);
-  quote();
+  if (requiresShipping) quote(); else recompute();
 })();
 </script>
 @endpush

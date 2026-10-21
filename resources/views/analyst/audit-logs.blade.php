@@ -14,7 +14,7 @@
 
   <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
     <div class="overflow-x-auto">
-      <table class="w-full text-left text-xs">
+      <table class="w-full text-left text-xs responsive-stack-table">
         <thead class="bg-slate-50 border-b border-slate-200 font-black uppercase text-[10px] text-slate-600">
           <tr>
             <th class="p-3.5">Fecha / Hora</th>
@@ -28,21 +28,21 @@
         <tbody class="divide-y divide-slate-100">
           @forelse($logs as $log)
             <tr class="hover:bg-slate-50/70">
-              <td class="p-3.5 whitespace-nowrap text-slate-500">{{ $log->created_at->format('d/m/Y H:i:s') }}</td>
-              <td class="p-3.5 font-bold text-slate-900">{{ $log->admin->name ?? 'Sistema' }}</td>
-              <td class="p-3.5">
+              <td class="p-3.5 whitespace-nowrap text-slate-500" data-label="Fecha / Hora">{{ $log->created_at->format('d/m/Y H:i:s') }}</td>
+              <td class="p-3.5 font-bold text-slate-900" data-label="Administrador">{{ $log->admin->name ?? 'Sistema' }}</td>
+              <td class="p-3.5" data-label="Acción">
                 <span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-100 text-[#006c47]">
                   {{ $log->action }}
                 </span>
               </td>
-              <td class="p-3.5 text-slate-600">
+              <td class="p-3.5 text-slate-600" data-label="Entidad">
                 @if($log->target_type)
                   {{ class_basename($log->target_type) }} #{{ $log->target_id }}
                 @else
                   Configuración Global
                 @endif
               </td>
-              <td class="p-3.5 text-slate-700 font-medium">{{ $log->reason ?? '-' }}</td>
+              <td class="p-3.5 text-slate-700 font-medium" data-label="Motivo">{{ $log->reason ?? '-' }}</td>
               <td class="p-3.5 text-slate-400 font-mono text-[11px]">{{ $log->ip_address ?? '127.0.0.1' }}</td>
             </tr>
           @empty

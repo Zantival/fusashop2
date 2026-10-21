@@ -31,7 +31,7 @@
           <input type="file" name="image" id="image-input" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"/>
           <div id="image-preview-container">
             @if($product && $product->image)
-              <img src="{{ asset('storage/'.$product->image) }}" class="w-full aspect-square object-cover rounded-xl mb-3"/>
+              <img loading="lazy" decoding="async" src="{{ asset('storage/'.$product->image) }}" class="w-full aspect-square object-cover rounded-xl mb-3"/>
               <p class="text-xs text-on-surface-variant">Clic para cambiar</p>
             @else
               <span class="material-symbols-outlined text-on-surface-variant text-4xl mb-2 block group-hover:scale-110 transition-transform">add_a_photo</span>
@@ -45,7 +45,7 @@
           @if($product && $product->images)
             @foreach($product->images as $img)
               <div class="relative group aspect-square">
-                <img src="{{ asset('storage/'.$img) }}" class="w-full h-full object-cover rounded-lg border border-outline-variant/30">
+                <img loading="lazy" decoding="async" src="{{ asset('storage/'.$img) }}" class="w-full h-full object-cover rounded-lg border border-outline-variant/30">
                 <label class="absolute top-1 right-1 bg-error text-white rounded-full p-1 cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity">
                   <input type="checkbox" name="remove_images[]" value="{{ $img }}" class="hidden">
                   <span class="material-symbols-outlined text-xs">delete</span>
@@ -73,6 +73,16 @@
               placeholder="Ej: Camiseta de Algodón Orgánico"/>
           </div>
 
+          @php $initialProductType = old('type', $product ? ($product->isService() ? 'service' : 'product') : 'product'); @endphp
+          <div class="sm:col-span-2">
+            <label class="block text-sm font-bold text-on-surface mb-2">Tipo de publicación *</label>
+            <select name="type" required class="w-full px-4 py-3 bg-surface-container-highest rounded-xl border-0 outline-none focus:ring-2 focus:ring-primary shadow-inner">
+              <option value="product" {{ $initialProductType === 'product' ? 'selected' : '' }}>Producto físico (requiere envío)</option>
+              <option value="service" {{ $initialProductType === 'service' ? 'selected' : '' }}>Servicio o reserva (hotel, restaurante, experiencia, etc.)</option>
+            </select>
+            <p class="text-xs text-on-surface-variant mt-1">Para servicios, el stock representa los cupos o unidades disponibles para reservar.</p>
+          </div>
+
           <div>
             <label class="block text-sm font-bold text-on-surface mb-2">Precio Base / Lista (COP) *</label>
             <div class="relative">
@@ -96,7 +106,7 @@
             <select name="category" id="category-select" required
               class="w-full px-4 py-3 bg-surface-container-highest rounded-xl border-0 outline-none focus:ring-2 focus:ring-primary shadow-inner appearance-none">
               <option value="">Seleccionar categoría</option>
-              @foreach(['Ropa','Electrónica','Hogar','Deportes','Alimentos','Belleza','Juguetes','Libros','Otros'] as $cat)
+              @foreach(['Ropa','Electrónica','Hogar','Deportes','Alimentos','Belleza','Juguetes','Libros','Hoteles y Alojamientos','Restaurantes y Gastronomía','Turismo y Experiencias','Servicios profesionales','Otros'] as $cat)
                 <option value="{{ $cat }}" {{ old('category', $product?->category) === $cat ? 'selected' : '' }}>{{ $cat }}</option>
               @endforeach
             </select>
@@ -159,7 +169,7 @@
                            <p class="text-[10px] font-black truncate w-full text-center text-on-surface-variant">{{ $val['name'] }}</p>
                            <div class="w-14 h-14 bg-surface-container rounded-md flex items-center justify-center overflow-hidden border border-outline-variant/20" id="preview-img-{{ $index }}-{{ $vIndex }}">
                              @if(!empty($val['image']))
-                               <img src="{{ asset('storage/'.$val['image']) }}" class="w-full h-full object-cover">
+                               <img loading="lazy" decoding="async" src="{{ asset('storage/'.$val['image']) }}" class="w-full h-full object-cover">
                                <input type="hidden" name="options[{{ $index }}][color_values][{{ $vIndex }}][existing_image]" value="{{ $val['image'] }}">
                              @else
                                <span class="material-symbols-outlined text-sm opacity-20">image</span>
@@ -389,7 +399,7 @@
   // Main Image Preview
   document.getElementById('image-input').addEventListener('change', e => {
     const f = e.target.files[0]; if(!f) return;
-    const r = new FileReader(); r.onload = x => document.getElementById('image-preview-container').innerHTML = `<img src="${x.target.result}" class="w-full aspect-square object-cover rounded-xl mb-3">`;
+    const r = new FileReader(); r.onload = x => document.getElementById('image-preview-container').innerHTML = `<img loading="lazy" decoding="async" src="${x.target.result}" class="w-full aspect-square object-cover rounded-xl mb-3">`;
     r.readAsDataURL(f);
   });
 
@@ -451,7 +461,7 @@
     if (input.files && input.files[0]) {
       const r = new FileReader(); r.onload = e => {
         const p = document.getElementById(`preview-img-${oi}-${vi}`);
-        if(p) p.innerHTML = `<img src="${e.target.result}" class="w-full h-full object-cover">`;
+        if(p) p.innerHTML = `<img loading="lazy" decoding="async" src="${e.target.result}" class="w-full h-full object-cover">`;
       };
       r.readAsDataURL(input.files[0]);
     }

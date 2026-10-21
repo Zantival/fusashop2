@@ -28,7 +28,7 @@ class GenerateEnviaShipment implements ShouldQueue
     {
         $order = Order::findOrFail($this->orderId);
 
-        if ($order->payment_status !== 'paid' || $order->tracking_number) {
+        if ($order->payment_status !== 'paid' || $order->tracking_number || !$order->hasShippableItems()) {
             return; // idempotente: ya tiene guía o no está pagado
         }
 

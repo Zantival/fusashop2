@@ -22,6 +22,7 @@ $hasImage     = !!$mainImageUrl;
 $avgRating    = $product->reviews->avg('rating') ?? 0;
 $icon = ['Ropa'=>'checkroom','Electrónica'=>'devices','Hogar'=>'chair','Deportes'=>'sports_soccer',
          'Alimentos'=>'lunch_dining','Belleza'=>'spa','Juguetes'=>'toys','Libros'=>'menu_book'][$product->category] ?? 'inventory_2';
+$availableUnits = $product->availableStock();
 
 $specIcons = [
     'material'   => 'texture', 'gender' => 'person', 'brand' => 'branding_watermark',
@@ -66,7 +67,7 @@ $specLabels = [
         <div class="pd-stage" id="pd-stage">
           <div class="pd-product-img" id="pd-product-img">
             @if($hasImage)
-              <img id="main-img" src="{{ $mainImageUrl }}" alt="{{ e($product->name) }}" class="pd-img" loading="eager" fetchpriority="high" decoding="async" onerror="this.style.display='none';document.getElementById('pd-fallback').style.removeProperty('display')"/>
+              <img loading="lazy" decoding="async" id="main-img" src="{{ $mainImageUrl }}" alt="{{ e($product->name) }}" class="pd-img" loading="eager" fetchpriority="high" decoding="async" onerror="this.style.display='none';document.getElementById('pd-fallback').style.removeProperty('display')"/>
               <div id="pd-fallback" class="pd-fallback" style="display:none">
                 <span class="material-symbols-outlined" style="font-size:6rem;color:white;font-variation-settings:'FILL' 1">{{ $icon }}</span>
               </div>
@@ -92,11 +93,11 @@ $specLabels = [
         @if(count($galleryImages) > 0)
           <div class="flex gap-2 mt-4 justify-center pd-fi" style="--d:.4s">
             @if($mainImageUrl)
-              <button onclick="changeMainImg('{{ $mainImageUrl }}')" class="w-14 h-14 rounded-lg border-2 border-white/20 overflow-hidden hover:border-white transition-all bg-white/5"><img src="{{ $mainImageUrl }}" class="w-full h-full object-cover"></button>
+              <button onclick="changeMainImg('{{ $mainImageUrl }}')" class="w-14 h-14 rounded-lg border-2 border-white/20 overflow-hidden hover:border-white transition-all bg-white/5"><img loading="lazy" decoding="async" src="{{ $mainImageUrl }}" class="w-full h-full object-cover"></button>
             @endif
             @foreach($galleryImages as $img)
               @php $galleryUrl = url('storage/' . $img); @endphp
-              <button onclick="changeMainImg('{{ $galleryUrl }}')" class="w-14 h-14 rounded-lg border-2 border-white/10 overflow-hidden hover:border-white transition-all bg-white/5"><img src="{{ $galleryUrl }}" class="w-full h-full object-cover"></button>
+              <button onclick="changeMainImg('{{ $galleryUrl }}')" class="w-14 h-14 rounded-lg border-2 border-white/10 overflow-hidden hover:border-white transition-all bg-white/5"><img loading="lazy" decoding="async" src="{{ $galleryUrl }}" class="w-full h-full object-cover"></button>
             @endforeach
           </div>
         @endif
@@ -112,12 +113,12 @@ $specLabels = [
           @if($product->allows_points ?? true)
             <span class="pd-badge" style="background:rgba(245,158,11,.18);border-color:rgba(251,191,36,.45);color:#fde68a">🪙 Aplica FusaCoins</span>
           @endif
-          @if($product->stock <= 5 && $product->stock > 0)
-            <span class="pd-badge" style="background:rgba(252,211,77,.12);border-color:rgba(252,211,77,.3);color:#fde68a">⚠ Solo {{ $product->stock }} disp.</span>
-          @elseif($product->stock <= 0)
-            <span class="pd-badge" style="background:rgba(186,26,26,.12);border-color:rgba(186,26,26,.3);color:#fca5a5">Agotado</span>
+          @if($availableUnits <= 5 && $availableUnits > 0)
+            <span class="pd-badge" style="background:rgba(252,211,77,.12);border-color:rgba(252,211,77,.3);color:#fde68a">{{ $product->isService() ? '⚠ Solo ' . $availableUnits . ' cupos' : '⚠ Solo ' . $availableUnits . ' disp.' }}</span>
+          @elseif($availableUnits <= 0)
+            <span class="pd-badge" style="background:rgba(186,26,26,.12);border-color:rgba(186,26,26,.3);color:#fca5a5">{{ $product->isService() ? 'Sin cupos disponibles' : 'Agotado' }}</span>
           @else
-            <span class="pd-badge" style="background:rgba(110,252,185,.1);border-color:rgba(110,252,185,.25);color:#6efcb9">✓ En stock</span>
+            <span class="pd-badge" style="background:rgba(110,252,185,.1);border-color:rgba(110,252,185,.25);color:#6efcb9">{{ $product->isService() ? '✓ Disponible para reservar' : '✓ En stock' }}</span>
           @endif
         </div>
 
@@ -167,7 +168,7 @@ $specLabels = [
         <div class="flex items-center gap-2 pd-fi" style="--d:.21s">
           <a href="{{ route('consumer.merchant.profile', $product->merchant_id) }}" class="pd-merchant flex-1">
             @if($product->merchant->companyProfile?->logo_path)
-              <img src="{{ Storage::url($product->merchant->companyProfile->logo_path) }}" class="w-10 h-10 rounded-full object-cover">
+              <img loading="lazy" decoding="async" src="{{ Storage::url($product->merchant->companyProfile->logo_path) }}" class="w-10 h-10 rounded-full object-cover">
             @else
               <div class="w-10 h-10 rounded-full flex items-center justify-center text-white font-black" style="background:{{ $from }}">{{ strtoupper(substr($product->merchant->name,0,1)) }}</div>
             @endif
@@ -257,7 +258,7 @@ $specLabels = [
           </div>
         @endif
 
-        @if($product->stock > 0)
+        @if($availableUnits > 0)
           @auth
             @if(auth()->user()->isConsumer())
               <form id="add-to-cart-form" method="POST" action="{{ route('consumer.cart.add') }}" class="pd-fi" style="--d:.3s">
@@ -274,17 +275,17 @@ $specLabels = [
                 <div class="flex items-center gap-3">
                   <div class="pd-qty">
                     <button type="button" onclick="const i=document.getElementById('qty');if(i.value>1)i.value--" class="pd-qty-btn"><span class="material-symbols-outlined text-[18px]">remove</span></button>
-                    <input type="number" id="qty" name="quantity" value="1" min="1" max="{{ $product->stock }}" class="w-12 text-center bg-transparent border-0 font-black text-white focus:ring-0 text-sm p-0 m-0 [appearance:textfield]">
-                    <button type="button" onclick="const i=document.getElementById('qty');if(i.value<{{ $product->stock }})i.value++" class="pd-qty-btn"><span class="material-symbols-outlined text-[18px]">add</span></button>
+                    <input type="number" id="qty" name="quantity" value="1" min="1" max="{{ $availableUnits }}" class="w-12 text-center bg-transparent border-0 font-black text-white focus:ring-0 text-sm p-0 m-0 [appearance:textfield]">
+                    <button type="button" onclick="const i=document.getElementById('qty');if(i.value<{{ $availableUnits }})i.value++" class="pd-qty-btn"><span class="material-symbols-outlined text-[18px]">add</span></button>
                   </div>
                   <button type="submit" class="add-to-cart" style="--background: linear-gradient(135deg,{{ $from }},{{ $to }}); --shadow: {{ $glow2 }}">
-                    <span class="btn-text">Añadir al carrito</span>
+                    <span class="btn-text">{{ $product->isService() ? 'Reservar servicio' : 'Añadir al carrito' }}</span>
                     <span class="btn-cart"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg></span>
                     <span class="btn-done"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>¡Listo!</span>
                   </button>
                   <button type="submit" id="btn-buy-now" name="buy_now" value="1" formaction="{{ route('consumer.cart.add') }}" class="px-7 py-3.5 bg-gradient-to-r from-orange-500 to-[#F97316] hover:from-orange-600 hover:to-orange-700 text-white font-black rounded-2xl text-sm transition-all shadow-lg hover:shadow-orange-500/30 flex items-center justify-center gap-2 shrink-0 cursor-pointer">
                     <span class="material-symbols-outlined text-lg">flash_on</span>
-                    <span>Comprar Ahora</span>
+                    <span>{{ $product->isService() ? 'Reservar ahora' : 'Comprar Ahora' }}</span>
                   </button>
                 </div>
               </form>
@@ -397,7 +398,7 @@ $specLabels = [
           {{-- Información de Autor --}}
           <div class="flex items-center gap-3.5 pt-4 border-t border-surface-container/40">
             @if($rev->user->avatar)
-              <img src="{{ Storage::url($rev->user->avatar) }}" class="w-11 h-11 rounded-full object-cover shadow-inner">
+              <img loading="lazy" decoding="async" src="{{ Storage::url($rev->user->avatar) }}" class="w-11 h-11 rounded-full object-cover shadow-inner">
             @else
               <div class="w-11 h-11 rounded-full flex items-center justify-center font-black text-sm shrink-0 shadow-inner"
                    style="background: {{ $avatarBg }}; color: {{ $avatarText }}">

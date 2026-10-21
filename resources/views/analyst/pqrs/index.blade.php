@@ -8,7 +8,7 @@
     </div>
 
     <div class="bg-surface-container-lowest rounded-3xl shadow-card overflow-hidden border border-outline-variant/30">
-        <table class="w-full text-left">
+        <table class="w-full text-left responsive-stack-table">
             <thead class="bg-surface-container-low border-b border-outline-variant/20">
                 <tr>
                     <th class="px-6 py-4 text-xs font-black text-on-surface-variant uppercase">Usuario</th>
@@ -21,7 +21,7 @@
             <tbody class="divide-y divide-outline-variant/10">
                 @foreach($pqrs as $item)
                 <tr class="hover:bg-surface-container-low/30 transition-colors">
-                    <td class="px-6 py-4">
+                    <td class="px-6 py-4" data-label="Usuario">
                         <div class="flex items-center gap-3">
                             <div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs">
                                 {{ strtoupper(substr($item->user->name, 0, 1)) }}
@@ -32,11 +32,11 @@
                             </div>
                         </div>
                     </td>
-                    <td class="px-6 py-4">
+                    <td class="px-6 py-4" data-label="Tipo / Asunto">
                         <span class="text-[9px] font-black uppercase tracking-widest text-primary mb-1 block">{{ $item->type }}</span>
                         <p class="text-sm font-medium text-on-surface truncate max-w-xs">{{ e($item->subject) }}</p>
                     </td>
-                    <td class="px-6 py-4 text-center">
+                    <td class="px-6 py-4 text-center" data-label="Estado">
                         <span class="px-2 py-1 rounded-full text-[9px] font-black uppercase tracking-wider
                             @if($item->status == 'pending') bg-amber-100 text-amber-700 
                             @elseif($item->status == 'resolved') bg-green-100 text-green-700 
@@ -44,10 +44,10 @@
                             {{ $item->status }}
                         </span>
                     </td>
-                    <td class="px-6 py-4 text-right">
+                    <td class="px-6 py-4 text-right" data-label="Fecha">
                         <p class="text-xs text-on-surface-variant">{{ $item->created_at->format('d/m/Y') }}</p>
                     </td>
-                    <td class="px-6 py-4 text-right">
+                    <td class="px-6 py-4 text-right" data-label="Acción">
                         <button onclick="openPqrsModal({{ $item->id }}, '{{ e($item->subject) }}', '{{ e($item->content) }}', '{{ e($item->admin_response) }}', '{{ $item->status }}')" 
                                 class="p-2 text-primary hover:bg-primary/10 rounded-lg transition-all">
                             <span class="material-symbols-outlined">edit_note</span>

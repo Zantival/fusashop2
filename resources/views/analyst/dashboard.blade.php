@@ -590,7 +590,7 @@
           @php $roleColors=['consumer'=>'bg-emerald-50 text-emerald-700','merchant'=>'bg-[#6efcb9]/40 text-[#006c47]','analyst'=>'bg-[#ffdea8] text-[#7c5800]']; @endphp
           <div class="flex items-center gap-3">
             @if($u->avatarUrl())
-              <img src="{{ $u->avatarUrl() }}" alt="{{ $u->name }}" class="w-10 h-10 rounded-full object-cover shrink-0 border border-emerald-300 bg-white">
+              <img loading="lazy" decoding="async" src="{{ $u->avatarUrl() }}" alt="{{ $u->name }}" class="w-10 h-10 rounded-full object-cover shrink-0 border border-emerald-300 bg-white">
             @else
               <div class="w-10 h-10 bg-primary-gradient rounded-full flex items-center justify-center text-white font-bold text-sm shrink-0">
                 {{ strtoupper(substr($u->name,0,1)) }}
@@ -1242,7 +1242,7 @@
         <div class="flex items-start justify-between gap-3">
           <div class="flex items-center gap-3 min-w-0">
             @if($m->avatarUrl())
-              <img src="{{ $m->avatarUrl() }}" alt="{{ $companyName }}" class="w-11 h-11 rounded-full object-cover shrink-0 border border-emerald-300 bg-white">
+              <img loading="lazy" decoding="async" src="{{ $m->avatarUrl() }}" alt="{{ $companyName }}" class="w-11 h-11 rounded-full object-cover shrink-0 border border-emerald-300 bg-white">
             @else
               <div class="w-11 h-11 rounded-full bg-primary-gradient font-bold text-white text-base flex items-center justify-center shrink-0">
                 {{ strtoupper(substr($companyName, 0, 1)) }}
@@ -1558,21 +1558,21 @@
       </div>
     </div>
 
-    <!-- SECTION 2: GESTIÓN DE COMISIONES (8%) Y ESTADO ANTE FACTUS DIAN -->
+    <!-- SECTION 2: VENTAS PAGADAS Y ESTADO ANTE FACTUS DIAN -->
     <div class="bg-white rounded-3xl p-6 sm:p-8 shadow-[0_12px_32px_rgba(27,28,28,.06)] border border-outline-variant/20 space-y-6">
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-outline-variant/20">
         <div>
           <h2 class="text-xl font-['Manrope'] font-black text-on-background flex items-center gap-2">
             <span class="material-symbols-outlined text-[#006c47]">account_balance</span>
-            Gestión de Tiendas, Comisiones FusaShop (8%) y Estado Fiscal DIAN
+            Gestión de Tiendas, Comisión Estimada y Estado Fiscal DIAN
           </h2>
           <p class="text-xs text-on-surface-variant mt-0.5">
-            Liquidación automática de comisiones retenidas y auditoría de emisión de facturas electrónicas vía Factus
+            Ventas confirmadas por Wompi. La comisión se muestra como valor estimado; el pago directo no la retiene automáticamente.
           </p>
         </div>
         <div class="flex items-center gap-2">
           <span class="px-3 py-1 rounded-full text-xs font-black bg-emerald-100 text-emerald-800 border border-emerald-200">
-            Comisión Plataforma: 8% Flat
+            Comisión Estimada: {{ $commissionRate ?? 8 }}% (no retenida)
           </span>
         </div>
       </div>
@@ -1584,7 +1584,7 @@
               <th class="py-3 px-4">Comercio / Tienda</th>
               <th class="py-3 px-4">Contacto / Tel</th>
               <th class="py-3 px-4">Ventas Brutas</th>
-              <th class="py-3 px-4 text-emerald-800">Comisión 8% Retenida</th>
+              <th class="py-3 px-4 text-emerald-800">Comisión estimada (no retenida)</th>
               <th class="py-3 px-4">Pedidos</th>
               <th class="py-3 px-4">Facturación Factus DIAN</th>
               <th class="py-3 px-4 text-right">Acción</th>
@@ -2040,7 +2040,7 @@
           <div class="p-2.5 rounded-xl bg-emerald-50/70 border border-emerald-200/80">
             <span class="block text-[10px] font-black uppercase text-[#006c47]">Ventas Totales</span>
             <span id="notify-modal-sales-kpi" class="text-sm font-black text-slate-900 mt-0.5 block">$ 0 COP</span>
-            <span id="notify-modal-net-kpi" class="text-[10px] text-emerald-800 font-semibold">Neto 92%: $ 0</span>
+            <span id="notify-modal-net-kpi" class="text-[10px] text-emerald-800 font-semibold">Cobro directo: $ 0</span>
           </div>
           <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200">
             <span class="block text-[10px] font-black uppercase text-slate-500">Variación Periodo</span>
@@ -2718,7 +2718,7 @@ window.selectNotifyMessageType = function(type) {
   // Poblar KPIs automáticos del reporte de ventas del comercio
   if (rep) {
     if (salesKpi) salesKpi.innerText = '$ ' + Number(rep.total_sales || 0).toLocaleString('es-CO') + ' COP';
-    if (netKpi) netKpi.innerText = 'Neto 92%: $ ' + Number(rep.net_sales || 0).toLocaleString('es-CO');
+    if (netKpi) netKpi.innerText = 'Cobro directo: $ ' + Number(rep.net_sales || 0).toLocaleString('es-CO');
     if (varKpi) {
       const v = Number(rep.variation_pct || 0);
       varKpi.innerText = (v >= 0 ? '▲ +' : '▼ ') + v + '%';
@@ -2730,7 +2730,7 @@ window.selectNotifyMessageType = function(type) {
     if (ratingKpi) ratingKpi.innerText = '⭐ ' + Number(rep.avg_rating || 5).toFixed(1) + ' (' + (rep.out_of_stock_count || 0) + ' agotados)';
   } else {
     if (salesKpi) salesKpi.innerText = merchant.sales || '$ 0 COP';
-    if (netKpi) netKpi.innerText = 'Libre de comisión 8%';
+    if (netKpi) netKpi.innerText = 'Cobro directo al comerciante';
     if (varKpi) varKpi.innerText = 'En evaluación';
     if (ordersKpi) ordersKpi.innerText = (merchant.productsCount || 0) + ' ref. catálogo';
     if (ticketKpi) ticketKpi.innerText = 'Conversión: ' + (merchant.conversionRate || '5.4%');

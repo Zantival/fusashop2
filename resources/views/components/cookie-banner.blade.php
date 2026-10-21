@@ -19,14 +19,14 @@ class="fixed bottom-6 left-6 right-6 md:left-auto md:w-[480px] z-[100] bg-surfac
             <div>
                 <h3 class="text-lg font-bold text-on-surface">Control de Privacidad</h3>
                 <p class="text-sm text-on-surface-variant leading-tight mt-1">
-                    Utilizamos cookies para personalizar tu experiencia y analizar nuestro tráfico. ¿Cómo prefieres continuar?
+                    Usamos cookies técnicas necesarias para la sesión, seguridad y preferencias. Actualmente no utilizamos cookies publicitarias ni analítica de terceros.
                 </p>
             </div>
         </div>
 
         <div class="flex flex-col gap-2 mt-2">
             <button @click="accept('accepted')" class="w-full py-3 bg-primary-gradient text-white font-bold rounded-xl shadow-sm hover:opacity-90 active:scale-[0.98] transition-all text-sm">
-                Aceptar todas las cookies
+                Continuar
             </button>
             <div class="flex gap-2">
                 <button @click="accept('essential')" class="flex-1 py-2.5 bg-surface-container-high text-on-surface font-semibold rounded-xl hover:bg-surface-dim active:scale-[0.98] transition-all text-sm">

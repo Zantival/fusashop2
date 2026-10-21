@@ -12,7 +12,80 @@
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&family=Manrope:wght@500;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
 
-<link rel="stylesheet" href="{{ asset('assets/css/app.css') }}">
+<link rel="stylesheet" href="{{ asset('assets/css/app.css') }}?v={{ filemtime(public_path('assets/css/app.css')) }}">
+<script>
+
+window.toggleMobileMenu = function(forceState) {
+  const drawer = document.getElementById('mobile-menu-drawer');
+  const backdrop = document.getElementById('mobile-menu-backdrop');
+  if (!drawer || !backdrop) return;
+
+  const isOpen = typeof forceState === 'boolean'
+    ? forceState
+    : drawer.classList.contains('-translate-x-full');
+
+  if (isOpen) {
+    backdrop.classList.remove('hidden');
+    drawer.classList.remove('-translate-x-full');
+    drawer.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('overflow-hidden');
+  } else {
+    drawer.classList.add('-translate-x-full');
+    backdrop.classList.add('hidden');
+    drawer.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('overflow-hidden');
+  }
+};
+
+window.togglePanelSidebar = function(forceState) {
+  const sidebar = document.getElementById('panel-sidebar');
+  const backdrop = document.getElementById('panel-sidebar-backdrop');
+  if (!sidebar) return;
+
+  const isOpen = typeof forceState === 'boolean'
+    ? forceState
+    : !sidebar.classList.contains('is-open');
+
+  sidebar.classList.toggle('is-open', isOpen);
+  if (backdrop) backdrop.classList.toggle('hidden', !isOpen);
+  document.body.classList.toggle('overflow-hidden', isOpen);
+};
+
+window.setFusaBotOpen = function(isOpen) {
+  const modal = document.getElementById('fusabot-modal');
+  if (!modal) return;
+  if (isOpen) {
+    modal.style.setProperty('display', 'flex', 'important');
+    modal.classList.remove('hidden');
+    modal.setAttribute('aria-hidden', 'false');
+    setTimeout(() => {
+      document.getElementById('fusabot-input')?.focus();
+    }, 60);
+  } else {
+    modal.style.setProperty('display', 'none', 'important');
+    modal.classList.add('hidden');
+    modal.setAttribute('aria-hidden', 'true');
+  }
+};
+window.closeFusaBot = function() { window.setFusaBotOpen(false); };
+window.openFusaBot = function() { window.setFusaBotOpen(true); };
+function setFusaBotOpen(isOpen) { window.setFusaBotOpen(isOpen); }
+
+// Captura de máxima prioridad para cerrar/minimizar el modal de FusaBot
+document.addEventListener('click', function(e) {
+  const closeTarget = e.target.closest('#fusabot-close, #fusabot-minimize, [data-fusabot-close]');
+  if (closeTarget) {
+    e.preventDefault();
+    e.stopPropagation();
+    const modal = document.getElementById('fusabot-modal');
+    if (modal) {
+      modal.style.setProperty('display', 'none', 'important');
+      modal.classList.add('hidden');
+      modal.setAttribute('aria-hidden', 'true');
+    }
+  }
+}, true);
+</script>
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <script src="{{ asset('assets/js/bootstrap.js') }}"></script>
 <script src="{{ asset('assets/js/app.js') }}" defer></script>
@@ -81,7 +154,7 @@
   [x-cloak] { display: none !important; visibility: hidden !important; }
   body { font-family: 'Plus Jakarta Sans', 'Inter', sans-serif; }
   h1, h2, h3, .font-heading { font-family: 'Plus Jakarta Sans', 'Manrope', sans-serif; }
-  
+
   /* Brand colors */
   :root {
     --fusa-green: #10B981;
@@ -140,7 +213,7 @@
     <!-- NAVBAR NORMAL PARA CLIENTES / TIENDA PÚBLICA   -->
     <!-- ============================================== -->
     <div class="max-w-7xl mx-auto px-4 md:px-6 py-2.5 flex items-center justify-between gap-3 md:gap-6">
-      
+
       <!-- Logotipo Oficial Oficial -->
       <div class="flex items-center gap-3">
         <button onclick="toggleMobileMenu()" id="hamburger-btn" class="md:hidden p-1.5 text-slate-600 hover:text-slate-900 rounded-lg" aria-label="Abrir menú">
@@ -154,14 +227,14 @@
         <form action="{{ route('consumer.catalog') }}" method="GET" id="omnibar-form" class="relative flex items-center">
           <div class="relative flex-1 flex items-center bg-slate-100 rounded-2xl border border-slate-200 focus-within:border-[#10B981] focus-within:bg-white focus-within:ring-2 focus-within:ring-emerald-100 transition-all overflow-hidden shadow-inner">
             <span class="material-symbols-outlined text-slate-400 pl-3.5 text-xl">search</span>
-            <input type="text" 
-                   name="search" 
+            <input type="text"
+                   name="search"
                    id="omnibar-input"
                    value="{{ request('search') }}"
                    autocomplete="off"
-                   placeholder="Buscar productos, ropa, tecnología, restaurantes o viveros..." 
+                   placeholder="Buscar productos, ropa, tecnología, restaurantes o viveros..."
                    class="w-full bg-transparent border-none py-2.5 pl-2.5 pr-20 text-xs md:text-sm text-slate-800 placeholder-slate-400 focus:ring-0 outline-none">
-            
+
             <!-- Botones de voz e imagen (Omnibar extras) -->
             <div class="absolute right-2 flex items-center gap-1">
               <button type="button" onclick="startVoiceSearch()" title="Búsqueda por voz" class="p-1 text-slate-400 hover:text-[#10B981] rounded-full hover:bg-slate-200 transition-colors">
@@ -175,21 +248,21 @@
         </form>
 
         <!-- Dropdown de Sugerencias Automáticas / Predictivo -->
-        <div id="omnibar-autocomplete-dropdown" 
+        <div id="omnibar-autocomplete-dropdown"
              class="hidden absolute left-0 right-0 top-full mt-2 bg-white rounded-2xl shadow-2xl border border-slate-100 overflow-hidden z-[100] max-h-[420px] overflow-y-auto divide-y divide-slate-100 animate-in fade-in slide-in-from-top-2 duration-150">
         </div>
       </div>
 
       <!-- Acciones Derechas Comprador -->
       <div class="flex items-center gap-2 sm:gap-3">
-        
+
         <!-- Botón Fusabot con Ilustración Oficial (al lado de la Campana) -->
         <button id="fusabot-launcher" type="button" aria-label="Abrir Asistente FusaBot" aria-haspopup="dialog" aria-controls="fusabot-modal"
                 class="fusabot-launcher-btn group relative flex items-center justify-center p-0.5 rounded-full hover:scale-110 active:scale-95 transition-all duration-300 cursor-pointer select-none focus:outline-none"
                 style="width: 44px; height: 44px; min-width: 44px; min-height: 44px; background: transparent; border: none; box-shadow: none;"
                 title="Abrir Asistente FusaBot IA">
           <div class="relative w-full h-full rounded-full overflow-hidden shadow-md group-hover:shadow-xl transition-all duration-300 ring-2 ring-emerald-400/50 group-hover:ring-emerald-500 bg-white">
-            <img src="{{ asset('fusabot.png') }}" alt="Fusabot IA" class="w-full h-full object-cover pointer-events-none select-none">
+            <img loading="lazy" decoding="async" src="{{ asset('fusabot.png') }}" alt="Fusabot IA" class="w-full h-full object-cover pointer-events-none select-none">
           </div>
           <span class="absolute -top-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-500 border-2 border-white animate-pulse"></span>
         </button>
@@ -275,7 +348,7 @@
           <div id="user-menu" class="relative">
             <button id="user-menu-toggle" aria-expanded="false" aria-controls="user-dropdown" type="button" class="flex items-center gap-2 p-1.5 pl-2 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-full transition-all">
               @if(auth()->user()->avatarUrl())
-                <img src="{{ auth()->user()->avatarUrl() }}" alt="{{ auth()->user()->name }}" class="w-7 h-7 rounded-full object-cover shrink-0 border border-emerald-300 bg-white">
+                <img loading="lazy" decoding="async" src="{{ auth()->user()->avatarUrl() }}" alt="{{ auth()->user()->name }}" class="w-7 h-7 rounded-full object-cover shrink-0 border border-emerald-300 bg-white">
               @else
                 <div class="w-7 h-7 bg-gradient-to-tr from-[#10B981] to-[#047857] text-white rounded-full flex items-center justify-center font-black text-xs shrink-0">
                   {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
@@ -379,12 +452,12 @@
     <!-- ========================================== -->
     <!-- 3. MEGA MENÚ DE CATEGORÍAS (COMPRADORES)   -->
     <!-- ========================================== -->
-    <div id="top-nav-category-wrapper" class="border-t border-slate-100 bg-slate-50/70 overflow-x-auto md:overflow-visible scrollbar-none relative">
+    <div id="top-nav-category-wrapper" class="hidden md:block border-t border-slate-100 bg-slate-50/70 overflow-x-auto md:overflow-visible scrollbar-none relative">
       <div id="top-nav-category-container" class="relative max-w-7xl mx-auto px-3 sm:px-4 md:px-6 flex items-center gap-1 py-1 text-[10.5px] font-semibold whitespace-nowrap">
-        
+
         <!-- Pestañita verde animada que enmarca el botón activo y se desliza suavemente -->
         <div id="nav-sliding-pill" style="opacity: 0; transform: translate3d(0, 0, 0); top: 0; left: 0; width: 0; height: 0;"></div>
-        
+
         <!-- Botón Inicio Principal -->
         <a href="{{ route('consumer.home') }}" data-nav-category="home" data-tab-index="0"
            class="top-nav-btn relative z-10 px-2.5 py-1 rounded-lg {{ request()->routeIs('consumer.home') ? 'is-active font-bold' : 'text-slate-600 hover:text-[#10B981]' }} flex items-center gap-1 transition-all select-none">
@@ -629,6 +702,273 @@
 
       </div>
     </div>
+
+    <!-- ============================================== -->
+    <!-- DRAWER MÓVIL DESPLEGABLE (HAMBURGUESA)         -->
+    <!-- Conserva exactamente las mismas opciones de PC -->
+    <!-- ============================================== -->
+    <div id="mobile-menu-backdrop" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 transition-opacity" onclick="toggleMobileMenu(false)"></div>
+    <div id="mobile-menu-drawer"
+         class="fixed top-0 left-0 bottom-0 w-[88vw] max-w-sm bg-white shadow-2xl z-50 transform -translate-x-full transition-transform duration-300 ease-in-out flex flex-col overflow-hidden"
+         aria-hidden="true"
+         role="dialog"
+         aria-label="Menú principal de navegación">
+
+      <!-- Cabecera del drawer móvil -->
+      <div class="p-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/80 shrink-0">
+        <x-logo size="default" :with-microcopy="false" />
+        <button type="button" onclick="toggleMobileMenu(false)" class="p-1.5 rounded-xl text-slate-500 hover:text-slate-800 hover:bg-slate-200 transition-colors" aria-label="Cerrar menú">
+          <span class="material-symbols-outlined text-2xl">close</span>
+        </button>
+      </div>
+
+      <!-- Buscador Omnibar para móvil -->
+      <div class="p-3 border-b border-slate-100 bg-white shrink-0">
+        <form action="{{ route('consumer.catalog') }}" method="GET" class="relative flex items-center">
+          <div class="relative flex-1 flex items-center bg-slate-100 rounded-xl border border-slate-200 focus-within:border-[#10B981] focus-within:bg-white focus-within:ring-2 focus-within:ring-emerald-100 transition-all overflow-hidden shadow-inner">
+            <span class="material-symbols-outlined text-slate-400 pl-2.5 text-lg">search</span>
+            <input type="text"
+                   name="search"
+                   value="{{ request('search') }}"
+                   placeholder="Buscar en FusaShop..."
+                   class="w-full bg-transparent border-none py-2 pl-2 pr-16 text-xs text-slate-800 placeholder-slate-400 focus:ring-0 outline-none">
+            <div class="absolute right-1 flex items-center gap-0.5">
+              <button type="button" onclick="startVoiceSearch()" title="Voz" class="p-1 text-slate-400 hover:text-[#10B981]">
+                <span class="material-symbols-outlined text-sm">mic</span>
+              </button>
+              <button type="button" onclick="openVisualSearchModal()" title="Foto" class="p-1 text-slate-400 hover:text-[#F97316]">
+                <span class="material-symbols-outlined text-sm">photo_camera</span>
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <!-- Contenido scrolleable con todas las opciones -->
+      <div class="flex-1 overflow-y-auto p-4 space-y-5 text-xs">
+
+        <!-- Estado de Cuenta / Sesión -->
+        <div class="p-3.5 bg-slate-50 rounded-2xl border border-slate-100 space-y-2.5">
+          @auth
+            <div class="flex items-center gap-3">
+              @if(auth()->user()->avatarUrl())
+                <img loading="lazy" decoding="async" src="{{ auth()->user()->avatarUrl() }}" alt="{{ auth()->user()->name }}" class="w-10 h-10 rounded-full object-cover shrink-0 border-2 border-emerald-400 bg-white">
+              @else
+                <div class="w-10 h-10 bg-gradient-to-tr from-[#10B981] to-[#047857] text-white rounded-full flex items-center justify-center font-black text-sm shrink-0">
+                  {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
+                </div>
+              @endif
+              <div class="min-w-0 flex-1">
+                <p class="font-bold text-slate-900 text-sm truncate">{{ auth()->user()->name }}</p>
+                <p class="text-[10px] text-slate-500 truncate">{{ auth()->user()->email }}</p>
+              </div>
+            </div>
+
+            <div class="pt-2 border-t border-slate-200/80 flex items-center justify-between text-[11px]">
+              <span class="text-slate-600 font-medium">Billetera FusaCoins:</span>
+              <span class="font-black text-[#F97316] bg-orange-50 px-2 py-0.5 rounded-full border border-orange-200">
+                {{ number_format($userCoins ?? 0, 0, ',', '.') }} pts
+              </span>
+            </div>
+
+            <!-- Accesos rápidos según rol en móvil -->
+            <div class="pt-2 border-t border-slate-200/80 space-y-1">
+              @if(auth()->user()->isConsumer())
+                <a href="{{ route('account.profile.edit') }}" onclick="toggleMobileMenu(false)" class="flex items-center gap-2 py-1.5 text-slate-700 hover:text-[#10B981] font-semibold">
+                  <span class="material-symbols-outlined text-base text-[#10B981]">manage_accounts</span> Editar Perfil
+                </a>
+                <a href="{{ route('account.profile') }}" onclick="toggleMobileMenu(false)" class="flex items-center gap-2 py-1.5 text-slate-700 hover:text-[#10B981] font-semibold">
+                  <span class="material-symbols-outlined text-base text-slate-500">account_balance_wallet</span> Mi Cuenta & Billetera
+                </a>
+                <a href="{{ route('consumer.orders') }}" onclick="toggleMobileMenu(false)" class="flex items-center gap-2 py-1.5 text-slate-700 hover:text-[#10B981] font-semibold">
+                  <span class="material-symbols-outlined text-base text-slate-500">local_shipping</span> Mis Pedidos & Envíos
+                </a>
+                <a href="{{ route('consumer.addresses') }}" onclick="toggleMobileMenu(false)" class="flex items-center gap-2 py-1.5 text-slate-700 hover:text-[#10B981] font-semibold">
+                  <span class="material-symbols-outlined text-base text-slate-500">pin_drop</span> Libreta de Direcciones
+                </a>
+              @elseif(auth()->user()->isMerchant())
+                <a href="{{ route('merchant.dashboard') }}" onclick="toggleMobileMenu(false)" class="flex items-center gap-2 py-1.5 text-emerald-800 font-bold">
+                  <span class="material-symbols-outlined text-base text-[#10B981]">dashboard</span> Merchant Center
+                </a>
+                <a href="{{ route('merchant.products') }}" onclick="toggleMobileMenu(false)" class="flex items-center gap-2 py-1.5 text-slate-700 font-semibold">
+                  <span class="material-symbols-outlined text-base text-slate-500">inventory_2</span> Catálogo de Productos
+                </a>
+                <a href="{{ route('merchant.orders') }}" onclick="toggleMobileMenu(false)" class="flex items-center gap-2 py-1.5 text-slate-700 font-semibold">
+                  <span class="material-symbols-outlined text-base text-slate-500">local_shipping</span> Gestión de Guías Envia
+                </a>
+                <a href="{{ route('merchant.profile') }}" onclick="toggleMobileMenu(false)" class="flex items-center gap-2 py-1.5 text-slate-700 font-semibold">
+                  <span class="material-symbols-outlined text-base text-slate-500">store</span> Perfil Comercial
+                </a>
+              @elseif(auth()->user()->isAnalyst())
+                <a href="{{ route('analyst.dashboard') }}" onclick="toggleMobileMenu(false)" class="flex items-center gap-2 py-1.5 text-emerald-900 font-bold">
+                  <span class="material-symbols-outlined text-base text-[#10B981]">admin_panel_settings</span> Operations Console
+                </a>
+                <a href="{{ route('analyst.integrations') }}" onclick="toggleMobileMenu(false)" class="flex items-center gap-2 py-1.5 text-slate-700 font-semibold">
+                  <span class="material-symbols-outlined text-base text-slate-500">sync_alt</span> Auditoría Integraciones
+                </a>
+              @endif
+
+              <a href="{{ route('notifications.index') }}" onclick="toggleMobileMenu(false)" class="flex items-center justify-between py-1.5 text-slate-700 hover:text-[#10B981] font-semibold">
+                <span class="flex items-center gap-2">
+                  <span class="material-symbols-outlined text-base text-[#10B981]">notifications</span> Notificaciones
+                </span>
+                @if(($unreadCount ?? 0) > 0)
+                  <span class="bg-[#F97316] text-white text-[9px] font-black px-1.5 py-0.5 rounded-full">{{ $unreadCount }}</span>
+                @endif
+              </a>
+
+              <form method="POST" action="{{ route('logout') }}" class="pt-2">
+                @csrf
+                <button type="submit" class="w-full text-left flex items-center gap-2 py-1.5 text-red-600 font-bold hover:bg-red-50 rounded-lg px-1 transition-colors">
+                  <span class="material-symbols-outlined text-base">logout</span> Cerrar Sesión
+                </button>
+              </form>
+            </div>
+          @else
+            <div class="space-y-2">
+              <p class="font-bold text-slate-800 text-sm">Bienvenido a FusaShop</p>
+              <p class="text-[11px] text-slate-500">Inicia sesión o regístrate para comprar y acumular FusaCoins.</p>
+              <div class="grid grid-cols-2 gap-2 pt-1">
+                <a href="{{ route('login') }}" onclick="toggleMobileMenu(false)" class="text-center py-2 bg-slate-200 text-slate-800 font-bold rounded-xl hover:bg-slate-300 transition-colors">
+                  Ingresar
+                </a>
+                <a href="{{ route('register') }}" onclick="toggleMobileMenu(false)" class="text-center py-2 bg-[#10B981] text-white font-bold rounded-xl hover:bg-emerald-700 transition-colors shadow-sm">
+                  Registrarme
+                </a>
+              </div>
+              <a href="{{ route('register', ['role' => 'merchant']) }}" onclick="toggleMobileMenu(false)" class="block text-center text-[11px] font-bold text-[#047857] hover:underline pt-1">
+                ¿Tienes un negocio? Regístrate como comerciante →
+              </a>
+            </div>
+          @endauth
+        </div>
+
+        <!-- Asistente FusaBot en móvil -->
+        <button type="button" onclick="toggleMobileMenu(false); setFusaBotOpen(true);"
+                class="w-full p-3 rounded-2xl bg-gradient-to-r from-slate-900 to-emerald-950 text-white flex items-center justify-between shadow-md">
+          <div class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-full overflow-hidden bg-white shrink-0">
+              <picture class="w-full h-full block">
+                <source srcset="{{ asset('fusabot.webp') }}" type="image/webp">
+                <img loading="lazy" decoding="async" src="{{ asset('fusabot.png') }}" alt="Fusabot" class="w-full h-full object-cover">
+              </picture>
+            </div>
+            <div class="text-left">
+              <p class="font-extrabold text-xs text-white">Asistente FusaBot IA</p>
+              <p class="text-[10px] text-emerald-300">Resuelve dudas sobre envíos, pagos y FusaCoins</p>
+            </div>
+          </div>
+          <span class="material-symbols-outlined text-emerald-400 text-sm">arrow_forward</span>
+        </button>
+
+        <!-- Navegación Principal y Categorías -->
+        <div>
+          <h4 class="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 mb-2">Vitrinas & Categorías</h4>
+          <div class="space-y-1">
+            <a href="{{ route('consumer.home') }}" onclick="toggleMobileMenu(false)" class="flex items-center gap-2.5 px-3 py-2 rounded-xl {{ request()->routeIs('consumer.home') ? 'bg-emerald-50 text-[#006c47] font-bold' : 'text-slate-700 hover:bg-slate-100' }}">
+              <span class="material-symbols-outlined text-base text-[#10B981]">home</span> Inicio Principal
+            </a>
+            <a href="{{ route('consumer.catalog') }}" onclick="toggleMobileMenu(false)" class="flex items-center gap-2.5 px-3 py-2 rounded-xl {{ request()->routeIs('consumer.catalog') && !request('category') ? 'bg-emerald-50 text-[#006c47] font-bold' : 'text-slate-700 hover:bg-slate-100' }}">
+              <span class="material-symbols-outlined text-base text-[#10B981]">grid_view</span> Catálogo Completo
+            </a>
+            <a href="{{ route('consumer.directory') }}" onclick="toggleMobileMenu(false)" class="flex items-center gap-2.5 px-3 py-2 rounded-xl {{ request()->routeIs('consumer.directory*') ? 'bg-emerald-50 text-[#006c47] font-bold' : 'text-slate-700 hover:bg-slate-100' }}">
+              <span class="material-symbols-outlined text-base text-[#10B981]">storefront</span> Directorio de Negocios Registrados
+            </a>
+            <a href="{{ route('consumer.catalog', ['category' => 'Electrónica']) }}" onclick="toggleMobileMenu(false)" class="flex items-center gap-2.5 px-3 py-2 rounded-xl {{ request('category') === 'Electrónica' ? 'bg-emerald-50 text-[#006c47] font-bold' : 'text-slate-700 hover:bg-slate-100' }}">
+              <span class="material-symbols-outlined text-base text-[#10B981]">devices</span> Tecnología & Gadgets
+            </a>
+            <a href="{{ route('consumer.catalog', ['category' => 'Ropa']) }}" onclick="toggleMobileMenu(false)" class="flex items-center gap-2.5 px-3 py-2 rounded-xl {{ request('category') === 'Ropa' ? 'bg-emerald-50 text-[#006c47] font-bold' : 'text-slate-700 hover:bg-slate-100' }}">
+              <span class="material-symbols-outlined text-base text-[#10B981]">checkroom</span> Moda, Calzado & Accesorios
+            </a>
+            <a href="{{ route('consumer.catalog', ['category' => 'Alimentos']) }}" onclick="toggleMobileMenu(false)" class="flex items-center gap-2.5 px-3 py-2 rounded-xl {{ request('category') === 'Alimentos' ? 'bg-emerald-50 text-[#006c47] font-bold' : 'text-slate-700 hover:bg-slate-100' }}">
+              <span class="material-symbols-outlined text-base text-[#10B981]">potted_plant</span> Viveros, Plantas & Agro
+            </a>
+            <a href="{{ route('consumer.catalog', ['category' => 'Turismo']) }}" onclick="toggleMobileMenu(false)" class="flex items-center gap-2.5 px-3 py-2 rounded-xl {{ request('category') === 'Turismo' ? 'bg-orange-50 text-[#F97316] font-bold' : 'text-slate-700 hover:bg-slate-100' }}">
+              <span class="material-symbols-outlined text-base text-[#F97316]">holiday_village</span> Hoteles, Glamping & Turismo
+            </a>
+            <a href="{{ route('consumer.catalog', ['category' => 'Gastronomía']) }}" onclick="toggleMobileMenu(false)" class="flex items-center gap-2.5 px-3 py-2 rounded-xl {{ request('category') === 'Gastronomía' ? 'bg-rose-50 text-rose-700 font-bold' : 'text-slate-700 hover:bg-slate-100' }}">
+              <span class="material-symbols-outlined text-base text-rose-600">restaurant</span> Restaurantes & Gastronomía
+            </a>
+            <a href="{{ route('consumer.catalog', ['category' => 'Mercado Mayorista (B2B)']) }}" onclick="toggleMobileMenu(false)" class="flex items-center gap-2.5 px-3 py-2 rounded-xl {{ request('category') === 'Mercado Mayorista (B2B)' ? 'bg-emerald-100 text-[#047857] font-bold' : 'text-[#047857] hover:bg-emerald-50 font-bold' }}">
+              <span class="material-symbols-outlined text-base">inventory</span> Mercado Mayorista (B2B)
+            </a>
+          </div>
+        </div>
+
+        <!-- Todas las Categorías de "Ver Más" -->
+        <div>
+          <h4 class="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 mb-2">Más Rubros del Sumapaz</h4>
+          <div class="grid grid-cols-1 gap-1">
+            <a href="{{ route('consumer.catalog', ['category' => 'Hogar']) }}" onclick="toggleMobileMenu(false)" class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-slate-700 hover:bg-slate-100">
+              <span class="material-symbols-outlined text-base text-amber-600">chair</span> Hogar, Muebles & Confort
+            </a>
+            <a href="{{ route('consumer.catalog', ['category' => 'Deportes']) }}" onclick="toggleMobileMenu(false)" class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-slate-700 hover:bg-slate-100">
+              <span class="material-symbols-outlined text-base text-blue-600">sports_soccer</span> Deportes, Fitness & Ciclo
+            </a>
+            <a href="{{ route('consumer.catalog', ['search' => 'Orquídeas']) }}" onclick="toggleMobileMenu(false)" class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-slate-700 hover:bg-slate-100">
+              <span class="material-symbols-outlined text-base text-emerald-600">local_florist</span> Orquídeas & Plantas Exóticas
+            </a>
+            <a href="{{ route('consumer.catalog', ['search' => 'Café']) }}" onclick="toggleMobileMenu(false)" class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-slate-700 hover:bg-slate-100">
+              <span class="material-symbols-outlined text-base text-amber-800">coffee</span> Café de Origen del Sumapaz
+            </a>
+            <a href="{{ route('consumer.catalog', ['search' => 'Artesanías']) }}" onclick="toggleMobileMenu(false)" class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-slate-700 hover:bg-slate-100">
+              <span class="material-symbols-outlined text-base text-purple-600">palette</span> Artesanías & Souvenirs
+            </a>
+            <a href="{{ route('consumer.catalog', ['search' => 'Mascotas']) }}" onclick="toggleMobileMenu(false)" class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-slate-700 hover:bg-slate-100">
+              <span class="material-symbols-outlined text-base text-amber-700">pets</span> Mascotas & Veterinaria
+            </a>
+            <a href="{{ route('consumer.catalog', ['search' => 'Belleza']) }}" onclick="toggleMobileMenu(false)" class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-slate-700 hover:bg-slate-100">
+              <span class="material-symbols-outlined text-base text-pink-600">spa</span> Salud, Belleza & Cuidado
+            </a>
+            <a href="{{ route('consumer.catalog', ['search' => 'Ferretería']) }}" onclick="toggleMobileMenu(false)" class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-slate-700 hover:bg-slate-100">
+              <span class="material-symbols-outlined text-base text-slate-600">home_repair_service</span> Ferretería & Construcción
+            </a>
+            <a href="{{ route('consumer.catalog', ['search' => 'Automotriz']) }}" onclick="toggleMobileMenu(false)" class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-slate-700 hover:bg-slate-100">
+              <span class="material-symbols-outlined text-base text-indigo-600">two_wheeler</span> Motos, Repuestos & Automotriz
+            </a>
+            <a href="{{ route('consumer.catalog', ['search' => 'Juguetes']) }}" onclick="toggleMobileMenu(false)" class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-slate-700 hover:bg-slate-100">
+              <span class="material-symbols-outlined text-base text-orange-500">toys</span> Juguetería, Bebés & Niños
+            </a>
+            <a href="{{ route('consumer.catalog', ['search' => 'Papelería']) }}" onclick="toggleMobileMenu(false)" class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-slate-700 hover:bg-slate-100">
+              <span class="material-symbols-outlined text-base text-teal-600">menu_book</span> Libros, Papelería & Oficina
+            </a>
+            <a href="{{ route('consumer.catalog', ['search' => 'Fincas']) }}" onclick="toggleMobileMenu(false)" class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-slate-700 hover:bg-slate-100">
+              <span class="material-symbols-outlined text-base text-lime-700">villa</span> Fincas de Recreo & Pasadías
+            </a>
+            <a href="{{ route('consumer.catalog', ['search' => 'Servicios']) }}" onclick="toggleMobileMenu(false)" class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-slate-700 hover:bg-slate-100">
+              <span class="material-symbols-outlined text-base text-cyan-600">build_circle</span> Servicios Técnicos Locales
+            </a>
+          </div>
+        </div>
+
+        <!-- Soporte & Enlaces Corporativos -->
+        <div class="pt-3 border-t border-slate-100">
+          <h4 class="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 mb-2">Comunidad & Legal</h4>
+          <div class="space-y-1 text-slate-600">
+            <a href="{{ route('fees') }}" onclick="toggleMobileMenu(false)" class="flex items-center gap-2 px-3 py-1.5 hover:text-[#10B981]">
+              <span class="material-symbols-outlined text-sm">sell</span> Tarifas & FusaCoins
+            </a>
+            <a href="{{ route('pqrs.create') }}" onclick="toggleMobileMenu(false)" class="flex items-center gap-2 px-3 py-1.5 hover:text-[#10B981]">
+              <span class="material-symbols-outlined text-sm">support_agent</span> PQRS & Garantías
+            </a>
+            <a href="{{ route('terms') }}" onclick="toggleMobileMenu(false)" class="flex items-center gap-2 px-3 py-1.5 hover:text-[#10B981]">
+              <span class="material-symbols-outlined text-sm">gavel</span> Términos del Servicio
+            </a>
+            <a href="{{ route('privacy') }}" onclick="toggleMobileMenu(false)" class="flex items-center gap-2 px-3 py-1.5 hover:text-[#10B981]">
+              <span class="material-symbols-outlined text-sm">policy</span> Política de Privacidad
+            </a>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Footer del drawer móvil -->
+      <div class="p-3 bg-slate-50 border-t border-slate-100 text-center shrink-0">
+        <p class="text-[10px] text-slate-400">FusaShop © {{ date('Y') }} · Fusagasugá, Colombia</p>
+      </div>
+
+    </div>
+
 </header>
 @endif
 
@@ -638,13 +978,13 @@
 <!-- 5. CONTENIDO PRINCIPAL (+ SIDEBAR ADMIN)   -->
 <!-- ========================================== -->
 @if($isAdmin)
-<div style="display: flex; min-height: 100vh; width: 100%; align-items: flex-start;">
+<div class="panel-layout-wrapper" style="display: flex; min-height: 100vh; width: 100%; align-items: flex-start;">
   <!-- Barra de Administración Vertical al Costado Izquierdo -->
   <x-admin-topbar />
 
   <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; min-height: 100vh;">
 @elseif($isMerchantPanel)
-<div style="display: flex; min-height: 100vh; width: 100%; align-items: flex-start;">
+<div class="panel-layout-wrapper" style="display: flex; min-height: 100vh; width: 100%; align-items: flex-start;">
   <!-- Barra de Comerciante Vertical al Costado Izquierdo (Mismo estilo que Analista) -->
   <x-merchant-topbar />
 
@@ -690,7 +1030,7 @@
 <!-- ========================================== -->
 <footer class="bg-slate-950 text-slate-400 mt-20 border-t border-slate-900 pb-20 md:pb-0 text-xs">
   <div class="max-w-7xl mx-auto px-6 py-14 grid grid-cols-1 md:grid-cols-5 gap-10">
-    
+
     <!-- Columna 1: Marca & Misión -->
     <div class="md:col-span-2 space-y-4">
       <x-logo size="lg" :with-microcopy="false" />
@@ -779,7 +1119,7 @@
       </a>
       <a href="{{ route('account.profile') }}" class="flex flex-col items-center justify-center flex-1 h-full text-slate-500 hover:text-slate-900">
         @if(auth()->user()->avatarUrl())
-          <img src="{{ auth()->user()->avatarUrl() }}" alt="{{ auth()->user()->name }}" class="w-6 h-6 rounded-full object-cover shrink-0 border border-emerald-300">
+          <img loading="lazy" decoding="async" src="{{ auth()->user()->avatarUrl() }}" alt="{{ auth()->user()->name }}" class="w-6 h-6 rounded-full object-cover shrink-0 border border-emerald-300">
         @else
           <span class="material-symbols-outlined text-2xl">account_circle</span>
         @endif
@@ -816,7 +1156,7 @@
   <div class="p-4 bg-gradient-to-r from-slate-900 via-slate-800 to-emerald-950 text-white flex items-center justify-between select-none shrink-0 shadow-sm">
     <div class="flex items-center gap-2.5">
       <div class="w-10 h-10 rounded-full overflow-hidden shadow-md shrink-0 ring-2 ring-emerald-400/60 bg-white">
-        <img src="{{ asset('fusabot.png') }}" alt="Fusabot IA" class="w-full h-full object-cover select-none">
+        <img loading="lazy" decoding="async" src="{{ asset('fusabot.png') }}" alt="Fusabot IA" class="w-full h-full object-cover select-none">
       </div>
       <div>
         <h4 class="font-extrabold text-sm flex items-center gap-1.5 text-white">
@@ -841,11 +1181,19 @@
       </div>
     </div>
     <div class="flex items-center gap-1">
-      <button id="fusabot-minimize" type="button" aria-label="Minimizar chat" title="Minimizar chat" class="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors">
-        <span class="material-symbols-outlined text-lg">remove</span>
+      <button id="fusabot-minimize" type="button" data-fusabot-close="true"
+              onclick="const m=document.getElementById('fusabot-modal');if(m){m.style.setProperty('display','none','important');m.classList.add('hidden');m.setAttribute('aria-hidden','true');}if(window.setFusaBotOpen)window.setFusaBotOpen(false);"
+              aria-label="Minimizar chat" title="Minimizar chat"
+              class="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+              style="cursor: pointer !important; pointer-events: auto !important;">
+        <span class="material-symbols-outlined text-lg pointer-events-none select-none">remove</span>
       </button>
-      <button id="fusabot-close" type="button" aria-label="Cerrar chat" title="Cerrar" class="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors">
-        <span class="material-symbols-outlined text-lg">close</span>
+      <button id="fusabot-close" type="button" data-fusabot-close="true"
+              onclick="const m=document.getElementById('fusabot-modal');if(m){m.style.setProperty('display','none','important');m.classList.add('hidden');m.setAttribute('aria-hidden','true');}if(window.setFusaBotOpen)window.setFusaBotOpen(false);"
+              aria-label="Cerrar chat" title="Cerrar"
+              class="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+              style="cursor: pointer !important; pointer-events: auto !important;">
+        <span class="material-symbols-outlined text-lg pointer-events-none select-none">close</span>
       </button>
     </div>
   </div>
@@ -993,6 +1341,8 @@ document.addEventListener('click', (event) => {
 
 document.addEventListener('keydown', (event) => {
   if (event.key === 'Escape') {
+    if (window.toggleMobileMenu) window.toggleMobileMenu(false);
+    if (window.togglePanelSidebar) window.togglePanelSidebar(false);
     const focusTarget = notificationDropdown && !notificationDropdown.classList.contains('hidden')
       ? notificationToggle
       : userDropdown && !userDropdown.classList.contains('hidden')
@@ -1008,13 +1358,17 @@ document.addEventListener('keydown', (event) => {
 window.setFusaBotOpen = function(isOpen) {
   const modal = document.getElementById('fusabot-modal');
   if (!modal) return;
-  modal.style.display = isOpen ? 'flex' : 'none';
-  modal.setAttribute('aria-hidden', String(!isOpen));
-
   if (isOpen) {
+    modal.style.setProperty('display', 'flex', 'important');
+    modal.classList.remove('hidden');
+    modal.setAttribute('aria-hidden', 'false');
     setTimeout(() => {
       document.getElementById('fusabot-input')?.focus();
     }, 60);
+  } else {
+    modal.style.setProperty('display', 'none', 'important');
+    modal.classList.add('hidden');
+    modal.setAttribute('aria-hidden', 'true');
   }
 };
 function setFusaBotOpen(isOpen) {
@@ -1300,8 +1654,8 @@ document.addEventListener('submit', (event) => {
           `;
 
           data.products.forEach(prod => {
-            const imgHtml = prod.image 
-              ? `<img src="${prod.image}" alt="${escapeHtml(prod.name)}" class="w-11 h-11 rounded-xl object-cover shrink-0 bg-slate-100 border border-slate-200">`
+            const imgHtml = prod.image
+              ? `<img loading="lazy" decoding="async" src="${prod.image}" alt="${escapeHtml(prod.name)}" class="w-11 h-11 rounded-xl object-cover shrink-0 bg-slate-100 border border-slate-200">`
               : `<div class="w-11 h-11 rounded-xl bg-emerald-50 text-[#10B981] flex items-center justify-center shrink-0 border border-emerald-100"><span class="material-symbols-outlined text-lg">inventory_2</span></div>`;
 
             html += `
@@ -1446,8 +1800,8 @@ document.addEventListener('submit', (event) => {
 
     const toast = document.createElement('div');
     toast.className = `pointer-events-auto transform transition-all duration-300 ease-out translate-y-3 opacity-0 flex items-center justify-between gap-3 p-3.5 rounded-2xl shadow-2xl border backdrop-blur-md text-xs font-bold ${
-      type === 'success' 
-        ? 'bg-slate-900/95 text-white border-emerald-500/30 shadow-emerald-950/20' 
+      type === 'success'
+        ? 'bg-slate-900/95 text-white border-emerald-500/30 shadow-emerald-950/20'
         : 'bg-red-950/95 text-white border-red-500/30 shadow-red-950/20'
     }`;
 
@@ -1667,7 +2021,7 @@ document.addEventListener('submit', (event) => {
     // Reemplazar el contenido principal
     currentMain.innerHTML = newMain.innerHTML;
 
-    // Actualizar @stack('scripts') si existe
+    // Actualizar scripts dinamicos de pagina si existen
     const newScriptsStack = doc.getElementById('dynamic-page-scripts');
     const currentScriptsStack = document.getElementById('dynamic-page-scripts');
     if (newScriptsStack && currentScriptsStack) {
@@ -1748,7 +2102,7 @@ document.addEventListener('submit', (event) => {
     return true;
   }
 
-  
+
   // =========================================================================
   // CONTROLADOR DE PESTAÑITA VERDE DESLIZANTE & TRANSICIÓN DE CONTENIDO
   // =========================================================================
@@ -2101,5 +2455,6 @@ document.addEventListener('submit', (event) => {
 <div id="dynamic-page-scripts">
 @stack('scripts')
 </div>
+@include('partials.cookie-banner')
 </body>
 </html>

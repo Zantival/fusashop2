@@ -6,17 +6,17 @@
       <div>
         <p class="font-bold text-white text-sm">Usamos cookies para mejorar tu experiencia</p>
         <p class="text-white/70 text-xs mt-0.5">
-          Usamos cookies para personalizar contenido, analizar tráfico y mejorar nuestros servicios.
+          Usamos cookies técnicas necesarias para la sesión, seguridad y preferencias. Actualmente no utilizamos cookies publicitarias ni analítica de terceros.
           <a href="{{ route('privacy') }}" class="text-[#6efcb9] underline hover:no-underline">Política de Privacidad</a>
         </p>
       </div>
     </div>
     <div class="flex items-center gap-3 shrink-0 w-full sm:w-auto">
       <button onclick="rejectCookies()" class="flex-1 sm:flex-none px-4 py-2 bg-white/10 text-white text-xs font-semibold rounded-lg hover:bg-white/20 transition-colors border border-white/20">
-        Rechazar
+        Solo necesarias
       </button>
       <button onclick="acceptCookies()" class="flex-1 sm:flex-none px-5 py-2 bg-[#00b67a] text-white text-xs font-bold rounded-lg hover:opacity-90 transition-all">
-        Aceptar todas
+        Aceptar
       </button>
     </div>
   </div>

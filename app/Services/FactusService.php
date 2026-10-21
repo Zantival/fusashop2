@@ -10,7 +10,19 @@ use RuntimeException;
 
 class FactusService
 {
-    private const DOC_TYPES = ['RC' => 1, 'TI' => 2, 'CC' => 3, 'TE' => 4, 'CE' => 5, 'NIT' => 6, 'PP' => 7];
+    /** Códigos de tipo de documento según catálogo DIAN (Factus API v2) */
+    private const DOC_TYPES = [
+        'RC'  => '11', // Registro Civil
+        'TI'  => '12', // Tarjeta de Identidad
+        'CC'  => '13', // Cédula de Ciudadanía
+        'TE'  => '21', // Tarjeta de Extranjería
+        'CE'  => '22', // Cédula de Extranjería
+        'NIT' => '31', // NIT
+        'PP'  => '41', // Pasaporte
+        'DIE' => '42', // Documento de Identificación Extranjero
+        'PEP' => '47', // Permiso Especial de Permanencia
+        'PPT' => '48', // Permiso por Protección Temporal
+    ];
 
     private function token(bool $forceRefresh = false): string
     {
@@ -20,7 +32,13 @@ class FactusService
 
         return Cache::remember('factus.access_token', 50 * 60, function () {
             $cfg = config('services.factus');
-            $res = Http::baseUrl($cfg['api_url'])->asForm()->acceptJson()->timeout(20)->post('/oauth/token', [
+            $req = Http::baseUrl($cfg['api_url'])->asForm()->acceptJson()->timeout(20);
+
+            if (app()->environment('local', 'testing') || ($cfg['env'] ?? 'sandbox') === 'sandbox') {
+                $req->withoutVerifying();
+            }
+
+            $res = $req->post('/oauth/token', [
                 'grant_type' => 'password',
                 'client_id' => $cfg['client_id'],
                 'client_secret' => $cfg['client_secret'],
@@ -29,7 +47,7 @@ class FactusService
             ]);
 
             if ($res->failed() || !$res->json('access_token')) {
-                throw new RuntimeException('Factus OAuth falló (' . $res->status() . ').');
+                throw new RuntimeException('Factus OAuth falló (' . $res->status() . '): ' . $res->body());
             }
 
             return $res->json('access_token');
@@ -38,37 +56,48 @@ class FactusService
 
     private function client(): PendingRequest
     {
-        return Http::baseUrl(config('services.factus.api_url'))
-            ->withToken($this->token())->acceptJson()->asJson()
+        $cfg = config('services.factus');
+        $req = Http::baseUrl($cfg['api_url'])
+            ->withToken($this->token())
+            ->acceptJson()
+            ->asJson()
             ->timeout(60)
-            ->retry(1, 300, function ($e, $req) {
+            ->retry(1, 300, function ($e, $request) {
                 // Token vencido: renovar y reintentar una vez
                 if (method_exists($e, 'response') && $e->response?->status() === 401) {
-                    $req->withToken($this->token(true));
+                    $request->withToken($this->token(true));
                     return true;
                 }
                 return false;
             }, throw: false);
+
+        if (app()->environment('local', 'testing') || ($cfg['env'] ?? 'sandbox') === 'sandbox') {
+            $req->withoutVerifying();
+        }
+
+        return $req;
     }
 
-    /** Payload JSON de factura electrónica con desglose de IVA por ítem. */
+    /** Payload JSON de factura electrónica compatible con Factus API v2 */
     public function buildPayload(Order $order): array
     {
         $order->loadMissing('items.product', 'user');
         $cfg = config('services.factus');
         $snap = $order->shipping_snapshot ?? [];
-        $rate = (float) $cfg['iva_rate'];
+        $rate = (float) ($cfg['iva_rate'] ?? 19.0);
         $gross = (float) $order->subtotal + (float) $order->shipping_cost;
-        // Descuento (puntos) repartido proporcionalmente
         $discountRate = $gross > 0 ? round(((float) $order->discount / $gross) * 100, 2) : 0;
 
         $docType = strtoupper($order->customer_document_type ?? 'CC');
         $isCompany = $docType === 'NIT';
+        $doc = (string) ($order->customer_document ?: '222222222222');
 
         $lines = [];
+        $totalCalculated = 0.0;
+
         foreach ($order->items as $item) {
             $taxed = $item->product?->is_taxed ?? true;
-            $lines[] = $this->line(
+            $line = $this->line(
                 'P' . $item->product_id,
                 (string) ($item->product?->name ?? 'Producto'),
                 (int) $item->quantity,
@@ -76,53 +105,114 @@ class FactusService
                 $taxed,
                 $discountRate,
                 $rate,
-                (bool) $cfg['prices_include_tax']
+                (bool) ($cfg['prices_include_tax'] ?? true)
             );
+            $totalCalculated += $line['_line_total'];
+            unset($line['_line_total']);
+            $lines[] = $line;
         }
+
         if ((float) $order->shipping_cost > 0) {
-            $lines[] = $this->line('FLETE', 'Servicio de envío', 1, (float) $order->shipping_cost, true, $discountRate, $rate, (bool) $cfg['prices_include_tax']);
+            $line = $this->line(
+                'FLETE',
+                'Servicio de envío',
+                1,
+                (float) $order->shipping_cost,
+                true,
+                $discountRate,
+                $rate,
+                (bool) ($cfg['prices_include_tax'] ?? true)
+            );
+            $totalCalculated += $line['_line_total'];
+            unset($line['_line_total']);
+            $lines[] = $line;
+        }
+
+        // El monto declarado en payment_details debe coincidir con el total de la factura
+        $paymentAmount = $totalCalculated > 0 ? $totalCalculated : (float) $order->total;
+
+        $paymentMethod = match ($order->payment_method) {
+            'cash'     => '10', // Efectivo
+            'transfer' => '42', // Consignación / Transferencia
+            default    => '48', // Tarjeta Crédito / Wompi
+        };
+
+        $reference = $order->reference ?: ('ORD-' . $order->id . '-' . time());
+
+        $customerData = [
+            'identification_document_code' => self::DOC_TYPES[$docType] ?? '13',
+            'identification'               => $doc,
+            'names'                        => $order->user?->name ?: 'Consumidor Final',
+            'address'                      => trim(($snap['street'] ?? '') . ' ' . ($snap['number'] ?? ''))
+                ?: ($order->shipping_address ?: ($order->isServiceReservation() ? 'No aplica - reserva de servicio' : 'No informado')),
+            'email'                        => $order->user?->email ?: 'facturacion@fusashop.com',
+            'phone'                        => (string) ($snap['phone'] ?? $order->user?->phone ?? '3000000000'),
+            'legal_organization_code'      => $isCompany ? '1' : '2',
+            'tribute_code'                 => $isCompany ? '01' : 'ZZ',
+            'municipality_code'            => (string) ($cfg['default_municipality_code'] ?? $cfg['default_municipality_id'] ?? '25290'),
+        ];
+
+        if ($isCompany && strlen($doc) > 0) {
+            $customerData['dv'] = self::computeDv($doc);
+            $customerData['company'] = $order->user?->name ?: 'Empresa Cliente';
         }
 
         return [
             'numbering_range_id' => (int) $cfg['numbering_range_id'],
-            'reference_code' => $order->reference,
-            'observation' => 'Pedido ' . $order->reference,
-            'payment_form' => '1',
-            'payment_method_code' => '48', // tarjeta crédito (Wompi)
-            'customer' => [
-                'identification_document_id' => self::DOC_TYPES[$docType] ?? 3,
-                'identification' => (string) $order->customer_document,
-                'names' => $order->user->name,
-                'address' => trim(($snap['street'] ?? '') . ' ' . ($snap['number'] ?? '')) ?: $order->shipping_address,
-                'email' => $order->user->email,
-                'phone' => $snap['phone'] ?? $order->user->phone,
-                'legal_organization_id' => $isCompany ? '1' : '2',
-                'tribute_id' => '21',
-                'municipality_id' => (string) ($cfg['default_municipality_id'] ?? 149),
+            'reference_code'     => $reference,
+            // El envío del comprobante al cliente lo gestiona la plataforma (Resend).
+            // Factus tiene send_email=true por defecto; evitar que lleguen correos duplicados.
+            'send_email'         => false,
+            'observation'        => 'Pedido ' . ($order->reference ?: $order->id),
+            'payment_details'    => [
+                [
+                    'payment_form'        => '1',
+                    'payment_method_code' => $paymentMethod,
+                    'reference_code'      => (string) ($order->wompi_transaction_id ?: $reference),
+                    'amount'              => number_format($paymentAmount, 2, '.', ''),
+                ]
             ],
-            'items' => $lines,
+            'customer' => $customerData,
+            'items'    => $lines,
         ];
     }
 
     private function line(string $code, string $name, int $qty, float $price, bool $taxed, float $discountRate, float $rate, bool $includesTax): array
     {
-        $unit = $taxed && !$includesTax ? round($price * (1 + $rate / 100), 2) : $price;
+        // En Factus v2 el 'price' es el valor unitario base (antes de impuestos)
+        $unitBase = $taxed && $includesTax
+            ? round($price / (1 + ($rate / 100)), 2)
+            : $price;
+
+        $gross = round($unitBase * $qty, 2);
+        $discount = round($gross * ($discountRate / 100), 2);
+        $taxable = $gross - $discount;
+        $taxAmount = $taxed ? round($taxable * ($rate / 100), 2) : 0.0;
+        $lineTotal = round($taxable + $taxAmount, 2);
+
+        $taxes = [];
+        if ($taxed && $rate > 0) {
+            $taxes[] = [
+                'code' => '01', // IVA
+                'rate' => number_format($rate, 2, '.', ''),
+            ];
+        }
 
         return [
-            'code_reference' => $code,
-            'name' => mb_substr($name, 0, 250),
-            'quantity' => $qty,
-            'discount_rate' => $discountRate,
-            'price' => $unit,
-            'tax_rate' => $taxed ? number_format($rate, 2, '.', '') : '0.00',
-            'unit_measure_id' => (int) (config('services.factus.unit_measure_id') ?? 70),
-            'standard_code_id' => 1,
-            'is_excluded' => $taxed ? 0 : 1,
-            'tribute_id' => 1, // IVA
+            'code_reference'    => $code,
+            'name'              => mb_substr($name, 0, 250),
+            'quantity'          => number_format($qty, 2, '.', ''),
+            'discount_rate'     => number_format($discountRate, 2, '.', ''),
+            'price'             => number_format($unitBase, 2, '.', ''),
+            'unit_measure_code' => (string) (config('services.factus.unit_measure_code') ?? '94'),
+            'standard_code'     => '999',
+            'is_excluded'       => !$taxed,
+            'taxes'             => $taxes,
+            '_line_total'       => $lineTotal,
         ];
     }
 
-    /** Emite la factura (POST /v1/bills/validate). */
+    /** Emite la factura (POST /v2/bills/validate). */
     public function issue(Order $order): array
     {
         $payload = $this->buildPayload($order);
@@ -131,38 +221,44 @@ class FactusService
         // En sandbox sin credenciales configuradas: emitir factura simulada para pruebas
         if ((empty($cfg['client_id']) || empty($cfg['username'])) && ($cfg['env'] ?? 'sandbox') === 'sandbox') {
             $num = 'SETP-' . rand(1000, 9999);
-            $cufe = hash('sha384', $order->reference . time());
+            $cufe = hash('sha384', ($order->reference ?? 'REF') . time());
             return [
                 'payload' => $payload,
-                'number' => $num,
-                'cufe' => $cufe,
-                'raw' => ['sandbox' => true, 'mock' => true, 'status' => 'Habilitación Sandbox DIAN']
+                'number'  => $num,
+                'cufe'    => $cufe,
+                'raw'     => ['sandbox' => true, 'mock' => true, 'status' => 'Habilitación Sandbox DIAN']
             ];
         }
 
-        $res = $this->client()->post('/v1/bills/validate', $payload);
+        $res = $this->client()->post('/v2/bills/validate', $payload);
 
         if ($res->failed()) {
             throw new RuntimeException('Factus validate falló (' . $res->status() . '): ' . mb_substr($res->body(), 0, 400));
         }
 
-        $bill = $res->json('data.bill') ?? [];
+        $bill = $res->json('data.bill') ?? $res->json('data') ?? [];
         if (empty($bill['cufe']) || empty($bill['number'])) {
-            throw new RuntimeException('Factus no devolvió CUFE/número de factura.');
+            throw new RuntimeException('Factus no devolvió CUFE/número de factura. Respuesta: ' . mb_substr($res->body(), 0, 300));
         }
 
-        return ['payload' => $payload, 'number' => $bill['number'], 'cufe' => $bill['cufe'], 'raw' => $res->json()];
+        return [
+            'payload' => $payload,
+            'number'  => $bill['number'],
+            'cufe'    => $bill['cufe'],
+            'raw'     => $res->json(),
+        ];
     }
 
     /** Descarga PDF (base64 decodificado). */
     public function downloadPdf(string $number): string
     {
-        return $this->download("/v1/bills/download-pdf/{$number}", 'pdf_base_64_encoded');
+        return $this->download("/v2/bills/{$number}/download-pdf", 'pdf_base_64_encoded');
     }
 
+    /** Descarga XML (base64 decodificado). */
     public function downloadXml(string $number): string
     {
-        return $this->download("/v1/bills/download-xml/{$number}", 'xml_base_64_encoded');
+        return $this->download("/v2/bills/{$number}/download-xml", 'xml_base_64_encoded');
     }
 
     private function download(string $path, string $key): string
@@ -184,5 +280,19 @@ class FactusService
         }
 
         return $bin;
+    }
+
+    public static function computeDv(string $nit): string
+    {
+        $primes = [3, 7, 13, 17, 19, 23, 29, 37, 41, 43, 47, 53, 59, 67, 71];
+        $clean = preg_replace('/\D/', '', $nit);
+        $len = strlen($clean);
+        $total = 0;
+        for ($i = 0; $i < $len; $i++) {
+            $digit = (int) $clean[$len - 1 - $i];
+            $total += $digit * ($primes[$i] ?? 0);
+        }
+        $mod = $total % 11;
+        return (string) ($mod > 1 ? 11 - $mod : $mod);
     }
 }

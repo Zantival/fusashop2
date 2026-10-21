@@ -3,11 +3,24 @@
 
 @section('content')
 <div class="max-w-7xl mx-auto px-6 py-8">
-  <form id="store-form" method="POST" action="{{ route('merchant.profile.store') }}" enctype="multipart/form-data" class="space-y-8">
+  @if(session('success'))
+    <div class="mb-6 p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-[#006c47] text-sm font-bold flex items-center gap-2 shadow-sm">
+      <span class="material-symbols-outlined text-lg">check_circle</span>
+      {{ session('success') }}
+    </div>
+  @endif
+  @if(isset($errors) && $errors->any())
+    <div class="mb-6 p-4 rounded-2xl bg-red-50 border border-red-200 text-[#ba1a1a] text-sm shadow-sm">
+      <ul class="list-disc pl-5 space-y-1">
+        @foreach($errors->all() as $err)
+          <li>{{ $err }}</li>
+        @endforeach
+      </ul>
+    </div>
+  @endif
+
+  <form id="store-form" method="POST" action="{{ route('merchant.store.update') }}" enctype="multipart/form-data" class="space-y-8">
     @csrf
-    @if($profile && $profile->rut_path)
-      <input type="hidden" name="rut_exists" value="1">
-    @endif
 
     {{-- ─── Perfil Estilo Consumidor con Edición ────────────────────── --}}
     <div class="bg-white rounded-3xl overflow-hidden shadow-sm mb-10 transition-shadow hover:shadow-md relative group/profile">
@@ -46,7 +59,7 @@
         {{-- Logo --}}
         <div class="w-32 h-32 md:w-44 md:h-44 rounded-full border-4 border-white overflow-hidden bg-white shrink-0 -mt-16 md:-mt-22 shadow-lg relative group/logo">
           @if($profile && $profile->logo_path)
-            <img id="logo-img" src="{{ Storage::url($profile->logo_path) }}" alt="Logo" class="w-full h-full object-cover">
+            <img loading="lazy" decoding="async" id="logo-img" src="{{ Storage::url($profile->logo_path) }}" alt="Logo" class="w-full h-full object-cover">
           @else
             <div id="logo-placeholder" class="w-full h-full flex items-center justify-center bg-surface-container">
               <span class="material-symbols-outlined text-5xl text-on-surface-variant">storefront</span>
@@ -91,7 +104,6 @@
         </div>
         </div>
       </div>
-    </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
       {{-- Sidebar: Contact & Status --}}
@@ -190,7 +202,7 @@
               @endphp
               <div class="flex flex-col md:flex-row gap-4 p-4 rounded-2xl bg-surface-container-low border border-outline-variant/10">
                 <div class="w-full md:w-40 h-24 rounded-lg bg-white overflow-hidden shrink-0 shadow-sm flex items-center justify-center">
-                  <img src="{{ Storage::url($path) }}" class="max-w-full max-h-full object-contain">
+                  <img loading="lazy" decoding="async" src="{{ Storage::url($path) }}" class="max-w-full max-h-full object-contain">
                 </div>
                 <div class="flex-1 space-y-3">
                   <div class="text-xs font-bold text-primary uppercase">Banner #{{ $index + 1 }} - Especificaciones Actuales</div>
@@ -216,16 +228,8 @@
           <p class="text-[11px] text-on-surface-variant mt-6 italic">Nota: Al subir nuevas imágenes, estas reemplazarán por completo la galería actual. Máximo 3 banners.</p>
         </div>
 
-        @if(!$profile || !$profile->rut_path)
-          <div class="bg-secondary-container/20 rounded-3xl p-6 border border-secondary/20">
-            <h3 class="font-['Manrope'] font-bold text-on-surface mb-2 flex items-center gap-2">
-              <span class="material-symbols-outlined text-secondary">description</span> Verificación de Identidad (RUT)
-            </h3>
-            <p class="text-sm text-on-surface-variant mb-4">Para poder publicar productos, necesitamos validar la legalidad de tu empresa.</p>
-            <input type="file" name="rut_file" accept=".pdf"
-                   class="w-full text-sm text-on-surface-variant file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-bold file:bg-secondary file:text-white hover:file:opacity-90 cursor-pointer" required>
-          </div>
-        @endif
+        {{-- Configuración de Cobros y Pagos Directos al Comercio --}}
+        @include('merchant.partials.payout-method-fields', ['profile' => $profile])
 
         <div class="flex flex-col sm:flex-row gap-4 pt-4">
           <button type="submit" class="flex-1 py-4 bg-primary-gradient text-white font-bold rounded-2xl shadow-xl shadow-primary/20 hover:opacity-95 active:scale-95 transition-all flex items-center justify-center gap-2">
@@ -242,22 +246,56 @@
 </div>
 
 @push('styles')
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" onerror="this.onerror=null;this.href='https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css';" />
 @endpush
 @push('scripts')
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" onerror="this.onerror=null;this.src='https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js';"></script>
 <script>
 (function() {
 // ─── Leaflet + OpenStreetMap (Gratuito, sin API key) ─────────────────────────
 let map, marker;
 
-function initMap() {
+function renderFallbackMap(mapEl, lat, lng) {
+  const offset = 0.008;
+  const bbox = [
+    lng - offset,
+    lat - offset,
+    lng + offset,
+    lat + offset
+  ].join(',');
+  const params = new URLSearchParams({
+    bbox: bbox,
+    layer: 'mapnik',
+    marker: lat + ',' + lng
+  });
+
+  mapEl.innerHTML = '<iframe title="Mapa de ubicación de la tienda" class="w-full h-full border-0 rounded-2xl" loading="lazy" src="https://www.openstreetmap.org/export/embed.html?' + params.toString() + '"></iframe>';
+}
+
+function setMapLocation(lat, lng, zoom) {
+  if (map && marker) {
+    map.setView([lat, lng], zoom);
+    marker.setLatLng([lat, lng]);
+    return;
+  }
+
+  const mapEl = document.getElementById('map');
+  if (mapEl) renderFallbackMap(mapEl, lat, lng);
+}
+
+function initMap(retries = 0) {
   const mapEl = document.getElementById('map');
   if (!mapEl) return;
 
-  if (typeof L === 'undefined') { 
-    mapEl.innerHTML = '<div class="p-4 text-error font-bold flex items-center gap-2"><span class="material-symbols-outlined">error</span> Leaflet.js no pudo cargar. Verifica la conexión o el AdBlock.</div>';
-    console.error('Leaflet no cargó'); 
+  if (typeof L === 'undefined') {
+    if (retries < 25) {
+      setTimeout(function() { initMap(retries + 1); }, 120);
+      return;
+    }
+
+    const lat = parseFloat(document.getElementById('lat-input').value) || 4.3361;
+    const lng = parseFloat(document.getElementById('lng-input').value) || -74.3638;
+    renderFallbackMap(mapEl, lat, lng);
     return; 
   }
 
@@ -298,7 +336,9 @@ function initMap() {
   setTimeout(function() { map.invalidateSize(); }, 200);
 
   } catch(e) {
-    mapEl.innerHTML = '<div class="p-4 text-error font-bold flex items-center gap-2"><span class="material-symbols-outlined">error</span> Error del mapa: ' + e.message + '</div>';
+    const lat = parseFloat(document.getElementById('lat-input').value) || 4.3361;
+    const lng = parseFloat(document.getElementById('lng-input').value) || -74.3638;
+    renderFallbackMap(mapEl, lat, lng);
     console.error('Map init error:', e);
   }
 }
@@ -344,8 +384,7 @@ if (searchInput) {
             if (results.length > 0) {
               var lat = parseFloat(results[0].lat);
               var lng = parseFloat(results[0].lon);
-              map.setView([lat, lng], 16);
-              marker.setLatLng([lat, lng]);
+              setMapLocation(lat, lng, 16);
               updateCoords(lat, lng);
               document.getElementById('address-input').value = results[0].display_name;
               searchInput.value = results[0].display_name.split(',')[0];
@@ -385,8 +424,7 @@ if (searchInput) {
           li.addEventListener('click', function() {
             var lat = parseFloat(place.lat);
             var lng = parseFloat(place.lon);
-            map.setView([lat, lng], 17);
-            marker.setLatLng([lat, lng]);
+            setMapLocation(lat, lng, 17);
             updateCoords(lat, lng);
             document.getElementById('address-input').value = place.display_name;
             searchInput.value = place.display_name.split(',')[0];
@@ -420,8 +458,7 @@ if (gpsBtn) {
       function(pos) {
         var lat = pos.coords.latitude;
         var lng = pos.coords.longitude;
-        map.setView([lat, lng], 17);
-        marker.setLatLng([lat, lng]);
+        setMapLocation(lat, lng, 17);
         updateCoords(lat, lng);
         reverseGeocode(lat, lng);
         btn.disabled = false;
@@ -461,6 +498,23 @@ if (document.readyState === 'loading') {
 
 @push('scripts')
 <script>
+function updateMerchantSidebarLogo(src) {
+  var sidebarLogo = document.querySelector('#merchant-user-menu img.merchant-store-logo');
+  if (sidebarLogo) {
+    sidebarLogo.src = src;
+    return;
+  }
+
+  var placeholder = document.getElementById('merchant-store-logo-placeholder');
+  if (placeholder) {
+    var newSidebarLogo = document.createElement('img');
+    newSidebarLogo.src = src;
+    newSidebarLogo.alt = 'Logo de la tienda';
+    newSidebarLogo.className = 'merchant-store-logo w-9 h-9 rounded-full object-cover shrink-0 border-2 border-[#10B981] shadow-2xs bg-white';
+    placeholder.replaceWith(newSidebarLogo);
+  }
+}
+
 function previewLogo(input) {
   if (input.files && input.files[0]) {
     var reader = new FileReader();
@@ -476,9 +530,15 @@ function previewLogo(input) {
         newImg.className = 'w-full h-full object-cover';
         placeholder.parentNode.replaceChild(newImg, placeholder);
       }
+      updateMerchantSidebarLogo(e.target.result);
     };
     reader.readAsDataURL(input.files[0]);
   }
+}
+
+var savedStoreLogo = document.getElementById('logo-img');
+if (savedStoreLogo) {
+  updateMerchantSidebarLogo(savedStoreLogo.src);
 }
 
 function previewBanners(input) {
@@ -497,7 +557,7 @@ function previewBanners(input) {
         }
         var item = document.createElement('div');
         item.className = 'flex flex-col md:flex-row gap-4 p-4 rounded-2xl bg-surface-container-low border border-outline-variant/10';
-        item.innerHTML = '<div class="w-full md:w-40 h-24 rounded-lg bg-white overflow-hidden shrink-0 shadow-sm flex items-center justify-center"><img src="' + e.target.result + '" class="max-w-full max-h-full object-contain"></div><div class="flex-1 space-y-2"><div class="text-[10px] font-bold text-primary uppercase">Nuevo Banner #' + (index + 1) + '</div><input type="text" name="banner_titles[]" placeholder="Título" class="w-full bg-white border-0 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 shadow-sm"><input type="text" name="banner_subtitles[]" placeholder="Descripción" class="w-full bg-white border-0 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 shadow-sm"></div>';
+        item.innerHTML = '<div class="w-full md:w-40 h-24 rounded-lg bg-white overflow-hidden shrink-0 shadow-sm flex items-center justify-center"><img loading="lazy" decoding="async" src="' + e.target.result + '" class="max-w-full max-h-full object-contain"></div><div class="flex-1 space-y-2"><div class="text-[10px] font-bold text-primary uppercase">Nuevo Banner #' + (index + 1) + '</div><input type="text" name="banner_titles[]" placeholder="Título" class="w-full bg-white border-0 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 shadow-sm"><input type="text" name="banner_subtitles[]" placeholder="Descripción" class="w-full bg-white border-0 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 shadow-sm"></div>';
         list.appendChild(item);
       };
       reader.readAsDataURL(file);

@@ -60,7 +60,7 @@
   <div class="bg-gradient lg:w-5/12 xl:w-1/2 flex flex-col items-center justify-center p-8 lg:p-16 py-16 relative overflow-hidden">
     <div class="absolute top-1/4 -left-20 w-64 h-64 bg-white/5 rounded-full"></div>
     <div class="absolute bottom-1/4 -right-20 w-80 h-80 bg-white/5 rounded-full"></div>
-    
+
     <div class="cart-anim mb-8 relative z-10">
       <div class="tag-anim absolute -top-6 -right-8 bg-[#feb700] text-[#6b4b00] px-3 py-1 rounded-full text-xs font-black shadow-lg rotate-12">¡Nuevo!</div>
       <svg width="120" height="100" viewBox="0 0 140 120" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -86,9 +86,39 @@
           </div>
           <a href="{{ route('login') }}" class="text-sm text-on-surface-variant hover:text-primary transition-colors font-medium">← Ya tengo cuenta</a>
         </div>
-        <h1 class="text-3xl font-black text-on-surface tracking-tight mb-1">Crea tu cuenta</h1>
-        <p class="text-on-surface-variant">Regístrate para empezar a usar FusaShop</p>
+        <h1 class="text-3xl font-black text-on-surface tracking-tight mb-1">
+          {{ session('social_registration') ? 'Completa tu registro' : 'Crea tu cuenta' }}
+        </h1>
+        <p class="text-on-surface-variant">
+          {{ session('social_registration') ? 'Selecciona tu tipo de cuenta y añade tu teléfono para continuar' : 'Regístrate para empezar a usar FusaShop' }}
+        </p>
       </div>
+
+      {{-- Notificación si viene redirigido desde Google Login sin cuenta previa --}}
+      @if(session('info'))
+        <div class="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-2xl flex items-start gap-3 form-enter shadow-xs">
+          <span class="material-symbols-outlined text-amber-600 text-[22px] shrink-0 mt-0.5">info</span>
+          <p class="text-sm text-amber-900 font-medium leading-relaxed">{{ session('info') }}</p>
+        </div>
+      @endif
+
+      {{-- Banner de cuenta Google conectada --}}
+      @if(session('social_registration'))
+        <div class="mb-6 p-4 bg-emerald-50 border border-emerald-200 rounded-2xl flex items-center justify-between form-enter shadow-xs">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-xs border border-emerald-100 shrink-0">
+              <img loading="lazy" decoding="async" src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-5 h-5" alt="Google">
+            </div>
+            <div>
+              <p class="text-xs font-bold text-emerald-950">Conectado con Google</p>
+              <p class="text-xs text-emerald-700 font-medium">{{ session('social_registration.email') }}</p>
+            </div>
+          </div>
+          <a href="{{ route('social.cancel') }}" class="text-xs font-bold text-emerald-800 hover:text-emerald-950 py-1.5 px-3 bg-white border border-emerald-200 rounded-xl hover:bg-emerald-100 transition-colors">
+            Cancelar
+          </a>
+        </div>
+      @endif
 
       @if($errors->any())
         <div class="mb-6 p-4 bg-error/10 border border-error/20 rounded-xl flex items-center gap-3 form-enter">
@@ -101,49 +131,55 @@
 
       <form method="POST" action="{{ route('register') }}" class="space-y-4" id="register-form">
         @csrf
-        
+
         <!-- Role Selection -->
         <div class="form-enter">
-          <label class="block text-sm font-bold text-on-surface mb-3">¿Qué rol tendrás?</label>
+          <label class="block text-sm font-bold text-on-surface mb-2">¿Qué tipo de cuenta deseas? <span class="text-error">*</span></label>
+          <p class="text-xs text-on-surface-variant mb-3">Elige si vas a comprar productos o vas a vender como comercio aliado</p>
           <div class="grid grid-cols-2 gap-3">
-            <!-- Comprar -->
+            <!-- Comprar / Cliente -->
             <label class="relative cursor-pointer block h-full">
-              <input type="radio" name="role" value="consumer" class="role-input absolute inset-0 w-full h-full opacity-0 z-20 cursor-pointer" {{ old('role', request('role', 'consumer'))==='consumer' ? 'checked' : '' }} required/>
-              <div class="role-box flex flex-col items-center gap-2 p-4 bg-surface-container rounded-2xl border-2 border-transparent transition-all h-full relative z-10">
+              <input type="radio" name="role" value="consumer" class="role-input absolute inset-0 w-full h-full opacity-0 z-20 cursor-pointer" {{ old('role', request('role', 'consumer'))==='consumer' ? 'checked' : '' }} onchange="toggleMerchantPayoutRegister()" required/>
+              <div class="role-box flex flex-col items-center gap-2 p-4 bg-surface-container rounded-2xl border-2 border-transparent transition-all h-full relative z-10 text-center">
                 <span class="material-symbols-outlined role-icon text-on-surface-variant text-3xl">shopping_bag</span>
-                <span class="text-sm font-bold text-on-surface">Comprar</span>
+                <span class="text-sm font-bold text-on-surface">Cliente</span>
+                <span class="text-[11px] text-on-surface-variant">Deseo Comprar</span>
               </div>
             </label>
-            <!-- Vender -->
+            <!-- Vender / Vendedor -->
             <label class="relative cursor-pointer block h-full">
-              <input type="radio" name="role" value="merchant" class="role-input absolute inset-0 w-full h-full opacity-0 z-20 cursor-pointer" {{ old('role', request('role'))==='merchant' ? 'checked' : '' }}/>
-              <div class="role-box flex flex-col items-center gap-2 p-4 bg-surface-container rounded-2xl border-2 border-transparent transition-all h-full relative z-10">
+              <input type="radio" name="role" value="merchant" class="role-input absolute inset-0 w-full h-full opacity-0 z-20 cursor-pointer" {{ old('role', request('role'))==='merchant' ? 'checked' : '' }} onchange="toggleMerchantPayoutRegister()"/>
+              <div class="role-box flex flex-col items-center gap-2 p-4 bg-surface-container rounded-2xl border-2 border-transparent transition-all h-full relative z-10 text-center">
                 <span class="material-symbols-outlined role-icon text-on-surface-variant text-3xl">storefront</span>
-                <span class="text-sm font-bold text-on-surface">Vender</span>
+                <span class="text-sm font-bold text-on-surface">Vendedor</span>
+                <span class="text-[11px] text-on-surface-variant">Comercio Aliado</span>
               </div>
             </label>
           </div>
         </div>
-
-
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div class="form-enter md:col-span-2">
             <label class="block text-sm font-semibold text-on-surface mb-1.5">Nombre completo</label>
             <div class="input-wrap">
               <span class="material-symbols-outlined input-icon-box">person</span>
-              <input type="text" name="name" value="{{ old('name') }}" required
-                class="input-field" placeholder="Tu nombre">
+              <input type="text" name="name" value="{{ old('name', session('social_registration.name')) }}" required
+                class="input-field" placeholder="Tu nombre y apellido">
             </div>
           </div>
 
           <div class="form-enter md:col-span-2">
             <label class="block text-sm font-semibold text-on-surface mb-1.5">Correo electrónico</label>
-            <div class="input-wrap">
+            <div class="input-wrap {{ session('social_registration') ? 'bg-slate-100 border-slate-200' : '' }}">
               <span class="material-symbols-outlined input-icon-box">mail</span>
-              <input type="email" name="email" value="{{ old('email') }}" required
-                class="input-field" placeholder="correo@ejemplo.com" autocomplete="email">
+              <input type="email" name="email" value="{{ old('email', session('social_registration.email')) }}" required
+                class="input-field {{ session('social_registration') ? 'text-slate-600 font-semibold cursor-not-allowed' : '' }}"
+                placeholder="correo@ejemplo.com" autocomplete="email"
+                {{ session('social_registration') ? 'readonly' : '' }}>
             </div>
+            @if(session('social_registration'))
+              <p class="text-[11px] text-on-surface-variant mt-1">Este correo proviene de tu cuenta de Google verificada.</p>
+            @endif
           </div>
 
           <div class="form-enter md:col-span-2">
@@ -155,24 +191,35 @@
             </div>
           </div>
 
-          <div class="form-enter">
-            <label class="block text-sm font-semibold text-on-surface mb-1.5">Contraseña</label>
+          <div class="form-enter {{ session('social_registration') ? 'md:col-span-1' : '' }}">
+            <label class="block text-sm font-semibold text-on-surface mb-1.5">
+              Contraseña
+              @if(session('social_registration'))
+                <span class="text-xs font-normal text-on-surface-variant">(Opcional)</span>
+              @endif
+            </label>
             <div class="input-wrap">
               <span class="material-symbols-outlined input-icon-box">lock</span>
-              <input type="password" name="password" id="password" required
-                class="input-field" placeholder="8+ caracteres" autocomplete="new-password">
+              <input type="password" name="password" id="password" {{ session('social_registration') ? '' : 'required' }}
+                class="input-field" placeholder="{{ session('social_registration') ? 'Opcional (12+ caracteres)' : '12+ caracteres' }}" minlength="12" autocomplete="new-password" aria-describedby="password-policy-hint">
               <button type="button" onclick="togglePwd('password', 'eye-pwd')" class="flex items-center justify-center w-10 min-w-10 text-on-surface-variant hover:text-primary transition-colors">
                 <span class="material-symbols-outlined text-[20px]" id="eye-pwd">visibility_off</span>
               </button>
             </div>
           </div>
+          <p id="password-policy-hint" class="text-xs text-on-surface-variant mt-1">Usa al menos 12 caracteres, con mayúsculas, minúsculas, un número y un símbolo.</p>
 
-          <div class="form-enter">
-            <label class="block text-sm font-semibold text-on-surface mb-1.5">Confirmar</label>
+          <div class="form-enter {{ session('social_registration') ? 'md:col-span-1' : '' }}">
+            <label class="block text-sm font-semibold text-on-surface mb-1.5">
+              Confirmar
+              @if(session('social_registration'))
+                <span class="text-xs font-normal text-on-surface-variant">(Opcional)</span>
+              @endif
+            </label>
             <div class="input-wrap">
               <span class="material-symbols-outlined input-icon-box">lock_reset</span>
-              <input type="password" name="password_confirmation" id="password_confirmation" required
-                class="input-field" placeholder="Repite contraseña">
+              <input type="password" name="password_confirmation" id="password_confirmation" {{ session('social_registration') ? '' : 'required' }}
+                class="input-field" placeholder="Repite contraseña" minlength="12" autocomplete="new-password">
               <button type="button" onclick="togglePwd('password_confirmation', 'eye-pwd-conf')" class="flex items-center justify-center w-10 min-w-10 text-on-surface-variant hover:text-primary transition-colors">
                 <span class="material-symbols-outlined text-[20px]" id="eye-pwd-conf">visibility_off</span>
               </button>
@@ -180,26 +227,136 @@
           </div>
         </div>
 
-        <div class="form-enter pt-2">
-          <button type="submit" id="reg-btn" class="w-full btn-primary py-4 text-sm font-bold text-white rounded-2xl shadow-lg shadow-emerald-500/25 flex items-center justify-center gap-2 hover:opacity-95 transition-all" style="background: linear-gradient(135deg, #10B981 0%, #047857 100%) !important;">
-            <span class="material-symbols-outlined text-[20px]">how_to_reg</span> Crear mi cuenta
-          </button>
-          
-          <div class="relative flex items-center justify-center my-6">
-            <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-surface-container-highest"></div></div>
-            <span class="relative px-4 bg-white text-[10px] font-black text-on-surface-variant uppercase tracking-widest">O regístrate con</span>
+        {{-- Módulo de Configuración de Método de Pago Preferido para Comerciantes --}}
+        @php
+          $regMethodType = old('payout_method_type', 'bank');
+          $regBanks = \App\Models\CompanyProfile::availableBanks();
+        @endphp
+        <div id="merchant-payout-register-section" class="p-4 rounded-2xl bg-emerald-50/50 border-2 border-[#006c47]/25 space-y-3.5 transition-all" style="display: {{ old('role', request('role')) === 'merchant' ? 'block' : 'none' }};">
+          <div class="flex items-start gap-2.5">
+            <div class="w-9 h-9 rounded-xl bg-[#006c47] text-white flex items-center justify-center shrink-0">
+              <span class="material-symbols-outlined text-[18px]">payments</span>
+            </div>
+            <div>
+              <h3 class="text-sm font-black text-on-surface">Método de Pago Preferido (Comerciante)</h3>
+              <p class="text-[11px] text-on-surface-variant leading-snug">
+                Configura dónde deseas recibir el dinero de tus ventas: cuenta bancaria tradicional o billetera digital.
+              </p>
+            </div>
           </div>
 
-          <a href="{{ route('social.redirect', 'google') }}" class="w-full flex items-center justify-center gap-3 py-3.5 bg-white border-2 border-surface-container-highest rounded-2xl font-bold text-on-surface hover:bg-surface-container-low hover:border-primary/30 transition-all shadow-sm">
-             <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-5 h-5" alt="Google Logo">
-             <span class="text-sm">Google</span>
-          </a>
+          <div>
+            <label class="block text-xs font-bold text-on-surface mb-1">Nombre de tu Tienda o Comercio (Opcional)</label>
+            <input type="text" name="company_name" value="{{ old('company_name') }}"
+                   class="w-full px-3.5 py-2.5 bg-white border border-outline-variant/30 rounded-xl text-xs font-semibold text-on-surface outline-none focus:ring-2 focus:ring-primary/20"
+                   placeholder="Ej: Café Especial del Sumapaz">
+          </div>
+
+          <div class="grid grid-cols-2 gap-2.5">
+            <label class="cursor-pointer rounded-xl border-2 p-2.5 flex items-center gap-2 bg-white transition-all" id="reg-label-bank">
+              <input type="radio" name="payout_method_type" value="bank" id="reg-radio-bank"
+                     {{ $regMethodType === 'bank' ? 'checked' : '' }}
+                     onchange="switchRegisterPayoutType('bank')"
+                     class="text-[#006c47] focus:ring-[#006c47]">
+              <div class="min-w-0">
+                <span class="text-xs font-extrabold text-on-surface block truncate">Cuenta Bancaria</span>
+                <span class="text-[10px] text-on-surface-variant block truncate">Ahorros / Corriente</span>
+              </div>
+            </label>
+
+            <label class="cursor-pointer rounded-xl border-2 p-2.5 flex items-center gap-2 bg-white transition-all" id="reg-label-wallet">
+              <input type="radio" name="payout_method_type" value="wallet" id="reg-radio-wallet"
+                     {{ $regMethodType === 'wallet' ? 'checked' : '' }}
+                     onchange="switchRegisterPayoutType('wallet')"
+                     class="text-[#006c47] focus:ring-[#006c47]">
+              <div class="min-w-0">
+                <span class="text-xs font-extrabold text-on-surface block truncate">Billetera Digital</span>
+                <span class="text-[10px] text-on-surface-variant block truncate">Nequi o Daviplata</span>
+              </div>
+            </label>
+          </div>
+
+          <!-- Sub-panel Cuenta Bancaria Tradicional -->
+          <div id="reg-bank-fields" class="space-y-3 pt-1" style="display: {{ $regMethodType === 'bank' ? 'block' : 'none' }};">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              <div>
+                <label class="block text-[11px] font-bold text-on-surface-variant mb-1">Banco <span class="text-error">*</span></label>
+                <select name="payout_bank_name" id="reg-payout-bank"
+                        class="w-full px-3 py-2.5 bg-white border border-outline-variant/30 rounded-xl text-xs font-semibold text-on-surface outline-none focus:ring-2 focus:ring-primary/20">
+                  <option value="">Selecciona banco...</option>
+                  @foreach($regBanks as $bName)
+                    <option value="{{ $bName }}" {{ old('payout_bank_name', 'Bancolombia') === $bName ? 'selected' : '' }}>{{ $bName }}</option>
+                  @endforeach
+                </select>
+              </div>
+              <div>
+                <label class="block text-[11px] font-bold text-on-surface-variant mb-1">Tipo de Cuenta <span class="text-error">*</span></label>
+                <select name="payout_account_type" id="reg-payout-acc-type"
+                        class="w-full px-3 py-2.5 bg-white border border-outline-variant/30 rounded-xl text-xs font-semibold text-on-surface outline-none focus:ring-2 focus:ring-primary/20">
+                  <option value="Ahorros" {{ old('payout_account_type', 'Ahorros') === 'Ahorros' ? 'selected' : '' }}>Ahorros</option>
+                  <option value="Corriente" {{ old('payout_account_type') === 'Corriente' ? 'selected' : '' }}>Corriente</option>
+                </select>
+              </div>
+            </div>
+            <div>
+              <label class="block text-[11px] font-bold text-on-surface-variant mb-1">Número de Cuenta Bancaria <span class="text-error">*</span></label>
+              <input type="text" name="payout_account_number" id="reg-payout-acc-num" value="{{ old('payout_account_number') }}"
+                     inputmode="numeric"
+                     class="w-full px-3.5 py-2.5 bg-white border border-outline-variant/30 rounded-xl text-xs font-mono font-bold text-on-surface outline-none focus:ring-2 focus:ring-primary/20"
+                     placeholder="Ej: 12345678901">
+            </div>
+          </div>
+
+          <!-- Sub-panel Billeteras Digitales (Nequi / Daviplata) -->
+          <div id="reg-wallet-fields" class="space-y-3 pt-1" style="display: {{ $regMethodType === 'wallet' ? 'block' : 'none' }};">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              <div>
+                <label class="block text-[11px] font-bold text-on-surface-variant mb-1">Billetera Digital <span class="text-error">*</span></label>
+                <select name="wallet_provider" id="reg-wallet-provider"
+                        class="w-full px-3 py-2.5 bg-white border border-outline-variant/30 rounded-xl text-xs font-semibold text-on-surface outline-none focus:ring-2 focus:ring-primary/20">
+                  <option value="Nequi" {{ old('wallet_provider', 'Nequi') === 'Nequi' ? 'selected' : '' }}>Nequi</option>
+                  <option value="Daviplata" {{ old('wallet_provider') === 'Daviplata' ? 'selected' : '' }}>Daviplata</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-[11px] font-bold text-on-surface-variant mb-1">Teléfono Asociado (10 dígitos) <span class="text-error">*</span></label>
+                <input type="tel" name="wallet_phone" id="reg-wallet-phone" value="{{ old('wallet_phone') }}"
+                       maxlength="10" inputmode="numeric"
+                       class="w-full px-3.5 py-2.5 bg-white border border-outline-variant/30 rounded-xl text-xs font-mono font-bold text-on-surface outline-none focus:ring-2 focus:ring-primary/20"
+                       placeholder="Ej: 3101234567">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="p-3 bg-emerald-50/60 rounded-xl border border-emerald-100 flex items-center gap-2.5 text-xs text-emerald-800 form-enter">
+          <span class="material-symbols-outlined text-emerald-600 text-base shrink-0">mark_email_read</span>
+          <span>Al crear tu cuenta, te enviaremos un <strong>código de 6 dígitos a tu correo</strong> para confirmar tu identidad.</span>
+        </div>
+
+        <div class="form-enter pt-2">
+          <button type="submit" id="reg-btn" class="w-full btn-primary py-4 text-sm font-bold text-white rounded-2xl shadow-lg shadow-emerald-500/25 flex items-center justify-center gap-2 hover:opacity-95 transition-all" style="background: linear-gradient(135deg, #10B981 0%, #047857 100%) !important;">
+            <span class="material-symbols-outlined text-[20px]">how_to_reg</span>
+            {{ session('social_registration') ? 'Completar registro y verificar correo' : 'Crear mi cuenta' }}
+          </button>
+
+          @unless(session('social_registration'))
+            <div class="relative flex items-center justify-center my-6">
+              <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-surface-container-highest"></div></div>
+              <span class="relative px-4 bg-white text-[10px] font-black text-on-surface-variant uppercase tracking-widest">O regístrate con</span>
+            </div>
+
+            <a href="{{ route('social.redirect', 'google') }}" class="w-full flex items-center justify-center gap-3 py-3.5 bg-white border-2 border-surface-container-highest rounded-2xl font-bold text-on-surface hover:bg-surface-container-low hover:border-primary/30 transition-all shadow-sm">
+               <img loading="lazy" decoding="async" src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-5 h-5" alt="Google Logo">
+               <span class="text-sm">Google</span>
+            </a>
+          @endunless
         </div>
 
         <p class="text-center text-xs text-on-surface-variant font-medium pt-4 form-enter">
-          Al registrarte, aceptas nuestros 
-          <a href="#" class="text-primary hover:underline">Términos de Servicio</a> y 
-          <a href="#" class="text-primary hover:underline">Privacidad</a>.
+          Al registrarte, aceptas nuestros
+          <a href="{{ route('terms') }}" class="text-primary hover:underline">Términos de Servicio</a> y
+          <a href="{{ route('privacy') }}" class="text-primary hover:underline">Privacidad</a>.
         </p>
       </form>
     </div>
@@ -216,6 +373,48 @@ function togglePwd(inputId, iconId) {
   i.type = i.type === 'password' ? 'text' : 'password';
   e.textContent = i.type === 'password' ? 'visibility_off' : 'visibility';
 }
+
+function toggleMerchantPayoutRegister() {
+  const checkedRole = document.querySelector('input[name="role"]:checked');
+  const isMerchant = checkedRole && checkedRole.value === 'merchant';
+  const section = document.getElementById('merchant-payout-register-section');
+  if (section) {
+    section.style.display = isMerchant ? 'block' : 'none';
+  }
+  const activeMethod = document.querySelector('input[name="payout_method_type"]:checked');
+  switchRegisterPayoutType(activeMethod ? activeMethod.value : 'bank', isMerchant);
+}
+
+function switchRegisterPayoutType(type, isMerchantOverride) {
+  const checkedRole = document.querySelector('input[name="role"]:checked');
+  const isMerchant = typeof isMerchantOverride === 'boolean' ? isMerchantOverride : (checkedRole && checkedRole.value === 'merchant');
+  const bankFields = document.getElementById('reg-bank-fields');
+  const walletFields = document.getElementById('reg-wallet-fields');
+  const labelBank = document.getElementById('reg-label-bank');
+  const labelWallet = document.getElementById('reg-label-wallet');
+  const bankAccNum = document.getElementById('reg-payout-acc-num');
+  const walletPhone = document.getElementById('reg-wallet-phone');
+
+  if (type === 'wallet') {
+    if (bankFields) bankFields.style.display = 'none';
+    if (walletFields) walletFields.style.display = 'block';
+    if (labelWallet) labelWallet.classList.add('border-[#006c47]', 'bg-emerald-50/40');
+    if (labelBank) labelBank.classList.remove('border-[#006c47]', 'bg-emerald-50/40');
+    if (bankAccNum) bankAccNum.required = false;
+    if (walletPhone) walletPhone.required = Boolean(isMerchant);
+  } else {
+    if (bankFields) bankFields.style.display = 'block';
+    if (walletFields) walletFields.style.display = 'none';
+    if (labelBank) labelBank.classList.add('border-[#006c47]', 'bg-emerald-50/40');
+    if (labelWallet) labelWallet.classList.remove('border-[#006c47]', 'bg-emerald-50/40');
+    if (walletPhone) walletPhone.required = false;
+    if (bankAccNum) bankAccNum.required = Boolean(isMerchant);
+  }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  toggleMerchantPayoutRegister();
+});
 
 document.getElementById('register-form').addEventListener('submit', function() {
   const btn = document.getElementById('reg-btn');

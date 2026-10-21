@@ -8,6 +8,22 @@
   $totalAlertsCount = $pendingKycCount + $failedIntegrationsCount + $openPqrsCount + $pendingBannersCount + $unreadDbNotifs;
 @endphp
 
+<!-- Barra móvil superior para Administrador (solo en móviles < 768px) -->
+<div id="panel-mobile-header" class="md:hidden w-full bg-white border-b border-slate-200 px-4 py-2.5 flex items-center justify-between sticky top-0 z-40">
+  <div class="flex items-center gap-2.5">
+    <button type="button" onclick="togglePanelSidebar()" class="p-1.5 text-slate-700 hover:bg-slate-100 rounded-lg cursor-pointer" aria-label="Abrir menú de administración">
+      <span class="material-symbols-outlined text-2xl">menu</span>
+    </button>
+    <x-logo size="sm" :href="route('analyst.dashboard')" :with-microcopy="false" />
+  </div>
+  <div class="flex items-center gap-2">
+    <span class="px-2 py-0.5 text-[10px] font-black bg-emerald-100 text-[#006c47] rounded-full">Admin Console</span>
+  </div>
+</div>
+
+<!-- Telón de fondo móvil -->
+<div id="panel-sidebar-backdrop" class="hidden md:hidden fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 transition-opacity" onclick="togglePanelSidebar(false)"></div>
+
 <aside id="panel-sidebar" data-panel-type="admin" aria-label="Barra lateral de administración"
        class="bg-white border-r border-slate-200 shadow-sm flex flex-col justify-between select-none"
        style="width: 270px; min-width: 270px; height: 100vh; position: sticky; top: 0; left: 0; z-index: 60; overflow-y: auto;">
@@ -20,14 +36,17 @@
     <!-- 1. LOGO INSTITUCIONAL -->
     <div class="pb-3 border-b border-slate-100 flex items-center justify-between">
       <x-logo size="default" :href="route('analyst.dashboard')" :with-microcopy="false" />
+      <button type="button" onclick="togglePanelSidebar(false)" class="md:hidden p-1 text-slate-500 hover:bg-slate-100 rounded-lg" aria-label="Cerrar barra lateral">
+        <span class="material-symbols-outlined text-xl">close</span>
+      </button>
     </div>
 
     <!-- 2. PÍLDORA DE PERFIL DEL ADMIN + BOTÓN DE EDITAR PERFIL -->
-    <div id="user-menu" class="relative">
+    <div id="admin-user-menu" class="relative">
       <div class="flex items-center justify-between bg-emerald-50/90 hover:bg-emerald-100/80 border border-emerald-200 rounded-2xl p-2 transition-all gap-2 shadow-2xs">
-        <button id="user-menu-toggle" aria-expanded="false" aria-controls="user-dropdown" type="button" class="flex items-center gap-2.5 text-left cursor-pointer min-w-0 flex-1">
+        <button id="admin-user-toggle" aria-expanded="false" aria-controls="admin-user-dropdown" type="button" onclick="event.stopPropagation(); const d=document.getElementById('admin-user-dropdown'); if(d){ const isH=d.classList.toggle('hidden'); this.setAttribute('aria-expanded', String(!isH)); }" class="flex items-center gap-2.5 text-left cursor-pointer min-w-0 flex-1">
           @if($adminUser->avatarUrl())
-            <img src="{{ $adminUser->avatarUrl() }}" alt="{{ $adminUser->name }}" class="w-9 h-9 rounded-full object-cover shrink-0 border-2 border-[#10B981] shadow-2xs bg-white">
+            <img loading="lazy" decoding="async" src="{{ $adminUser->avatarUrl() }}" alt="{{ $adminUser->name }}" class="w-9 h-9 rounded-full object-cover shrink-0 border-2 border-[#10B981] shadow-2xs bg-white">
           @else
             <div class="w-9 h-9 bg-gradient-to-tr from-[#006c47] to-[#10B981] text-white rounded-full flex items-center justify-center font-black text-xs shrink-0 shadow-2xs">
               {{ strtoupper(substr($adminUser->name, 0, 1)) }}
@@ -37,7 +56,7 @@
             <span class="text-xs font-extrabold text-slate-900 truncate">{{ $adminUser->name }}</span>
             <span class="text-[10px] font-bold text-[#006c47] truncate">{{ $adminUser->adminSubroleLabel() }}</span>
           </div>
-          <span class="material-symbols-outlined text-slate-500 text-base shrink-0">expand_more</span>
+          <span class="material-symbols-outlined text-slate-500 text-base shrink-0 pointer-events-none select-none">expand_more</span>
         </button>
 
         <a href="{{ route('analyst.users.edit', $adminUser->id) }}" 
@@ -48,7 +67,7 @@
       </div>
 
       <!-- Menú desplegable de Píldora de Perfil (se abre verticalmente debajo) -->
-      <div id="user-dropdown" class="hidden mt-2 w-full bg-white rounded-2xl shadow-lg border border-emerald-200 p-2 z-[80] text-xs">
+      <div id="admin-user-dropdown" class="hidden mt-2 w-full bg-white rounded-2xl shadow-lg border border-emerald-200 p-2 z-[80] text-xs">
         <div class="p-2.5 bg-slate-50 rounded-xl mb-1.5 border border-slate-100">
           <div class="flex items-center justify-between gap-1">
             <p class="font-extrabold text-slate-900 text-xs truncate">{{ $adminUser->name }}</p>
@@ -108,12 +127,11 @@
       </div>
 
       <!-- Botón Fusabot Admin (Estilizado, Pequeño y Redondito) -->
-      <button type="button" onclick="setFusaBotOpen(true)"
-              class="w-full py-1.5 px-3 rounded-full text-white text-xs font-extrabold flex items-center justify-between shadow-[0_3px_12px_rgba(16,185,129,0.28)] hover:shadow-[0_4px_16px_rgba(16,185,129,0.38)] hover:scale-[1.01] active:scale-98 transition-all duration-200 cursor-pointer border border-emerald-400/40 bg-gradient-to-r from-[#006c47] via-[#10B981] to-[#047857] group"
+      <button id="admin-fusabot-launcher" type="button" data-fusabot-open="true" onclick="if(window.setFusaBotOpen){window.setFusaBotOpen(true);}else{const m=document.getElementById('fusabot-modal');if(m){m.style.setProperty('display','flex','important');m.classList.remove('hidden');}}" class="fusabot-launcher-btn w-full py-1.5 px-3 rounded-full text-white text-xs font-extrabold flex items-center justify-between shadow-[0_3px_12px_rgba(16,185,129,0.28)] hover:shadow-[0_4px_16px_rgba(16,185,129,0.38)] hover:scale-[1.01] active:scale-98 transition-all duration-200 cursor-pointer border border-emerald-400/40 bg-gradient-to-r from-[#006c47] via-[#10B981] to-[#047857] group"
               title="Abrir Asistente FusaBot IA">
         <span class="flex items-center gap-2 min-w-0">
           <span class="relative w-6 h-6 rounded-full bg-white p-0.5 shadow-xs overflow-hidden shrink-0 flex items-center justify-center ring-1 ring-white/60 group-hover:rotate-6 transition-transform">
-            <img src="{{ asset('fusabot.png') }}" alt="FusaBot" class="w-full h-full object-cover">
+            <img loading="lazy" decoding="async" src="{{ asset('fusabot.png') }}" alt="FusaBot" class="w-full h-full object-cover">
           </span>
           <span class="text-white text-[11.5px] font-extrabold tracking-tight truncate">FusaBot Asistente</span>
         </span>
@@ -304,4 +322,18 @@
     </a>
   </div>
 
+
+<script id="admin-topbar-user-dropdown-listener">
+document.addEventListener('click', function(e) {
+  const menu = document.getElementById('admin-user-menu');
+  const dropdown = document.getElementById('admin-user-dropdown');
+  const toggle = document.getElementById('admin-user-toggle');
+  if (dropdown && !dropdown.classList.contains('hidden')) {
+    if (!menu || !menu.contains(e.target)) {
+      dropdown.classList.add('hidden');
+      if (toggle) toggle.setAttribute('aria-expanded', 'false');
+    }
+  }
+});
+</script>
 </aside>

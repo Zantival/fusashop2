@@ -150,7 +150,7 @@
               <div class="flex items-center gap-3 bg-slate-50 p-2.5 rounded-xl border border-slate-100 text-xs">
                 <div class="w-10 h-10 rounded-lg bg-white overflow-hidden shrink-0 border border-slate-200">
                   @if($item->product && $item->product->image_url)
-                    <img src="{{ $item->product->image_url }}" alt="{{ $item->product->name }}" class="w-full h-full object-cover">
+                    <img loading="lazy" decoding="async" src="{{ $item->product->image_url }}" alt="{{ $item->product->name }}" class="w-full h-full object-cover">
                   @else
                     <div class="w-full h-full flex items-center justify-center text-slate-400">
                       <span class="material-symbols-outlined text-base">inventory_2</span>

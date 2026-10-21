@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Consumer;
 
 use App\Http\Controllers\Controller;
+use App\Support\ColombiaLocations;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -23,6 +24,7 @@ class AddressController extends Controller
         return view('consumer.addresses', [
             'addresses' => Auth::user()->shippingAddresses()->orderByDesc('is_default')->get(),
             'states' => self::STATES,
+            'municipalities' => ColombiaLocations::all(),
         ]);
     }
 
@@ -71,7 +73,7 @@ class AddressController extends Controller
 
     private function validated(Request $request): array
     {
-        return $request->validate([
+        $data = $request->validate([
             'label' => 'required|string|max:60',
             'recipient' => 'required|string|max:120',
             'phone' => ['required', 'regex:/^[0-9+\s\-]{7,20}$/'],
@@ -80,8 +82,22 @@ class AddressController extends Controller
             'district' => 'nullable|string|max:100',
             'city' => 'required|string|max:100',
             'state' => 'required|in:' . implode(',', array_keys(self::STATES)),
-            'postal_code' => ['required', 'regex:/^[0-9]{6}$/'],
+            'postal_code' => ['nullable', 'regex:/^[0-9]{6}$/'],
             'reference' => 'nullable|string|max:255',
         ]);
+
+        $dummyPostals = ['000000', '123456', '123465', '111111', '999999', '123123'];
+        if (empty($data['postal_code']) || in_array($data['postal_code'], $dummyPostals, true)) {
+            $loc = ColombiaLocations::find($data['city'], $data['state']);
+            if ($loc && !empty($loc['postal_code'])) {
+                $data['postal_code'] = $loc['postal_code'];
+            }
+        }
+
+        if (empty($data['postal_code'])) {
+            $data['postal_code'] = '110111';
+        }
+
+        return $data;
     }
 }

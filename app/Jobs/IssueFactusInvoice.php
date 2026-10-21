@@ -44,7 +44,8 @@ class IssueFactusInvoice implements ShouldQueue
         }
 
         // Paso 2: PDF/XML (si fallan, el reintento solo repite la descarga).
-        $base = 'invoices/' . $order->reference;
+        $ref = $order->reference ?: ('order_' . $order->id);
+        $base = 'invoices/' . $ref;
         if (!$order->invoice_pdf_path) {
             Storage::disk('local')->put("{$base}.pdf", $factus->downloadPdf($order->invoice_number));
             $order->update(['invoice_pdf_path' => "{$base}.pdf"]);

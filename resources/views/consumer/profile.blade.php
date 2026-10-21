@@ -31,7 +31,7 @@
     <div class="flex items-center gap-4">
       <div class="relative w-16 h-16 rounded-2xl overflow-hidden bg-primary/10 border-2 border-primary/20 shrink-0 flex items-center justify-center shadow-inner">
         @if($user->avatarUrl())
-          <img src="{{ $user->avatarUrl() }}" alt="{{ $user->name }}" class="w-full h-full object-cover">
+          <img loading="lazy" decoding="async" src="{{ $user->avatarUrl() }}" alt="{{ $user->name }}" class="w-full h-full object-cover">
         @else
           <span class="font-black text-2xl text-primary">{{ strtoupper(substr($user->name, 0, 2)) }}</span>
         @endif
@@ -611,7 +611,7 @@
 
                     <div class="my-4 p-3 bg-white rounded-xl border border-outline-variant/20 flex items-center gap-3">
                       <div class="w-12 h-12 bg-surface-container rounded-lg shrink-0 flex items-center justify-center p-1">
-                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data={{ urlencode($qrString) }}" alt="QR Voucher" class="w-full h-full object-contain">
+                        <img loading="lazy" decoding="async" src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data={{ urlencode($qrString) }}" alt="QR Voucher" class="w-full h-full object-contain">
                       </div>
                       <div class="flex-1 text-[11px] leading-tight">
                         <span class="font-bold text-on-surface block">Código QR de Redención</span>
@@ -669,7 +669,7 @@
             </div>
           @else
             <div class="overflow-x-auto">
-              <table class="w-full text-left border-collapse">
+              <table class="w-full text-left border-collapse responsive-stack-table">
                 <thead>
                   <tr class="border-b border-outline-variant/20 text-[11px] font-bold text-on-surface-variant uppercase tracking-wider">
                     <th class="py-3 px-4">Factura #</th>
@@ -682,19 +682,19 @@
                 <tbody class="divide-y divide-outline-variant/10 text-xs">
                   @foreach($invoices as $inv)
                     <tr class="hover:bg-surface-container-low transition-colors">
-                      <td class="py-3.5 px-4 font-mono font-bold text-on-surface">
+                      <td class="py-3.5 px-4 font-mono font-bold text-on-surface" data-label="Factura #">
                         {{ $inv->invoice_number ?? 'FE-'.$inv->id }}
                       </td>
-                      <td class="py-3.5 px-4 text-on-surface-variant">
+                      <td class="py-3.5 px-4 text-on-surface-variant" data-label="Fecha Emisión">
                         {{ $inv->invoiced_at ? $inv->invoiced_at->format('d/m/Y') : $inv->created_at->format('d/m/Y') }}
                       </td>
-                      <td class="py-3.5 px-4 font-mono text-[10px] text-on-surface-variant max-w-[200px] truncate" title="{{ $inv->invoice_cufe }}">
+                      <td class="py-3.5 px-4 font-mono text-[10px] text-on-surface-variant max-w-[200px] truncate" data-label="CUFE DIAN" title="{{ $inv->invoice_cufe }}">
                         {{ $inv->invoice_cufe ? substr($inv->invoice_cufe, 0, 24).'...' : 'Validado en DIAN' }}
                       </td>
-                      <td class="py-3.5 px-4 font-bold text-on-surface">
+                      <td class="py-3.5 px-4 font-bold text-on-surface" data-label="Monto Total">
                         ${{ number_format($inv->total, 0, ',', '.') }} COP
                       </td>
-                      <td class="py-3.5 px-4 text-right">
+                      <td class="py-3.5 px-4 text-right" data-label="Descargas DIAN">
                         <div class="flex items-center justify-end gap-2">
                           @if($inv->invoice_pdf_path)
                             <a href="{{ route('consumer.orders.invoice', [$inv->id, 'pdf']) }}" class="px-3 py-1.5 bg-red-50 text-red-700 hover:bg-red-100 border border-red-200 rounded-xl font-bold text-xs flex items-center gap-1 transition-all" title="Descargar PDF DIAN">
@@ -786,7 +786,7 @@
 
       <div class="p-4 bg-surface-container-lowest rounded-2xl border-2 border-dashed border-orange-300 inline-block shadow-inner">
         <template x-if="activeQrData">
-          <img :src="activeQrData.qr" alt="Voucher QR" class="w-48 h-48 mx-auto">
+          <img loading="lazy" decoding="async" :src="activeQrData.qr" alt="Voucher QR" class="w-48 h-48 mx-auto">
         </template>
       </div>
 

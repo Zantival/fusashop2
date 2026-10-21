@@ -57,6 +57,52 @@
     </div>
   </div>
 
+  @php
+    $cp = auth()->user()->companyProfile;
+  @endphp
+  {{-- Card de Recepción de Pagos del Comercio --}}
+  <div class="mb-10 bg-white rounded-3xl p-6 shadow-sm border border-emerald-500/30 flex flex-col md:flex-row md:items-center justify-between gap-6 bg-gradient-to-r from-emerald-50/40 via-white to-white">
+    <div class="flex items-start gap-4">
+      <div class="w-12 h-12 rounded-2xl bg-[#006c47]/10 text-[#006c47] flex items-center justify-center shrink-0">
+        <span class="material-symbols-outlined text-2xl">account_balance</span>
+      </div>
+      <div>
+        <div class="flex items-center gap-2 flex-wrap">
+          <h2 class="text-base font-bold text-on-surface">Recepción de Pagos de tus Ventas</h2>
+          @if($cp && $cp->hasCustomWompi())
+            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#6efcb9]/50 text-[#003f28] inline-flex items-center gap-1">
+              <span class="material-symbols-outlined text-[12px]">verified</span> Pagos Directos a tu Wompi Activos
+            </span>
+          @elseif($cp && $cp->hasPayoutInfo())
+            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-800">
+              Cuenta Bancaria Registrada
+            </span>
+          @else
+            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800">
+              Configuración pendiente
+            </span>
+          @endif
+        </div>
+        <p class="text-xs text-on-surface-variant mt-1">
+          @if($cp && $cp->hasCustomWompi())
+            Tus clientes pagan con tarjeta, PSE o Nequi y el dinero ingresa <strong>directamente a tu pasarela Wompi</strong> sin pasar por el administrador.
+          @elseif($cp && $cp->hasPayoutInfo())
+            Tus datos bancarios están registrados (<strong>{{ $cp->payout_bank_name }} ({{ $cp->payout_account_type }} #{{ $cp->payout_account_number }})</strong>), pero las ventas se pagan en la cuenta Wompi del comerciante y no se transfieren automáticamente a esta cuenta bancaria.
+          @else
+            Configura tus llaves Wompi para que los compradores paguen directamente a tu cuenta de Wompi. Registrar datos bancarios por sí solo no habilita pagos ni transferencias automáticas.
+          @endif
+        </p>
+        @if($cp && $cp->hasCustomWompi())
+          <p class="text-xs text-amber-800 mt-2">La comisión de FusaShop no se descuenta automáticamente de estos pagos directos.</p>
+        @endif
+      </div>
+    </div>
+    <a href="{{ route('merchant.store.edit') }}" class="px-5 py-2.5 bg-[#006c47] hover:bg-[#10B981] text-white text-xs font-bold rounded-xl transition-all shrink-0 flex items-center gap-2 shadow-sm self-start md:self-center">
+      <span class="material-symbols-outlined text-sm">settings</span>
+      Configurar Pagos y Cuenta
+    </a>
+  </div>
+
   <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
     {{-- Low Stock Alerts --}}
     <div class="lg:col-span-2 bg-white rounded-3xl shadow-sm border border-outline-variant/30 overflow-hidden">
@@ -75,7 +121,7 @@
             <p class="text-on-surface-variant font-medium">¡Todo al día! No tienes productos con stock bajo.</p>
           </div>
         @else
-          <table class="w-full text-left">
+          <table class="w-full text-left responsive-stack-table">
             <thead class="bg-surface-container-lowest text-[#3c4a41] text-xs font-bold uppercase">
               <tr>
                 <th class="px-8 py-4">Producto</th>
@@ -87,7 +133,7 @@
             <tbody class="divide-y divide-outline-variant/20">
               @foreach($lowStockProducts as $p)
               <tr class="hover:bg-surface-container-lowest/50 transition-colors">
-                <td class="px-8 py-5">
+                <td class="px-8 py-5" data-label="Producto">
                   <div class="flex items-center gap-3">
                     <div class="w-10 h-10 rounded-lg overflow-hidden bg-surface-container">
                        <x-product-image :product="$p" class="w-full h-full object-cover"/>
@@ -95,23 +141,28 @@
                     <span class="font-bold text-[#1b1c1c] text-sm">{{ $p->name }}</span>
                   </div>
                 </td>
-                <td class="px-8 py-5">
+                <td class="px-8 py-5" data-label="Stock Actual">
                   <span class="text-lg font-black {{ $p->stock == 0 ? 'text-error' : 'text-amber-600' }}">{{ $p->stock }}</span>
                 </td>
-                <td class="px-8 py-5">
+                <td class="px-8 py-5" data-label="Estado">
                   @if($p->stock == 0)
                     <span class="px-2 py-1 bg-error-container text-error text-[10px] font-black uppercase rounded">Agotado</span>
                   @else
                     <span class="px-2 py-1 bg-amber-100 text-amber-700 text-[10px] font-black uppercase rounded">Crítico</span>
                   @endif
                 </td>
-                <td class="px-8 py-5 text-right">
+                <td class="px-8 py-5 text-right" data-label="Acción">
                   <a href="{{ route('merchant.inventory') }}" class="text-primary font-bold text-sm hover:underline">Reponer</a>
                 </td>
               </tr>
               @endforeach
             </tbody>
           </table>
+          @if($lowStockProducts->hasPages())
+            <div class="p-4 border-t border-outline-variant/20">
+              {{ $lowStockProducts->links() }}
+            </div>
+          @endif
         @endif
       </div>
     </div>

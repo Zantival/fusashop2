@@ -5,9 +5,9 @@ namespace App\Http\Controllers\Analyst;
 use App\Http\Controllers\Controller;
 use App\Models\{AdminAuditLog, BannerRequest, CompanyProfile, GlobalBanner, MlRun, Order, OrderItem, Product, Review, Setting, User};
 use App\Services\Admin\{DashboardMetricsService, ReviewTopicAnalysisService, SalesDiagnosisService, SectorCensusService, TerritoryHeatmapService};
+use App\Support\PasswordPolicy;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\{Cache, DB, Hash, Schema, Storage};
-use Illuminate\Validation\Rules\Password;
 use Symfony\Component\Process\Process;
 
 class AnalystController extends Controller
@@ -150,7 +150,7 @@ class AnalystController extends Controller
         $data = $request->validate([
             'name'          => 'required|string|max:255',
             'email'         => 'required|email|unique:users',
-            'password'      => ['required', Password::min(8)],
+            'password'      => ['required', PasswordPolicy::rule()],
             'role'          => 'required|in:consumer,merchant,analyst',
             'admin_subrole' => 'nullable|in:super_admin,analyst_readonly,support',
             'phone'         => 'nullable|string|max:20',
@@ -193,7 +193,7 @@ class AnalystController extends Controller
             'role'          => 'nullable|in:consumer,merchant,analyst',
             'admin_subrole' => 'nullable|in:super_admin,analyst_readonly,support',
             'phone'         => 'nullable|string|max:20',
-            'password'      => ['nullable', Password::min(8)],
+            'password'      => ['nullable', PasswordPolicy::rule()],
             'avatar'        => 'nullable|image|max:4096',
         ]);
 
@@ -540,22 +540,33 @@ class AnalystController extends Controller
     {
         $defaultBannerFee = Setting::bannerFee();
         $commissionRate = Setting::commissionRate();
+        $activeBannerPayout = Setting::activeBannerPayoutSnapshot();
 
-        $bannerPayments = BannerRequest::with('user')->latest()->get()->map(fn ($br) => [
-            'id'         => $br->id,
-            'type'       => 'Banner Publicitario',
-            'merchant'   => $br->user->name ?? 'Desconocido',
-            'email'      => $br->user->email ?? '-',
-            'amount'     => $br->cost > 0 ? $br->cost : $defaultBannerFee,
-            'status'     => $br->status,
-            'date'       => $br->created_at,
-            'detail_url' => route('analyst.banner-requests.show', $br->id),
+        $bannerPayments = BannerRequest::with('user.companyProfile')->latest()->get()->map(fn ($br) => [
+            'id'                  => $br->id,
+            'type'                => ($br->target_type ?? '') === 'promo_card' ? 'Tarjeta Promocional' : 'Banner Publicitario',
+            'merchant'            => $br->user->companyProfile->company_name ?? $br->user->name ?? 'Desconocido',
+            'email'               => $br->user->email ?? '-',
+            'amount'              => $br->cost > 0 ? $br->cost : $defaultBannerFee,
+            'status'              => $br->status,
+            'reference'           => $br->payment_proof_path,
+            'destination_mode'    => $br->isCorporateDestination() ? 'corporate' : 'custom',
+            'destination_badge'   => $br->isCorporateDestination() ? 'Cuenta Corporativa Central' : 'Cuenta Específica Analista',
+            'destination_account' => $br->formattedPayoutDestination(),
+            'destination_holder'  => $br->payout_account_holder ?: $activeBannerPayout['payout_account_holder'],
+            'date'                => $br->created_at,
+            'detail_url'          => route('analyst.banner-requests.show', $br->id),
         ]);
 
-        $merchantAccounts = CompanyProfile::with('user')->latest()->get()->map(function ($cp) use ($commissionRate) {
-            $sales = (float) OrderItem::join('products', 'products.id', '=', 'order_items.product_id')
-                ->where('products.merchant_id', $cp->merchant_id)
-                ->sum(DB::raw('order_items.quantity * order_items.price'));
+        $merchantSalesMap = OrderItem::join('products', 'products.id', '=', 'order_items.product_id')
+            ->join('orders', 'orders.id', '=', 'order_items.order_id')
+            ->where('orders.payment_status', 'paid')
+            ->groupBy('products.merchant_id')
+            ->select('products.merchant_id', DB::raw('SUM(order_items.quantity * order_items.price) as total_sales'))
+            ->pluck('total_sales', 'products.merchant_id');
+
+        $merchantAccounts = CompanyProfile::with('user')->latest()->get()->map(function ($cp) use ($commissionRate, $merchantSalesMap) {
+            $sales = (float) ($merchantSalesMap[$cp->merchant_id] ?? 0);
             $commission = round($sales * ($commissionRate / 100));
             return [
                 'id'                => $cp->merchant_id,
@@ -563,9 +574,14 @@ class AnalystController extends Controller
                 'owner'             => $cp->user->name ?? 'Desconocido',
                 'email'             => $cp->user->email ?? '-',
                 'kyc_status'        => $cp->kyc_status,
+                'payout_summary'    => $cp->formattedPayoutSummary(),
+                'has_payout'        => $cp->hasPayoutInfo(),
                 'sales'             => $sales,
                 'commission'        => $commission,
-                'net_payout'        => max(0, $sales - $commission),
+                // El checkout actual paga directamente al comerciante; la comisión no se retiene ni liquida automáticamente.
+                'net_payout'        => $sales,
+                'commission_is_collected' => false,
+                'direct_wompi_active' => $cp->hasCustomWompi(),
                 'settlement_status' => $cp->settlement_status ?? 'pending',
                 'created_at'        => $cp->created_at,
             ];
@@ -573,7 +589,113 @@ class AnalystController extends Controller
 
         $totalBannerRevenue = $bannerPayments->where('status', 'approved')->sum('amount');
 
-        return view('analyst.payments', compact('bannerPayments', 'merchantAccounts', 'totalBannerRevenue', 'commissionRate', 'defaultBannerFee'));
+        return view('analyst.payments', compact('bannerPayments', 'merchantAccounts', 'totalBannerRevenue', 'commissionRate', 'defaultBannerFee', 'activeBannerPayout'));
+    }
+
+    public function updateBannerPayoutConfig(Request $request)
+    {
+        $mode = $request->input('destination_mode', 'corporate');
+        if (!in_array($mode, ['corporate', 'custom'], true)) {
+            $mode = 'corporate';
+        }
+
+        $current = Setting::bannerPayoutConfig();
+
+        if ($mode === 'corporate') {
+            $data = $request->validate([
+                'corporate_bank_name'      => 'required|string|max:120',
+                'corporate_account_type'   => 'required|in:Ahorros,Corriente',
+                'corporate_account_number' => 'required|string|max:60',
+                'corporate_account_holder' => 'required|string|max:150',
+                'corporate_nit'            => 'nullable|string|max:40',
+            ], [
+                'corporate_bank_name.required'      => 'Indica la entidad bancaria de la cuenta corporativa central.',
+                'corporate_account_number.required' => 'Indica el número de la cuenta corporativa central de FusaShop.',
+            ]);
+
+            $updated = array_merge($current, [
+                'destination_mode'         => 'corporate',
+                'corporate_bank_name'      => strip_tags(trim($data['corporate_bank_name'])),
+                'corporate_account_type'   => strip_tags(trim($data['corporate_account_type'])),
+                'corporate_account_number' => strip_tags(trim($data['corporate_account_number'])),
+                'corporate_account_holder' => strip_tags(trim($data['corporate_account_holder'])),
+                'corporate_nit'            => strip_tags(trim($data['corporate_nit'] ?? '')),
+                'updated_by'               => auth()->user()->name ?? 'Analista',
+                'updated_at'               => now()->format('d/m/Y h:i A'),
+            ]);
+        } else {
+            $customMethod = $request->input('custom_method_type', 'bank') === 'wallet' ? 'wallet' : 'bank';
+
+            if ($customMethod === 'wallet') {
+                $request->merge([
+                    'custom_wallet_phone' => preg_replace('/\D+/', '', (string) $request->input('custom_wallet_phone')),
+                ]);
+                $data = $request->validate([
+                    'custom_wallet_provider' => 'required|in:Nequi,Daviplata',
+                    'custom_wallet_phone'    => ['required', 'string', 'regex:/^[0-9]{10}$/'],
+                    'custom_account_holder'  => 'required|string|max:150',
+                    'custom_id_number'       => 'nullable|string|max:40',
+                ], [
+                    'custom_wallet_provider.required' => 'Selecciona la billetera digital (Nequi o Daviplata).',
+                    'custom_wallet_phone.required'    => 'Ingresa el número de teléfono celular asociado a la billetera digital.',
+                    'custom_wallet_phone.regex'       => 'El número de teléfono de Nequi o Daviplata debe tener exactamente 10 dígitos.',
+                    'custom_account_holder.required'  => 'Indica el nombre del titular de la cuenta o billetera.',
+                ]);
+
+                $updated = array_merge($current, [
+                    'destination_mode'       => 'custom',
+                    'custom_method_type'     => 'wallet',
+                    'custom_wallet_provider' => strip_tags(trim($data['custom_wallet_provider'])),
+                    'custom_wallet_phone'    => $data['custom_wallet_phone'],
+                    'custom_account_holder'  => strip_tags(trim($data['custom_account_holder'])),
+                    'custom_id_number'       => strip_tags(trim($data['custom_id_number'] ?? '')),
+                    'updated_by'             => auth()->user()->name ?? 'Analista',
+                    'updated_at'             => now()->format('d/m/Y h:i A'),
+                ]);
+            } else {
+                $request->merge([
+                    'custom_account_number' => preg_replace('/[^0-9\-]//', '', (string) $request->input('custom_account_number')),
+                ]);
+                $data = $request->validate([
+                    'custom_bank_name'      => 'required|string|max:100',
+                    'custom_account_type'   => 'required|in:Ahorros,Corriente',
+                    'custom_account_number' => ['required', 'string', 'min:6', 'max:30', 'regex:/^[0-9\-]{6,30}$/'],
+                    'custom_account_holder' => 'required|string|max:150',
+                    'custom_id_number'      => 'nullable|string|max:40',
+                ], [
+                    'custom_bank_name.required'      => 'Selecciona el banco para el recaudo publicitario.',
+                    'custom_account_type.required'   => 'Selecciona el tipo de cuenta (Ahorros o Corriente).',
+                    'custom_account_number.required' => 'Ingresa el número de cuenta bancaria.',
+                    'custom_account_number.min'      => 'El número de cuenta debe tener al menos 6 dígitos.',
+                    'custom_account_holder.required' => 'Indica el nombre del titular de la cuenta.',
+                ]);
+
+                $updated = array_merge($current, [
+                    'destination_mode'      => 'custom',
+                    'custom_method_type'    => 'bank',
+                    'custom_bank_name'      => strip_tags(trim($data['custom_bank_name'])),
+                    'custom_account_type'   => strip_tags(trim($data['custom_account_type'])),
+                    'custom_account_number' => $data['custom_account_number'],
+                    'custom_account_holder' => strip_tags(trim($data['custom_account_holder'])),
+                    'custom_id_number'      => strip_tags(trim($data['custom_id_number'] ?? '')),
+                    'updated_by'            => auth()->user()->name ?? 'Analista',
+                    'updated_at'            => now()->format('d/m/Y h:i A'),
+                ]);
+            }
+        }
+
+        Setting::setValue('banner_payout_config', json_encode($updated), 'financial', 'Configuración de destino de ingresos por banners publicitarios');
+        $auditConfig = static function (array $config): array {
+            foreach (['custom_wompi_integrity_secret', 'custom_wompi_events_secret'] as $secretKey) {
+                if (!empty($config[$secretKey])) {
+                    $config[$secretKey] = '[CONFIGURADO]';
+                }
+            }
+            return $config;
+        };
+        AdminAuditLog::record('settings.banner_payout_config', null, 'Actualización de destino de recaudo de banners publicitarios', $auditConfig($current), $auditConfig($updated));
+
+        return back()->with('success', '¡Configuración de destino de ingresos por banners y publicidad actualizada exitosamente!');
     }
 
     // ─── Banners Globales y Marca ──────────────────────────────────────────────
@@ -584,6 +706,16 @@ class AnalystController extends Controller
         $activeBannersCount = $banners->where('is_active', true)->count();
         $pendingRequests = BannerRequest::with('user.companyProfile')->latest()->get();
         $bannerFee = Setting::bannerFee();
+        $bannerMerchants = User::where('role', 'merchant')
+            ->where('is_blocked', false)
+            ->with('companyProfile')
+            ->get()
+            ->map(fn ($merchant) => [
+                'id' => $merchant->id,
+                'label' => trim((string) ($merchant->companyProfile->company_name ?: $merchant->name)),
+            ])
+            ->sortBy('label', SORT_NATURAL | SORT_FLAG_CASE)
+            ->values();
 
         // 1. Detección de productos con descuento real (% OFF) o promociones de comerciantes
         $allActiveProducts = Product::with('merchant.companyProfile')
@@ -638,6 +770,7 @@ class AnalystController extends Controller
             'activeBannersCount',
             'pendingRequests', 
             'bannerFee', 
+            'bannerMerchants',
             'allActiveProducts',
             'discountedProducts', 
             'categoriesWithDiscounts', 
@@ -771,6 +904,7 @@ class AnalystController extends Controller
 
         $banner = GlobalBanner::create([
             'title'      => $bannerTitle,
+            'description'=> strip_tags($requestInfo->notes ?? ''),
             'image_path' => $requestInfo->image_path,
             'link_url'   => $linkUrl,
             'is_active'  => true,
@@ -800,24 +934,44 @@ class AnalystController extends Controller
     public function bannerStore(Request $request)
     {
         $request->validate([
-            'title'      => 'nullable|string|max:255',
+            'title'      => 'required|string|max:255',
+            'description'=> 'required|string|max:1500',
             'image'      => 'required|file|mimes:jpg,jpeg,png,webp,mp4,webm,mov|max:10240',
-            'link_url'   => 'nullable|url|max:500',
+            'merchant_id'=> 'nullable|integer|exists:users,id',
             'sort_order' => 'nullable|integer|min:0',
             'starts_at'  => 'nullable|date',
             'ends_at'    => 'nullable|date|after_or_equal:starts_at',
         ]);
 
+        $targetMerchant = null;
+        if ($request->filled('merchant_id')) {
+            $targetMerchant = User::where('role', 'merchant')
+                ->where('is_blocked', false)
+                ->find($request->integer('merchant_id'));
+            if (!$targetMerchant) {
+                if ($request->expectsJson()) {
+                    return response()->json(['message' => 'Selecciona un comercio activo de la lista.'], 422);
+                }
+                return back()->withInput()->withErrors(['merchant_id' => 'Selecciona un comercio activo de la lista.']);
+            }
+        }
+
         $activeCount = GlobalBanner::where('is_active', true)->count();
         if ($activeCount >= 8) {
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'Ya hay 8 banners activos. Desactiva uno antes de publicar otro.'], 422);
+            }
             return back()->with('error', 'Ya existen 8 banners activos (4 en el espacio superior y 4 en el inferior). Desactiva o elimina uno antes de publicar otro.');
         }
 
         $path = $request->file('image')->store('global_banners', 'public');
         $banner = GlobalBanner::create([
             'title'      => strip_tags($request->title ?? ''),
+            'description'=> strip_tags($request->description ?? ''),
             'image_path' => $path,
-            'link_url'   => $request->link_url,
+            'link_url'   => $targetMerchant
+                ? route('consumer.merchant.profile', $targetMerchant->id)
+                : route('consumer.catalog'),
             'is_active'  => true,
             'sort_order' => $request->sort_order ?? ((int) GlobalBanner::max('sort_order') + 1),
             'starts_at'  => $request->starts_at,
@@ -825,6 +979,22 @@ class AnalystController extends Controller
         ]);
 
         AdminAuditLog::record('banner.created', $banner, 'Nuevo banner global subido');
+        if ($request->expectsJson()) {
+            return response()->json([
+                'message' => 'Banner publicado correctamente.',
+                'banner' => [
+                    'id' => $banner->id,
+                    'title' => $banner->title ?: 'Banner sin título',
+                    'description' => $banner->description,
+                    'image_url' => $banner->image_url,
+                    'is_video' => $banner->is_video,
+                    'link_url' => $banner->link_url,
+                    'merchant_name' => $targetMerchant?->companyProfile?->company_name ?: $targetMerchant?->name,
+                    'sort_order' => $banner->sort_order,
+                ],
+                'active_count' => GlobalBanner::where('is_active', true)->count(),
+            ]);
+        }
         return back()->with('success', 'Banner creado y programado exitosamente.');
     }
 
@@ -1088,11 +1258,14 @@ class AnalystController extends Controller
         $reviewAnalysis = $reviewService->analyzeAll();
         $territorialData = $territoryService->getTerritorialIntelligence();
 
-        // Top 10 y Bottom 10 comercios por ventas
-        $allMerchantsRanking = CompanyProfile::with('user')->get()->map(function ($cp) {
-            $sales = (float) OrderItem::join('products', 'products.id', '=', 'order_items.product_id')
-                ->where('products.merchant_id', $cp->merchant_id)
-                ->sum(DB::raw('order_items.quantity * order_items.price'));
+        // Top 10 y Bottom 10 comercios por ventas (Optimizado con agregación SQL agrupada)
+        $rankingSalesMap = OrderItem::join('products', 'products.id', '=', 'order_items.product_id')
+            ->groupBy('products.merchant_id')
+            ->select('products.merchant_id', DB::raw('SUM(order_items.quantity * order_items.price) as total_sales'))
+            ->pluck('total_sales', 'products.merchant_id');
+
+        $allMerchantsRanking = CompanyProfile::with('user')->get()->map(function ($cp) use ($rankingSalesMap) {
+            $sales = (float) ($rankingSalesMap[$cp->merchant_id] ?? 0);
             return (object) [
                 'company_name' => $cp->company_name,
                 'business_type' => $cp->business_type ?? 'Comercio',

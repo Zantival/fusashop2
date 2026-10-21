@@ -764,3 +764,168 @@ h3 {
 .card__stock.ok  { color: #006c47; }
 .card__stock.low { color: #d97706; }
 .card__stock.out { color: #ba1a1a; }
+
+
+/* ============================================================
+   RESPONSIVIDAD MÓVIL Y MEDIA QUERIES (< 768px)
+   Sin alterar el diseño actual de escritorio (>= 768px)
+   ============================================================ */
+
+/* 1. Comportamiento en escritorio (>= 768px): Garantizar diseño de PC intacto */
+@media (min-width: 768px) {
+  #top-nav-category-wrapper {
+    display: block !important;
+  }
+  .panel-layout-wrapper {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: flex-start !important;
+  }
+  #panel-sidebar {
+    transform: none !important;
+    position: sticky !important;
+    top: 0 !important;
+    left: 0 !important;
+    height: 100vh !important;
+    width: 270px !important;
+    min-width: 270px !important;
+    z-index: 60 !important;
+    display: flex !important;
+  }
+  #panel-mobile-header,
+  #panel-sidebar-backdrop {
+    display: none !important;
+  }
+}
+
+/* 2. Adaptación para dispositivos móviles (< 768px) */
+@media (max-width: 767.98px) {
+  /* Ocultar barra horizontal de categorías de PC en móviles */
+  #top-nav-category-wrapper {
+    display: none !important;
+  }
+
+  /* Contenedor del panel administrativo / comerciante: apilado vertical */
+  .panel-layout-wrapper {
+    display: flex !important;
+    flex-direction: column !important;
+    min-height: 100vh !important;
+    width: 100% !important;
+  }
+
+  /* Barra lateral del panel en móvil: convertida a menú off-canvas deslizable */
+  #panel-sidebar {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    bottom: 0 !important;
+    width: 280px !important;
+    max-width: 85vw !important;
+    height: 100vh !important;
+    z-index: 9999 !important;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3) !important;
+    transform: translateX(-100%);
+    transition: transform 300ms cubic-bezier(0.4, 0, 0.2, 1) !important;
+    overflow-y: auto !important;
+  }
+
+  #panel-sidebar.is-open {
+    transform: translateX(0) !important;
+  }
+
+  /* Conversión de layouts horizontales de tablas en tarjetas apiladas verticales */
+  .responsive-stack-table,
+  table.responsive-stack-table,
+  .table-responsive-stack table {
+    display: block !important;
+    width: 100% !important;
+    border: none !important;
+    background: transparent !important;
+  }
+
+  .responsive-stack-table thead,
+  table.responsive-stack-table thead,
+  .table-responsive-stack table thead {
+    display: none !important;
+  }
+
+  .responsive-stack-table tbody,
+  table.responsive-stack-table tbody,
+  .table-responsive-stack table tbody {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0.875rem !important;
+    width: 100% !important;
+  }
+
+  .responsive-stack-table tr,
+  table.responsive-stack-table tr,
+  .table-responsive-stack table tr {
+    display: flex !important;
+    flex-direction: column !important;
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 1rem !important;
+    padding: 0.875rem 1rem !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04) !important;
+    margin-bottom: 0 !important;
+    width: 100% !important;
+  }
+
+  .responsive-stack-table td,
+  table.responsive-stack-table td,
+  .table-responsive-stack table td {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    padding: 0.5rem 0 !important;
+    border: none !important;
+    border-bottom: 1px dashed #f1f5f9 !important;
+    font-size: 0.8125rem !important;
+    width: 100% !important;
+    text-align: right !important;
+  }
+
+  .responsive-stack-table td:last-child,
+  table.responsive-stack-table td:last-child,
+  .table-responsive-stack table td:last-child {
+    border-bottom: none !important;
+    padding-top: 0.75rem !important;
+    justify-content: flex-end !important;
+  }
+
+  .responsive-stack-table td[data-label]::before,
+  table.responsive-stack-table td[data-label]::before,
+  .table-responsive-stack table td[data-label]::before {
+    content: attr(data-label);
+    font-weight: 700;
+    font-size: 0.6875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #64748b;
+    text-align: left;
+    margin-right: 0.75rem;
+    flex-shrink: 0;
+  }
+
+  /* Conversión de layouts horizontales de columnas múltiples en apilados verticales mediante Flexbox y Grid */
+  .mobile-stack-vertical {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 1rem !important;
+  }
+
+  .mobile-grid-1col {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 1rem !important;
+  }
+
+  /* Ajuste de modal asistente en pantalla móvil */
+  #fusabot-modal {
+    width: calc(100vw - 1rem) !important;
+    right: 0.5rem !important;
+    bottom: 4.5rem !important;
+    max-height: calc(100vh - 5.5rem) !important;
+  }
+}

@@ -11,24 +11,43 @@ class WompiService
     /**
      * Firma de integridad: SHA256("{referencia}{monto_en_centavos}{moneda}{secreto_integridad}").
      */
-    public function integritySignature(string $reference, int $amountInCents, string $currency = 'COP'): string
+    public function integritySignature(string $reference, int $amountInCents, string $currency = 'COP', ?string $customSecret = null): string
     {
-        return hash('sha256', $reference . $amountInCents . $currency . config('services.wompi.integrity_secret'));
+        $secret = $customSecret;
+        if ($secret === null) {
+            $order = Order::where('reference', $reference)->first();
+            $secret = $order?->merchantProfile()?->wompi_integrity_secret ?: config('services.wompi.integrity_secret');
+        }
+
+        return hash('sha256', $reference . $amountInCents . $currency . $secret);
     }
 
-    public function isSandboxWithoutKeys(): bool
+    public function isSandboxWithoutKeys(?Order $order = null): bool
     {
+        $merchantProfile = $order?->merchantProfile();
+        if ($merchantProfile?->hasCustomWompi()) {
+            return false;
+        }
+
         return config('services.wompi.env', 'sandbox') === 'sandbox'
             && empty(config('services.wompi.public_key'));
     }
 
-    /** URL del Web Checkout oficial de Wompi (sandbox o producción según llaves, o simulador local si no hay llaves). */
+    /** URL del Web Checkout oficial de Wompi (el pago ingresa directamente al comerciante si configuró sus llaves). */
     public function checkoutUrl(Order $order, string $redirectUrl): string
     {
         $cents = $order->totalInCents();
-        $signature = $this->integritySignature($order->reference, $cents, $order->currency);
+        $merchantProfile = $order->merchantProfile();
+        $useMerchantKeys = $merchantProfile?->hasCustomWompi() ?? false;
 
-        if ($this->isSandboxWithoutKeys()) {
+        $signature = $this->integritySignature(
+            $order->reference,
+            $cents,
+            $order->currency,
+            $useMerchantKeys ? $merchantProfile->wompi_integrity_secret : null
+        );
+
+        if ($this->isSandboxWithoutKeys($order)) {
             return route('wompi.sandbox.checkout', [
                 'reference'       => $order->reference,
                 'amount_in_cents' => $cents,
@@ -38,8 +57,14 @@ class WompiService
             ]);
         }
 
+        $publicKey = $useMerchantKeys ? $merchantProfile->wompi_public_key : config('services.wompi.public_key');
+
+        if (empty($publicKey)) {
+            throw new \RuntimeException('El pedido no tiene una cuenta Wompi válida de un único comerciante.');
+        }
+
         return rtrim(config('services.wompi.checkout_url'), '/') . '/?' . $this->buildCheckoutQuery([
-            'public-key'              => config('services.wompi.public_key'),
+            'public-key'              => $publicKey,
             'currency'                => $order->currency,
             'amount-in-cents'         => $cents,
             'reference'               => $order->reference,
@@ -50,13 +75,17 @@ class WompiService
         ]);
     }
 
-    /** URL de Checkout Wompi para pago de pauta publicitaria (BannerRequest). */
+    /** URL de Checkout Wompi para pago de pauta publicitaria (BannerRequest - va a la plataforma o destino del analista). */
     public function bannerCheckoutUrl(\App\Models\BannerRequest $bannerRequest, string $reference, string $redirectUrl): string
     {
         $cents = (int) round(((float) $bannerRequest->cost) * 100);
-        $signature = $this->integritySignature($reference, $cents, 'COP');
+        $activeSnapshot = \App\Models\Setting::activeBannerPayoutSnapshot();
+        $publicKey = $activeSnapshot['wompi_public_key'] ?: config('services.wompi.public_key');
+        $integritySecret = $activeSnapshot['wompi_integrity_secret'] ?: config('services.wompi.integrity_secret');
 
-        if ($this->isSandboxWithoutKeys()) {
+        $signature = hash('sha256', $reference . $cents . 'COP' . $integritySecret);
+
+        if ($this->isSandboxWithoutKeys() && empty($activeSnapshot['wompi_public_key'])) {
             return route('wompi.sandbox.checkout', [
                 'reference'       => $reference,
                 'amount_in_cents' => $cents,
@@ -67,7 +96,7 @@ class WompiService
         }
 
         return rtrim(config('services.wompi.checkout_url'), '/') . '/?' . $this->buildCheckoutQuery([
-            'public-key'              => config('services.wompi.public_key'),
+            'public-key'              => $publicKey,
             'currency'                => 'COP',
             'amount-in-cents'         => $cents,
             'reference'               => $reference,
@@ -94,11 +123,28 @@ class WompiService
 
     /**
      * Valida la autenticidad de un evento de Wompi.
-     * checksum = SHA256(valores de signature.properties concatenados + timestamp + events_secret)
+     * Soporta tanto las credenciales del comerciante como las globales.
      */
     public function verifyEvent(array $payload, ?string $headerChecksum = null): bool
     {
-        $secret = config('services.wompi.events_secret');
+        $reference = Arr::get($payload, 'data.transaction.reference');
+        $order = $reference ? Order::where('reference', $reference)->first() : null;
+        $merchantProfile = $order?->merchantProfile();
+        $bannerRequest = !$order && $reference
+            ? \App\Models\BannerRequest::where('payment_proof_path', $reference)->exists()
+            : false;
+
+        if ($merchantProfile?->hasCustomWompi()) {
+            $secret = $merchantProfile->wompi_events_secret;
+        } elseif ($bannerRequest) {
+            $bannerCredentials = \App\Models\Setting::activeBannerPayoutSnapshot();
+            $secret = !empty($bannerCredentials['wompi_public_key'])
+                ? $bannerCredentials['wompi_events_secret']
+                : config('services.wompi.events_secret');
+        } else {
+            $secret = config('services.wompi.events_secret');
+        }
+
         $properties = Arr::get($payload, 'signature.properties');
         $checksum = Arr::get($payload, 'signature.checksum') ?: $headerChecksum;
         $timestamp = Arr::get($payload, 'timestamp');

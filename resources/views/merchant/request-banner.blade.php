@@ -57,7 +57,7 @@
         Solicitar Pauta Publicitaria (Banner Principal)
       </h1>
       <p class="text-slate-500 text-xs md:text-sm mt-1">
-        Sube la pieza publicitaria, escribe las instrucciones para el administrador, elige hacia dónde dirigir a tus clientes (tienda entera o productos en oferta) y realiza el pago seguro para su publicación.
+        Sube la pieza publicitaria, escribe la descripción que verán tus clientes, elige el destino del anuncio y realiza el pago seguro para su publicación.
       </p>
     </div>
 
@@ -121,7 +121,7 @@
           <div x-show="previewUrl" x-cloak style="display: none;" class="space-y-3">
             <div class="relative rounded-2xl overflow-hidden border border-slate-200 bg-slate-900 aspect-[3/1] max-h-72 flex items-center justify-center shadow-inner">
               <template x-if="!isVideo">
-                <img :src="previewUrl" alt="Previsualización del Banner" class="w-full h-full object-cover">
+                <img loading="lazy" decoding="async" :src="previewUrl" alt="Previsualización del Banner" class="w-full h-full object-cover">
               </template>
               <template x-if="isVideo">
                 <video :src="previewUrl" controls class="w-full h-full object-contain"></video>
@@ -145,8 +145,8 @@
       <div class="flex items-center gap-2.5 border-b border-slate-100 pb-3">
         <span class="w-7 h-7 rounded-full bg-emerald-600 text-white font-extrabold text-xs flex items-center justify-center">2</span>
         <div>
-          <h2 class="font-bold text-slate-800 text-base md:text-lg">Descripción e Instrucciones para el Administrador *</h2>
-          <p class="text-slate-400 text-xs">Indica el título o eslogan y las indicaciones exactas de lo que deseas que publique el administrador.</p>
+          <h2 class="font-bold text-slate-800 text-base md:text-lg">Descripción que verán tus clientes *</h2>
+          <p class="text-slate-400 text-xs">Escribe el mensaje que aparecerá sobre la imagen del banner.</p>
         </div>
       </div>
 
@@ -162,13 +162,13 @@
         </div>
 
         <div>
-          <label class="block text-xs font-extrabold uppercase tracking-wider text-slate-600 mb-1.5">
-            ¿Qué deseas que comunique el Administrador en la publicación? *
+            <label class="block text-xs font-extrabold uppercase tracking-wider text-slate-600 mb-1.5">
+              Descripción del anuncio *
           </label>
           <textarea name="description" rows="4" required
-                    placeholder="Escribe aquí las instrucciones detalladas para el administrador. Por ejemplo: 'Por favor publicar este banner en el carrusel de inicio, destacando que tenemos 20% de descuento en la colección de calzado hasta este domingo y que contamos con envíos gratis en Fusagasugá'."
+                    placeholder="Ejemplo: 20 % de descuento en nuestra colección de calzado hasta este domingo. Envíos gratis en Fusagasugá."
                     class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/40 text-slate-800 placeholder-slate-400 font-normal leading-relaxed">{{ old('description') }}</textarea>
-          <p class="text-[11px] text-slate-400 mt-1">El administrador leerá estas notas para programar y redactar cualquier texto complementario de tu pauta publicitaria.</p>
+          <p class="text-[11px] text-slate-400 mt-1">Este texto se mostrará en el banner y será visible para todos los visitantes.</p>
         </div>
       </div>
     </div>
@@ -306,7 +306,7 @@
                   
                   <div class="w-12 h-12 rounded-lg bg-slate-100 border border-slate-200 overflow-hidden shrink-0 flex items-center justify-center relative">
                     @if($p->image_url)
-                      <img src="{{ $p->image_url }}" alt="{{ $p->name }}" class="w-full h-full object-cover">
+                      <img loading="lazy" decoding="async" src="{{ $p->image_url }}" alt="{{ $p->name }}" class="w-full h-full object-cover">
                     @else
                       <span class="material-symbols-outlined text-slate-400 text-xl">image</span>
                     @endif

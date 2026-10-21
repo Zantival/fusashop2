@@ -26,7 +26,7 @@ $stockLeft = $product->availableStock();
 @endphp
 
 <div class="group bg-white rounded-3xl border border-slate-200/80 hover:border-[#10B981]/50 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col overflow-hidden relative">
-    
+
     <!-- Badges superiores -->
     <div class="absolute top-3 left-3 z-10 flex flex-col gap-1 items-start pointer-events-none">
         @if($hasDiscount)
@@ -50,9 +50,9 @@ $stockLeft = $product->availableStock();
     <!-- Imagen con Zoom en Hover -->
     <a href="{{ route('consumer.product', $product->id) }}" class="relative aspect-square w-full bg-slate-50 overflow-hidden flex items-center justify-center">
         @if($hasImage)
-            <img src="{{ $imageUrl }}" 
-                 alt="{{ e($product->name) }}" 
-                 loading="lazy" 
+            <img loading="lazy" decoding="async" src="{{ $imageUrl }}"
+                 alt="{{ e($product->name) }}"
+                 loading="lazy"
                  class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out">
         @else
             <div class="w-full h-full flex items-center justify-center bg-gradient-to-tr from-slate-100 to-slate-200 text-slate-400 group-hover:scale-105 transition-transform duration-500">

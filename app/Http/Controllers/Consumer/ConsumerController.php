@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Consumer;
 
 use App\Http\Controllers\Controller;
 use App\Models\{Product, Cart, CartItem, Order, OrderItem, CompanyProfile, Review, User, GlobalBanner};
+use App\Support\PasswordPolicy;
 use App\Events\ProductOutOfStock;
 use App\Notifications\{NewProductReview, NewOrderNotification};
 use Illuminate\Http\Request;
@@ -98,6 +99,76 @@ class ConsumerController extends Controller
         $links = [];
         $escalate = false;
 
+        // 1. Error en Facturación Electrónica Factus / DIAN
+        if (preg_match('/\b(error.*factur|fallo.*factur|error.*factus|fallo.*factus|error.*dian|cufe|xml.*error|error.*xml)\b/', $normalized)) {
+            $answer = "🧾 **Solución a Errores de Facturación Electrónica con Factus:**\n\n"
+                . "1. ⚙️ **Rango de Numeración DIAN**: Verifica en tu configuración que la resolución y rango de facturación autorizados por la DIAN no hayan expirado ni alcanzado el número consecutivo límite.\n"
+                . "2. ⏱️ **Reintentos del Sistema**: Si la API de Factus experimentó lentitud, FusaShop reintenta la emisión en segundo plano. Puedes auditar el CUFE en tu Dashboard.\n"
+                . "3. 👨‍💼 **Asistencia Técnica**: Si un pedido pagado continúa sin generar CUFE legal, comunícate con el Administrador para forzar la reemisión.";
+            $links[] = ['label' => '📊 Ver Dashboard y Ventas', 'url' => route('merchant.dashboard')];
+            if ($adminId) {
+                $links[] = ['label' => '💬 Solicitar Revisión con Administrador', 'url' => route('chat.show', $adminId), 'primary' => true];
+            }
+            return response()->json(['answer' => $answer, 'links' => $links, 'products' => [], 'escalate' => true]);
+        }
+
+        // 2. Error de Envíos / Guías Envia.com
+        if (preg_match('/\b(error.*envia|fallo.*envia|error.*guia|fallo.*guia|no.*genera.*guia|error.*despacho|flete.*error)\b/', $normalized)) {
+            $answer = "🚚 **Solución a Inconvenientes con Guías de Envia.com:**\n\n"
+                . "1. 🏢 **Dirección de Origen Completa**: En tu *Perfil Comercial*, verifica que la dirección de tu negocio tenga nomenclatura exacta (calle/carrera, número, barrio) y teléfono válido.\n"
+                . "2. ⚖️ **Peso y Dimensiones**: Asegúrate de que el producto tenga peso (en kg) y dimensiones mayores a 0; de lo contrario Envia no puede liquidar el flete.\n"
+                . "3. 📦 **Generación de Guía**: Puedes ingresar a *Pedidos para Despachar* y generar el rótulo en PDF para entregarlo a la transportadora.";
+            $links[] = ['label' => '🏢 Revisar Dirección en Perfil', 'url' => route('merchant.profile')];
+            $links[] = ['label' => '📦 Pedidos para Despachar', 'url' => route('merchant.orders'), 'primary' => true];
+            if ($adminId) {
+                $links[] = ['label' => '💬 Soporte Logístico con Administrador', 'url' => route('chat.show', $adminId)];
+            }
+            return response()->json(['answer' => $answer, 'links' => $links, 'products' => [], 'escalate' => true]);
+        }
+
+        // 3. Error al Publicar o Modificar Productos / Fotos
+        if (preg_match('/\b(error.*producto|fallo.*producto|no.*deja.*publicar|error.*foto|error.*imagen|error.*subir|error.*variante|error.*precio)\b/', $normalized)) {
+            $answer = "📸 **Solución a Problemas al Publicar o Editar Productos:**\n\n"
+                . "1. 🖼️ **Formato y Peso de Imágenes**: Las fotos deben ser en formato JPG, PNG o WEBP y pesar máximo 5 MB cada una.\n"
+                . "2. 💲 **Formato de Precio**: Ingresa únicamente números enteros (sin puntos, comas ni símbolos de moneda).\n"
+                . "3. 🏷️ **Categoría y Stock**: Recuerda seleccionar una categoría del listado e indicar un stock inicial mayor a 0.\n"
+                . "4. 📑 **Verificación KYC**: Para publicar productos tu perfil debe estar verificado con RUT y Cámara de Comercio aprobados.";
+            $links[] = ['label' => '➕ Publicar Producto', 'url' => route('merchant.products.create'), 'primary' => true];
+            $links[] = ['label' => '📦 Gestionar Mis Productos', 'url' => route('merchant.products')];
+            $links[] = ['label' => '🏢 Estado de Verificación KYC', 'url' => route('merchant.profile')];
+            return response()->json(['answer' => $answer, 'links' => $links, 'products' => [], 'escalate' => false]);
+        }
+
+        // 4. Error de Comisiones, Liquidación o Retiro de Fondos
+        if (preg_match('/\b(error.*comision|error.*retiro|error.*saldo|fallo.*pago|no.*puedo.*retirar|problema.*banco)\b/', $normalized)) {
+            $answer = "💰 **Solución a Dudas y Problemas de Liquidación / Retiros:**\n\n"
+                . "1. 📦 **Estado de Entrega**: Los ingresos de una venta quedan disponibles en tu saldo una vez la transportadora confirme la entrega exitosa del pedido.\n"
+                . "2. 🏦 **Datos Bancarios**: Verifica que tu certificación bancaria o cuenta inscrita en el perfil comercial coincida con el titular registrado.\n"
+                . "3. ⏱️ **Dispersión**: Las transferencias se procesan según los cortes semanales establecidos por la plataforma.";
+            $links[] = ['label' => '💳 Consultar Saldo en Dashboard', 'url' => route('merchant.dashboard'), 'primary' => true];
+            if ($adminId) {
+                $links[] = ['label' => '💬 Contactar al Analista Financiero', 'url' => route('chat.show', $adminId)];
+            }
+            return response()->json(['answer' => $answer, 'links' => $links, 'products' => [], 'escalate' => true]);
+        }
+
+        // 5. Errores Generales / Falla en Plataforma / Soporte Administrativo
+        if (preg_match('/\b(error|errores|problema|problemas|fallo|fallos|falla|fallas|bug|bugs|soporte|ayuda|administrador|admin|asesor|humano|reclamo)\b/', $normalized)) {
+            $answer = "👨‍💼 **Soporte Técnico y Operativo para Comerciantes:**\n\n"
+                . "Si experimentas un error o inconveniente con tu panel de ventas, sigue estas recomendaciones:\n\n"
+                . "1. 🔄 **Actualizar página**: Presiona `Ctrl + F5` para recargar el panel con la versión más reciente.\n"
+                . "2. 🔐 **Verificar sesión**: Si estuviste inactivo por varias horas, cierra sesión e ingresa nuevamente.\n"
+                . "3. 💬 **Chat con el Administrador**: Para fallas en pedidos, liquidaciones o validación de documentos, nuestro equipo de soporte analítico está disponible para asistirte en tiempo real.";
+            $escalate = true;
+            $links[] = [
+                'label' => '💬 Abrir Chat con el Administrador',
+                'url' => $adminId ? route('chat.show', $adminId) : route('chat.index'),
+                'primary' => true
+            ];
+            $links[] = ['label' => '📊 Volver al Dashboard', 'url' => route('merchant.dashboard')];
+            return response()->json(['answer' => $answer, 'links' => $links, 'products' => [], 'escalate' => true]);
+        }
+
         // Sugerencias para optimizar productos y vender más
         if (preg_match('/\b(mejorar|vender mas|mas ventas|ventas|foto|fotos|imagen|imagenes|descripcion|descripciones|titulo|presentacion|consejo|consejos|tip|tips|estrategia|marketing|variante|variantes|colores|presentar)\b/', $normalized)) {
             $answer = "📈 **Consejos para mejorar la presentación de tus productos y vender más en FusaShop:**\n\n"
@@ -123,15 +194,6 @@ class ConsumerController extends Controller
             $answer = "📑 **Validación Comercial (KYC):**\n\n"
                 . "Para habilitar la publicación de productos y recepción de fondos, debes subir tu RUT y certificado de Cámara de Comercio vigente en tu perfil. El equipo administrativo valida los documentos en un plazo máximo de 24 horas hábiles.";
             $links[] = ['label' => '🏢 Ver mi perfil y documentos', 'url' => route('merchant.profile')];
-        } elseif (preg_match('/\b(soporte|ayuda|administrador|admin|asesor|humano|problema|error|reclamo)\b/', $normalized)) {
-            $answer = "👨‍💼 **Soporte Administrativo Directo:**\n\n"
-                . "Si presentas inconvenientes con tu cuenta, liquidaciones o necesitas soporte operativo prioritario, puedes abrir una conversación directa en tiempo real con la administración de FusaShop.";
-            $escalate = true;
-            $links[] = [
-                'label' => '💬 Abrir chat con el Administrador',
-                'url' => $adminId ? route('chat.show', $adminId) : route('chat.index'),
-                'primary' => true
-            ];
         } else {
             $answer = "Hola " . e($user->name) . " 👋 Soy FusaBot para Comerciantes. Estoy aquí para ayudarte a optimizar la presentación de tus productos para vender más, resolver dudas sobre logística con Envia.com, facturación Factus o tus comisiones y retiros. ¿Qué deseas consultar?";
             $links[] = ['label' => '📈 Cómo vender más', 'url' => '#', 'prompt' => '¿Cómo mejorar la presentación de mis productos para vender más?'];
@@ -142,7 +204,7 @@ class ConsumerController extends Controller
         return response()->json([
             'answer' => $answer,
             'links' => $links,
-            'products' => [], // Los comerciantes no reciben recomendaciones de compra
+            'products' => [],
             'escalate' => $escalate,
         ]);
     }
@@ -202,9 +264,94 @@ class ConsumerController extends Controller
         $links = [];
         $escalate = false;
 
-        // 1. Detección de Problemas Mayores o Solicitud de Humano / Administrador
+        // =========================================================================
+        // A. ERRORES ESPECÍFICOS Y RESOLUCIÓN TÉCNICA (NUNCA ENVIAR A COMPRAR)
+        // =========================================================================
+
+        // 1. Error en Pagos, Wompi, PSE, Tarjetas, Cobros o Transacciones
+        if (preg_match('/\b(error.*pago|pago.*error|error.*pagar|no.*puedo.*pagar|no.*me.*deja.*pagar|rechazad|declinad|fallo.*pago|pago.*fallo|error.*pse|error.*wompi|error.*tarjeta|error.*nequi|error.*daviplata|cobro.*duplicado|descontaron.*dinero|debitaron.*no aparece|dinero.*descontado)\b/', $normalized)) {
+            $answer = "💳 **Solución a Inconvenientes con Pagos (Wompi / PSE / Tarjeta):**\n\n"
+                . "1. 🔒 **Fondos y Permisos**: Revisa que tu cuenta bancaria o billetera (Nequi / Daviplata) tenga saldo suficiente y compras por internet / PSE activas.\n"
+                . "2. ⏱️ **Espera de Confirmación**: Wompi puede tardar hasta 5 minutos en confirmar pagos por PSE o corresponsal. No hagas un segundo pago hasta verificar el estado en *Mis Pedidos*.\n"
+                . "3. 🛡️ **¿El dinero fue debitado pero el pedido no se confirmó?**: ¡Tu dinero está protegido! El Administrador puede conciliar tu transacción de inmediato en el sistema bancario.\n"
+                . "4. 🔄 **Reintentar Pago**: Puedes volver a tu carrito de compras y elegir otro método de pago (por ejemplo, Tarjeta de Crédito/Débito en vez de PSE).";
+
+            $escalate = true;
+            if (Auth::check()) {
+                $links[] = [
+                    'label' => '💬 Hablar con el Administrador en Vivo',
+                    'url' => $adminId ? route('chat.show', $adminId) : route('chat.index'),
+                    'primary' => true
+                ];
+            } else {
+                $links[] = [
+                    'label' => '💬 Iniciar Sesión para Soporte en Vivo',
+                    'url' => route('login'),
+                    'primary' => true
+                ];
+            }
+            $links[] = ['label' => '📝 Radicar PQRS Oficial', 'url' => route('pqrs.create')];
+            $links[] = ['label' => '🛒 Ir a Mi Carrito', 'url' => route('consumer.cart')];
+            $links[] = ['label' => '📦 Consultar Mis Pedidos', 'url' => Auth::check() ? route('consumer.orders') : route('login')];
+
+            return response()->json(['answer' => $answer, 'links' => $links, 'products' => [], 'escalate' => true]);
+        }
+
+        // 2. Error de Inicio de Sesión, Registro, Código OTP de 6 Dígitos, Contraseña o Bloqueo
+        if (preg_match('/\b(error.*iniciar|error.*login|error.*registro|error.*clave|error.*contrasena|error.*codigo|codigo.*incorrecto|no.*llega.*codigo|error.*verific|no.*puedo.*entrar|no.*puedo.*ingresar|cuenta.*bloqueada|error.*google)\b/', $normalized)) {
+            $answer = "🔐 **Solución a Inconvenientes de Acceso, Registro o Verificación:**\n\n"
+                . "1. 📩 **Código de Verificación de 6 Dígitos**: Revisa tu carpeta de *Spam / Correo no deseado*. El código expira a los 30 minutos. Puedes pulsar en *'Reenviar código'* desde la pantalla de verificación.\n"
+                . "2. 🌐 **Inicio de Sesión con Google**: Si es tu primera vez registrándote, el sistema te solicitará seleccionar tu rol (Cliente o Vendedor) e indicar tu número de teléfono.\n"
+                . "3. 🔑 **Contraseña Olvidada**: En la pantalla de login haz clic en *'¿Olvidaste tu contraseña?'* para solicitar el restablecimiento seguro.\n"
+                . "4. 🚫 **Cuenta Bloqueada**: Si tu cuenta fue bloqueada por seguridad o intentos fallidos, el Administrador puede reactivarla.";
+
+            if (Auth::check()) {
+                $links[] = [
+                    'label' => '💬 Solicitar Desbloqueo al Administrador',
+                    'url' => $adminId ? route('chat.show', $adminId) : route('chat.index'),
+                    'primary' => true
+                ];
+            } else {
+                $links[] = ['label' => '🔑 Ir a Iniciar Sesión', 'url' => route('login'), 'primary' => true];
+                $links[] = ['label' => '📝 Completar Registro', 'url' => route('register')];
+            }
+            $links[] = ['label' => '📧 Verificar Código de Correo', 'url' => route('verification.notice')];
+
+            return response()->json(['answer' => $answer, 'links' => $links, 'products' => [], 'escalate' => false]);
+        }
+
+        // 3. Error en Envíos, Cobertura, Dirección o Guías de Transporte
+        if (preg_match('/\b(error.*envio|error.*direccion|no.*calcula.*envio|no.*llega.*pedido|paquete.*retrasado|guia.*invalida|error.*cobertura)\b/', $normalized)) {
+            $answer = "🚚 **Solución a Inconvenientes con Envíos y Logística:**\n\n"
+                . "1. 📍 **Dirección de Entrega**: Asegúrate de incluir la nomenclatura completa (ej: Calle 8 # 5-20, Barrio Centro, Fusagasugá). Si faltan datos, el cotizador de Envia.com no puede calcular la tarifa.\n"
+                . "2. 🔍 **Rastreo de Guía**: Si tu pedido ya fue despachado, consulta el número de guía de Envia.com en *Mis Pedidos* para ver el trayecto en vivo.\n"
+                . "3. ⚠️ **Demoras de la Transportadora**: Si tu paquete presenta novedad en ruta, nuestro equipo de soporte gestiona la prioridad directamente con Envia.";
+
+            $links[] = ['label' => '📦 Consultar Mis Pedidos y Guías', 'url' => Auth::check() ? route('consumer.orders') : route('login'), 'primary' => true];
+            $links[] = ['label' => '📍 Mis Direcciones Guardadas', 'url' => Auth::check() ? route('consumer.addresses') : route('login')];
+            if (Auth::check()) {
+                $links[] = ['label' => '💬 Reportar Novedad al Administrador', 'url' => $adminId ? route('chat.show', $adminId) : route('chat.index')];
+            }
+
+            return response()->json(['answer' => $answer, 'links' => $links, 'products' => [], 'escalate' => false]);
+        }
+
+        // 4. Error con el Carrito de Compras o Reserva de Stock
+        if (preg_match('/\b(error.*carrito|no.*deja.*agregar|stock.*insuficiente|reserva.*vencida|error.*checkout)\b/', $normalized)) {
+            $answer = "🛒 **Solución a Problemas con el Carrito de Compras:**\n\n"
+                . "1. 📦 **Stock No Disponible**: Si otro usuario compró la última unidad disponible de un producto, el sistema te avisará en el carrito para removerlo o reducir la cantidad.\n"
+                . "2. ⏳ **Tiempo de Reserva**: Al iniciar la orden de compra, el stock queda reservado durante 30 minutos. Si expira este tiempo, los productos vuelven al inventario del comercio.\n"
+                . "3. 🔄 **Actualizar Carrito**: Si ves un aviso de error, entra a tu carrito y actualiza las cantidades para recalcular el total.";
+
+            $links[] = ['label' => '🛒 Ir a Mi Carrito', 'url' => route('consumer.cart'), 'primary' => true];
+            $links[] = ['label' => '🛍️ Explorar Catálogo', 'url' => route('consumer.catalog')];
+
+            return response()->json(['answer' => $answer, 'links' => $links, 'products' => [], 'escalate' => false]);
+        }
+
+        // 5. Casos Críticos (Estafas, cobro indebido, producto dañado, robo, demanda)
         $isCriticalIssue = (bool) preg_match(
-            '/\b(estafa|robo|cobro|duplicado|indebido|no llega|no llego|extraviad|perdid|danad|rot|grave|demanda|abogado|humano|persona|asesor|administrador|soporte en vivo|agente|hablar con alguien|hablar con persona|atencion humana)\b/i',
+            '/\b(estafa|robo|cobro.*indebido|no llega|no llego|extraviad|perdid|danad|rot|grave|demanda|abogado)\b/i',
             $normalized
         );
 
@@ -238,7 +385,41 @@ class ConsumerController extends Controller
             ]);
         }
 
-        // 2. FAQ: FusaCoins
+        // 6. ERRORES GENERALES, FALLAS TÉCNICAS O SOLICITUD DE ASISTENCIA HUMANA
+        if (preg_match('/\b(error|errores|problema|problemas|fallo|fallos|falla|fallas|bug|bugs|no funciona|no me deja|se trabo|se cayo|pantalla blanca|no carga|inconveniente|inconvenientes|soporte tecnico|ayuda tecnica|asesor|humano|persona|administrador|admin|soporte en vivo|agente|hablar con alguien|hablar con persona|atencion humana)\b/i', $normalized)) {
+            $escalate = true;
+            $answer = "🛠️ **Diagnóstico y Solución de Errores en FusaShop:**\n\n"
+                . "Lamento que estés experimentando un error en la plataforma. Sigue estos pasos prácticos para resolverlo:\n\n"
+                . "1. 🔄 **Recarga Forzada**: Presiona `Ctrl + F5` en tu computador o desliza hacia abajo en el móvil para limpiar la memoria caché y cargar la versión más reciente.\n"
+                . "2. 🔐 **Renovar Sesión**: Cierra sesión e inicia nuevamente si tu sesión expiró por inactividad.\n"
+                . "3. 🌐 **Navegador**: Te recomendamos usar navegadores modernos como Google Chrome, Microsoft Edge, Brave o Safari.\n"
+                . "4. 👨‍💼 **Atención en Vivo**: Si el error persiste o necesitas ayuda técnica inmediata, puedes **abrir un chat directo con nuestro Administrador** para que revise tu caso en tiempo real.";
+
+            if (Auth::check()) {
+                $links[] = [
+                    'label' => '💬 Hablar con el Administrador en Vivo',
+                    'url' => $adminId ? route('chat.show', $adminId) : route('chat.index'),
+                    'primary' => true
+                ];
+            } else {
+                $links[] = [
+                    'label' => '💬 Iniciar Sesión para Chat en Vivo',
+                    'url' => route('login'),
+                    'primary' => true
+                ];
+            }
+            $links[] = ['label' => '📝 Radicar PQRS Técnica', 'url' => route('pqrs.create')];
+            $links[] = ['label' => 'ℹ️ Centro de Ayuda', 'url' => route('consumer.support.contact')];
+
+            return response()->json([
+                'answer' => $answer,
+                'links' => $links,
+                'products' => [], // NUNCA mandar a comprar productos cuando reportan un error
+                'escalate' => true,
+            ]);
+        }
+
+        // 7. FAQ: FusaCoins
         if (preg_match('/\b(fusacoin|fusacoins|coins|puntos|redimir|descuento puntos|acumular)\b/', $normalized)) {
             $answer = "🌸 **Programa de FusaCoins de FusaShop:**\n\n"
                 . "• **Cómo ganar**: Acumulas **1 FusaCoin por cada $10.000 COP** de compra en pedidos confirmados.\n"
@@ -249,7 +430,7 @@ class ConsumerController extends Controller
             return response()->json(['answer' => $answer, 'links' => $links, 'products' => [], 'escalate' => false]);
         }
 
-        // 3. FAQ: Cancelaciones, Devoluciones y Garantías
+        // 8. FAQ: Cancelaciones, Devoluciones y Garantías
         if (preg_match('/\b(cancelar|cancelacion|anular|devolucion|devolver|reembolso|garantia)\b/', $normalized)) {
             $answer = "🔄 **Políticas de Cancelación y Garantías:**\n\n"
                 . "• **Antes del despacho**: Puedes solicitar la cancelación del pedido desde tu historial mientras el comerciante no haya generado la guía de transporte.\n"
@@ -260,7 +441,7 @@ class ConsumerController extends Controller
             return response()->json(['answer' => $answer, 'links' => $links, 'products' => [], 'escalate' => false]);
         }
 
-        // 4. FAQ: Envíos con Envia.com
+        // 9. FAQ: Envíos con Envia.com
         if (preg_match('/\b(envio|envios|entrega|entregas|despacho|flete|tiempo|tiempos|cuanto tarda|cobertura|llegada|transportadora)\b/', $normalized)) {
             $answer = "🚚 **Envíos y Cobertura con Envia.com:**\n\n"
                 . "En FusaShop todos los envíos son gestionados por **Envia.com** con cobertura urbana en Fusagasugá, zonas turísticas (Chinauta, Silvania) y despacho a nivel nacional.\n\n"
@@ -270,7 +451,7 @@ class ConsumerController extends Controller
             return response()->json(['answer' => $answer, 'links' => $links, 'products' => [], 'escalate' => false]);
         }
 
-        // 5. FAQ: Métodos de Pago con Wompi
+        // 10. FAQ: Métodos de Pago con Wompi
         if (preg_match('/\b(pago|pagos|pagar|metodo|metodos|nequi|daviplata|pse|tarjeta|tarjetas|wompi|credito|debito|bancolombia)\b/', $normalized)) {
             $answer = "💳 **Métodos de Pago Seguros con Wompi:**\n\n"
                 . "Tu dinero está 100% protegido. Aceptamos:\n"
@@ -283,7 +464,7 @@ class ConsumerController extends Controller
             return response()->json(['answer' => $answer, 'links' => $links, 'products' => [], 'escalate' => false]);
         }
 
-        // 6. FAQ: Registro como Vendedor
+        // 11. FAQ: Registro como Vendedor
         if (preg_match('/\b(vender|vendedor|vendedora|registrar|registrarme|mi negocio|publicar)\b/', $normalized)) {
             $answer = "🏪 **¿Quieres vender tus productos en FusaShop?**\n\n"
                 . "Únete a la red comercial del Sumapaz. Regístrate seleccionando el perfil de comerciante, sube tu RUT y Cámara de Comercio, y comienza a publicar tu catálogo para llegar a miles de compradores.";
@@ -291,7 +472,7 @@ class ConsumerController extends Controller
             return response()->json(['answer' => $answer, 'links' => $links, 'products' => [], 'escalate' => false]);
         }
 
-        // 7. FAQ: Perfil y Gestión de Cuenta
+        // 12. FAQ: Perfil y Gestión de Cuenta
         if (preg_match('/\b(perfil|cuenta|nombre|correo|email|telefono|direccion|avatar|foto)\b/', $normalized)) {
             $answer = "👤 **Gestión de Mi Perfil:**\n\n"
                 . "Puedes cambiar tu nombre, correo, teléfono, direcciones de envío guardadas y foto desde Mi Perfil. Edita los campos y guarda los cambios al final del formulario.";
@@ -302,7 +483,7 @@ class ConsumerController extends Controller
             return response()->json(['answer' => $answer, 'links' => $links, 'products' => [], 'escalate' => false]);
         }
 
-        // 8. FAQ: Cómo comprar / Pedidos / Carrito
+        // 13. FAQ: Cómo comprar / Pedidos / Carrito
         if (preg_match('/\b(comprar|compra|como comprar|como realizo una compra|pedido|pedidos|carrito|checkout)\b/', $normalized)) {
             $answer = "🛍️ **Cómo comprar en FusaShop:**\n\n"
                 . "Para comprar, abre el catálogo, elige un producto y agrégalo al carrito. Después confirma tu dirección de entrega y el método de pago para completar el pedido con total seguridad.";
@@ -310,7 +491,9 @@ class ConsumerController extends Controller
             return response()->json(['answer' => $answer, 'links' => $links, 'products' => [], 'escalate' => false]);
         }
 
-        // 9. Búsqueda y Recomendación de Productos en Catálogo
+        // =========================================================================
+        // B. BÚSQUEDA Y RECOMENDACIÓN DE PRODUCTOS EN CATÁLOGO
+        // =========================================================================
         $words = preg_split('/[^a-z0-9]+/', $normalized, -1, PREG_SPLIT_NO_EMPTY);
         $stopWords = [
             'como', 'que', 'quiero', 'quisiera', 'puedo', 'puedes', 'podria', 'podrias',
@@ -318,6 +501,9 @@ class ConsumerController extends Controller
             'necesito', 'una', 'uno', 'unas', 'unos', 'el', 'la', 'los', 'las', 'de',
             'del', 'para', 'por', 'con', 'en', 'me', 'mi', 'un', 'al', 'alguna',
             'algun', 'favor', 'venden', 'vender', 'comprar', 'compra',
+            'error', 'errores', 'problema', 'problemas', 'fallo', 'fallos', 'falla', 'fallas',
+            'bug', 'bugs', 'presento', 'tengo', 'sucede', 'pasa', 'salio', 'sale',
+            'pantalla', 'sistema', 'pagina', 'soporte', 'ayuda'
         ];
         $terms = array_values(array_unique(array_filter(
             $words,
@@ -395,7 +581,7 @@ class ConsumerController extends Controller
             $answer = "No encontré coincidencias con ese término en el catálogo en este momento. Prueba con otro nombre o categoría.";
             $links[] = ['label' => 'Explorar catálogo completo', 'url' => route('consumer.catalog')];
         } else {
-            $answer = "Puedo ayudarte a buscar productos locales, cotizar envíos o resolver dudas de tus compras. ¿Qué te gustaría encontrar hoy?";
+            $answer = "Puedo ayudarte a resolver dudas sobre tus compras, pagos, envíos o encontrar productos locales en Fusagasugá. ¿En qué te puedo colaborar hoy?";
             $links[] = ['label' => 'Explorar catálogo completo', 'url' => route('consumer.catalog')];
             $links[] = ['label' => 'Ver ofertas especiales', 'url' => route('consumer.home') . '#ofertas'];
         }
@@ -422,6 +608,7 @@ class ConsumerController extends Controller
             'escalate' => false,
         ]);
     }
+
 
     public function productDetail($id)
     {
@@ -481,7 +668,7 @@ class ConsumerController extends Controller
         }
 
         if ($request->boolean('buy_now')) {
-            session(['selected_cart_items' => [$item->id]]);
+            session(['checkout_selected_items' => [$item->id]]);
             return redirect()->route('consumer.checkout');
         }
 
@@ -643,7 +830,8 @@ class ConsumerController extends Controller
         // Reservas O2O: órdenes cuyos ítems pertenezcan a hotelería, gastronomía, turismo o experiencias
         $o2oOrders = Order::where('user_id', $user->id)
             ->whereHas('items.product', function ($q) {
-                $q->where('category', 'LIKE', '%Turismo%')
+                $q->where('type', 'service')
+                  ->orWhere('category', 'LIKE', '%Turismo%')
                   ->orWhere('category', 'LIKE', '%Gastronom%')
                   ->orWhere('category', 'LIKE', '%Restaurante%')
                   ->orWhere('category', 'LIKE', '%Hotel%')
@@ -654,16 +842,6 @@ class ConsumerController extends Controller
             ->latest()
             ->take(6)
             ->get();
-
-        // Si no hay pedidos O2O específicos por categoría, proveemos las órdenes pagadas recientes como vouchers válidos
-        if ($o2oOrders->isEmpty()) {
-            $o2oOrders = Order::where('user_id', $user->id)
-                ->where('payment_status', 'paid')
-                ->with(['items.product.merchant.companyProfile'])
-                ->latest()
-                ->take(3)
-                ->get();
-        }
 
         $addresses = $user->shippingAddresses()->latest()->get();
 
@@ -706,8 +884,12 @@ class ConsumerController extends Controller
             'address'          => 'nullable|string|max:255',
             'avatar'           => 'nullable|image|mimes:jpeg,png,jpg,webp,gif|max:4096',
             'remove_avatar'    => 'nullable|boolean',
+            'wompi_public_key' => 'nullable|string|max:120',
+            'wompi_integrity_secret' => 'nullable|string|max:120',
+            'wompi_events_secret' => 'nullable|string|max:120',
+            'clear_wompi_credentials' => 'nullable|boolean',
             'current_password' => 'nullable|required_with:password|current_password',
-            'password'         => 'nullable|string|min:8|confirmed',
+            'password'         => ['nullable', 'confirmed', PasswordPolicy::rule()],
         ], [
             'name.required'                     => 'El nombre completo es obligatorio.',
             'email.required'                    => 'El correo electrónico es obligatorio.',
@@ -716,7 +898,7 @@ class ConsumerController extends Controller
             'avatar.image'                      => 'El archivo de imagen no es válido.',
             'avatar.max'                        => 'La imagen de perfil no debe superar los 4 MB.',
             'current_password.current_password' => 'La contraseña actual no es correcta.',
-            'password.min'                      => 'La nueva contraseña debe tener mínimo 8 caracteres.',
+            'password.min'                      => 'La contraseña debe tener al menos 12 caracteres.',
             'password.confirmed'                => 'La confirmación de la nueva contraseña no coincide.',
         ]);
 
@@ -749,7 +931,44 @@ class ConsumerController extends Controller
             $updateData['password'] = \Illuminate\Support\Facades\Hash::make($data['password']);
         }
 
+        $payoutData = [];
+        if ($user->isMerchant()) {
+            $payoutData = CompanyProfile::validateAndExtractPayoutData($request, false);
+        }
+
         $user->update($updateData);
+
+        if ($user->isMerchant()) {
+            $cp = $user->companyProfile ?? new CompanyProfile([
+                'merchant_id'  => $user->id,
+                'company_name' => $user->name,
+                'phone'        => $updateData['phone'],
+                'rut_path'     => '',
+                'kyc_status'   => 'pending',
+            ]);
+            $cp->phone = $updateData['phone'];
+            $cp->address = $updateData['address'] ?: $cp->address;
+            if (!empty($payoutData)) {
+                $cp->payout_method_type    = $payoutData['payout_method_type'];
+                $cp->payout_bank_name      = $payoutData['payout_bank_name'];
+                $cp->payout_account_type   = $payoutData['payout_account_type'];
+                $cp->payout_account_number = $payoutData['payout_account_number'];
+                $cp->payout_account_holder = $payoutData['payout_account_holder'] ?? $user->name;
+                $cp->payout_id_number      = $payoutData['payout_id_number'];
+            }
+            if ($request->boolean('clear_wompi_credentials')) {
+                $cp->wompi_public_key = null;
+                $cp->wompi_integrity_secret = null;
+                $cp->wompi_events_secret = null;
+            } else {
+                foreach (['wompi_public_key', 'wompi_integrity_secret', 'wompi_events_secret'] as $credential) {
+                    if ($request->filled($credential)) {
+                        $cp->{$credential} = strip_tags(trim((string) $request->input($credential)));
+                    }
+                }
+            }
+            $cp->save();
+        }
 
         // Si es comerciante y tiene perfil comercial, sincronizar también el teléfono de contacto
         if ($user->isMerchant() && $user->companyProfile) {

@@ -31,25 +31,25 @@
   </form>
 
   <div class="bg-surface-container-lowest rounded-2xl overflow-x-auto shadow-[0_12px_32px_rgba(27,28,28,.06)]">
-    <table class="w-full text-sm">
+    <table class="w-full text-sm responsive-stack-table">
       <thead class="text-left text-xs uppercase text-on-surface-variant">
         <tr><th class="p-3">Fecha</th><th>Servicio</th><th>Acción</th><th>Pedido</th><th>Estado</th><th>Detalle</th><th></th></tr>
       </thead>
       <tbody>
       @forelse($logs as $log)
         <tr class="border-t border-outline-variant/20 align-top">
-          <td class="p-3 whitespace-nowrap">{{ $log->created_at->format('d/m H:i:s') }}</td>
-          <td class="font-semibold">{{ $log->service }}</td>
-          <td>{{ $log->action }}</td>
-          <td class="font-mono text-xs">{{ $log->order?->reference ?? '—' }}</td>
-          <td>
+          <td class="p-3 whitespace-nowrap" data-label="Fecha">{{ $log->created_at->format('d/m H:i:s') }}</td>
+          <td class="font-semibold" data-label="Servicio">{{ $log->service }}</td>
+          <td data-label="Acción">{{ $log->action }}</td>
+          <td class="font-mono text-xs" data-label="Pedido">{{ $log->order?->reference ?? '—' }}</td>
+          <td data-label="Estado">
             <span class="px-2 py-0.5 rounded-full text-xs font-bold {{ $log->status === 'failed' ? 'bg-[#ffdad6] text-[#ba1a1a]' : 'bg-[#6efcb9]/40 text-[#003f28]' }}">
               {{ $log->status }}{{ $log->http_status ? ' · '.$log->http_status : '' }}
             </span>
             @if($log->resolved_at)<span class="block text-[10px] text-on-surface-variant">reintentado</span>@endif
           </td>
-          <td class="max-w-md text-xs text-on-surface-variant break-words">{{ \Illuminate\Support\Str::limit($log->error ?? json_encode($log->response), 220) }}</td>
-          <td class="p-3">
+          <td class="max-w-md text-xs text-on-surface-variant break-words" data-label="Detalle">{{ \Illuminate\Support\Str::limit($log->error ?? json_encode($log->response), 220) }}</td>
+          <td class="p-3" data-label="Acciones">
             @if($log->status === 'failed' && !$log->resolved_at && $log->retry_job)
               <form method="POST" action="{{ route('analyst.integrations.retry', $log) }}">@csrf
                 <button class="px-3 py-1 bg-primary text-white rounded-lg text-xs font-bold">Reintentar</button>

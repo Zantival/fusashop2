@@ -67,7 +67,7 @@
             <div class="flex items-start justify-between gap-4 mb-4">
               <div class="w-16 h-16 rounded-2xl bg-slate-50 border border-slate-200/80 overflow-hidden shrink-0 flex items-center justify-center shadow-xs group-hover:scale-105 transition-transform">
                 @if($merchant->logoUrl())
-                  <img src="{{ $merchant->logoUrl() }}" alt="{{ $merchant->company_name }}" class="w-full h-full object-cover">
+                  <img loading="lazy" decoding="async" src="{{ $merchant->logoUrl() }}" alt="{{ $merchant->company_name }}" class="w-full h-full object-cover">
                 @else
                   <div class="w-full h-full bg-gradient-to-tr from-[#10B981] to-[#047857] text-white flex items-center justify-center font-black text-xl">
                     {{ strtoupper(substr($merchant->company_name, 0, 2)) }}

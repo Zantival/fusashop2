@@ -304,6 +304,7 @@ class SalesDiagnosisService
 
         if ($productIds->isNotEmpty()) {
             $salesByProd = OrderItem::whereIn('product_id', $productIds)
+                ->whereHas('order', fn ($q) => $q->where('payment_status', 'paid'))
                 ->select(
                     'product_id',
                     DB::raw('SUM(quantity) as units_sold'),
@@ -315,6 +316,7 @@ class SalesDiagnosisService
                 ->keyBy('product_id');
 
             $totalOrders = (int) OrderItem::whereIn('product_id', $productIds)
+                ->whereHas('order', fn ($q) => $q->where('payment_status', 'paid'))
                 ->distinct('order_id')
                 ->count('order_id');
 
@@ -340,8 +342,8 @@ class SalesDiagnosisService
         }
 
         $avgTicket = $totalOrders > 0 ? round($totalSales / $totalOrders, 0) : 0.0;
-        $commissionRate = \App\Models\Setting::commissionRate();
-        $netSales = round($totalSales * (1 - ($commissionRate / 100)), 0);
+        // Los pagos se acreditan directamente al comerciante; la tasa no se retiene en el checkout.
+        $netSales = round($totalSales, 0);
 
         // Calificación y reseñas
         $avgRating = $productIds->isNotEmpty()
@@ -439,7 +441,7 @@ class SalesDiagnosisService
         $congratsReportText = "📊 REPORTE OFICIAL DE VENTAS Y CRECIMIENTO — {$companyName}\n"
             . "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
             . "• Ventas Totales Brutas: {$salesFormatted} ( Variación: +" . abs($variationPct) . "% )\n"
-            . "• Ingreso Neto Comercio (92%): {$netFormatted}\n"
+            . "• Ventas cobradas directamente al comercio: {$netFormatted}\n"
             . "• Pedidos Completados: {$totalOrders} | Ticket Promedio: {$ticketFormatted}\n"
             . "• Catálogo Activo: {$inStockCount} de {$totalProducts} productos con stock | Reputación: {$avgRating}★\n\n"
             . "✅ ¿POR QUÉ AUMENTARON TUS VENTAS?\n"
@@ -454,7 +456,7 @@ class SalesDiagnosisService
         $diagReportText = "📊 REPORTE OFICIAL DE VENTAS Y DIAGNÓSTICO CAUSAL — {$companyName}\n"
             . "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
             . "• Ventas Totales Registradas: {$salesFormatted} ( Variación: " . ($variationPct < 0 ? "{$variationPct}%" : "-8.5%") . " )\n"
-            . "• Ingreso Neto Comercio (92%): {$netFormatted}\n"
+            . "• Ventas cobradas directamente al comercio: {$netFormatted}\n"
             . "• Pedidos Registrados: {$totalOrders} | Ticket Promedio: {$ticketFormatted}\n"
             . "• Estado de Catálogo: {$inStockCount} activos / {$outOfStockCount} agotados | PQRS Abiertas: {$openPqrs}\n\n"
             . "⚠️ ¿POR QUÉ BAJARON O SE DESACELERARON TUS VENTAS?\n"

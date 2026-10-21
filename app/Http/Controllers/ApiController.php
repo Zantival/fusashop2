@@ -3,10 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\{User, Product, Cart, CartItem, Order, OrderItem};
+use App\Support\PasswordPolicy;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\Rules\Password;
 
 class ApiController extends Controller
 {
@@ -26,7 +26,7 @@ class ApiController extends Controller
         $data = $request->validate([
             'name'     => 'required|string|max:255',
             'email'    => 'required|email|unique:users',
-            'password' => ['required', 'confirmed', Password::min(8)],
+            'password' => ['required', 'confirmed', PasswordPolicy::rule()],
             'role'     => 'required|in:consumer,merchant',
         ]);
         $user = User::create([

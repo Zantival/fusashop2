@@ -3,9 +3,10 @@
     "type": "module",
     "scripts": {
         "dev": "vite",
-        "build": "npm run css:build && npm run copy:public-to-dist",
+        "build": "npm run css:build && npm run images:optimize && npm run copy:public-to-dist",
         "css:build": "tailwindcss -i ./resources/css/app.css -o ./public/assets/css/app.css --minify",
         "css:watch": "tailwindcss -i ./resources/css/app.css -o ./public/assets/css/app.css --watch",
+        "images:optimize": "node scripts/optimize-images.cjs",
         "copy:public-to-dist": "node -e \"const fs=require('node:fs');fs.rmSync('dist',{recursive:true,force:true});fs.cpSync('public','dist',{recursive:true});\""
     },
     "devDependencies": {
@@ -14,6 +15,7 @@
         "axios": "^1.7.4",
         "laravel-vite-plugin": "^1.0",
         "postcss": "^8.5.13",
+        "sharp": "^0.35.5",
         "tailwindcss": "^4.2.4",
         "vite": "^5.0"
     },

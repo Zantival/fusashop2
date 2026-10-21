@@ -3,11 +3,12 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Models\Cart;
+use App\Mail\VerifyEmailCodeMail;
 use App\Models\User;
-use App\Notifications\WelcomeNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Laravel\Socialite\Facades\Socialite;
 
 class SocialAuthController extends Controller
@@ -27,76 +28,79 @@ class SocialAuthController extends Controller
         return Socialite::driver($provider)->redirect();
     }
 
-    public function callback(string $provider)
+    public function cancel()
     {
-        try {
-            $socialUser = Socialite::driver($provider)->user();
-
-            return $this->loginOrRegisterSocialUser(
-                provider: $provider,
-                providerId: (string) $socialUser->getId(),
-                email: strtolower((string) $socialUser->getEmail()),
-                name: $socialUser->getName() ?: ($socialUser->getNickname() ?: 'Usuario Google'),
-                defaultRole: 'consumer'
-            );
-        } catch (\Throwable $e) {
-            return redirect()->route('login')->withErrors([
-                'email' => 'No se pudo iniciar sesión con ' . ucfirst($provider) . '. Verifica tus credenciales OAuth en .env (' . $e->getMessage() . ')',
-            ]);
-        }
+        session()->forget('social_registration');
+        return redirect()->route('register');
     }
 
-    private function loginOrRegisterSocialUser(
-        string $provider,
-        string $providerId,
-        string $email,
-        string $name,
-        string $defaultRole = 'consumer'
-    ) {
-        $user = User::where('email', $email)->first();
-
-        if ($user) {
-            $updates = [];
-            if (!$user->provider_id) {
-                $updates['provider'] = $provider;
-                $updates['provider_id'] = $providerId;
-            }
-            if (is_null($user->email_verified_at)) {
-                $updates['email_verified_at'] = now();
-            }
-            if (!empty($updates)) {
-                $user->forceFill($updates)->save();
-            }
-
-            Auth::login($user, true);
-            return $this->redirectByRole($user);
-        }
-
-        $newUser = new User([
-            'name'        => $name,
-            'email'       => $email,
-            'provider'    => $provider,
-            'provider_id' => $providerId,
-            'role'        => $defaultRole,
-            'password'    => null,
-        ]);
-        $newUser->email_verified_at = now();
-        $newUser->save();
-
-        if ($newUser->role === 'consumer') {
-            Cart::firstOrCreate(['user_id' => $newUser->id]);
+    public function callback(string $provider)
+    {
+        if ($provider !== 'google') {
+            abort(404);
         }
 
         try {
-            $newUser->notify(new WelcomeNotification());
+            $socialUser = Socialite::driver($provider)->user();
+            $email = strtolower((string) $socialUser->getEmail());
+
+            $user = User::where('email', $email)->first();
+
+            // CASO 1: Si no existe en la base de datos, NO creamos la cuenta en blanco.
+            // Redirigimos a la pantalla de registro para pedir los datos faltantes (Rol: Comprador/Vendedor, Teléfono, etc.)
+            if (!$user) {
+                session([
+                    'social_registration' => [
+                        'provider'    => $provider,
+                        'provider_id' => (string) $socialUser->getId(),
+                        'email'       => $email,
+                        'name'        => $socialUser->getName() ?: ($socialUser->getNickname() ?: 'Usuario Google'),
+                        'avatar'      => $socialUser->getAvatar(),
+                    ],
+                ]);
+
+                return redirect()->route('register')->with('info', "Tu cuenta de Google ({$email}) aún no está registrada en FusaShop. Selecciona si deseas Comprar o Vender y completa tus datos para crear tu cuenta.");
+            }
+
+            // CASO 2: La cuenta ya existe en la base de datos
+            if ($user->is_blocked) {
+                return redirect()->route('login')->withErrors([
+                    'email' => 'Tu cuenta ha sido bloqueada. Contacta al administrador.',
+                ]);
+            }
+
+            // Vincular provider y provider_id si no estaban guardados
+            if (empty($user->provider_id)) {
+                $user->forceFill([
+                    'provider'    => $provider,
+                    'provider_id' => (string) $socialUser->getId(),
+                ])->save();
+            }
+
+            // Si el correo no ha sido verificado con los 6 dígitos, enviar código y redirigir a verificación OTP
+            if (! $user->hasVerifiedEmail()) {
+                Auth::login($user);
+                if (empty($user->verification_code) || ($user->verification_code_expires_at && $user->verification_code_expires_at->isPast())) {
+                    $code = $user->generateVerificationCode();
+                    try {
+                        Mail::to($user->email)->send(new VerifyEmailCodeMail($user, $code));
+                    } catch (\Throwable $e) {
+                        Log::error('Error enviando código de verificación al login con Google: ' . $e->getMessage());
+                    }
+                }
+                return redirect()->route('verification.notice');
+            }
+
+            // Usuario verificado: iniciar sesión normalmente
+            Auth::login($user, true);
+            return $this->redirectByRole($user);
+
         } catch (\Throwable $e) {
-            // No bloquear el inicio de sesión si el transporte de correo en sandbox restringe destinatarios
+            Log::error('Error en callback de autenticación social.', ['provider' => $provider, 'exception' => $e]);
+            return redirect()->route('login')->withErrors([
+                'email' => 'No se pudo iniciar sesión con Google. Intenta de nuevo.',
+            ]);
         }
-
-        Auth::login($newUser, true);
-
-        return $this->redirectByRole($newUser)
-            ->with('success', '¡Cuenta autenticada exitosamente con ' . ucfirst($provider) . '!');
     }
 
     private function redirectByRole(User $user)

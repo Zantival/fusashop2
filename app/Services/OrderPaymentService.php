@@ -135,7 +135,9 @@ class OrderPaymentService
         $this->notifyMerchants($order);
         $this->clearPurchasedItemsFromCart($order);
 
-        GenerateEnviaShipment::dispatch($order->id)->afterCommit();
+        if ($order->hasShippableItems()) {
+            GenerateEnviaShipment::dispatch($order->id)->afterCommit();
+        }
         IssueFactusInvoice::dispatch($order->id)->afterCommit();
 
         return self::APPROVED;

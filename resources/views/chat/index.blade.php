@@ -31,7 +31,7 @@
           <!-- Avatar -->
           <div class="relative shrink-0">
             @if($otherUser->avatar)
-              <img src="{{ Storage::url($otherUser->avatar) }}" class="w-12 h-12 rounded-full object-cover">
+              <img loading="lazy" decoding="async" src="{{ Storage::url($otherUser->avatar) }}" class="w-12 h-12 rounded-full object-cover">
             @else
               <div class="w-12 h-12 bg-greenhouse-gradient rounded-full flex items-center justify-center text-white font-bold text-lg">
                 {{ strtoupper(substr($otherUser->name, 0, 1)) }}

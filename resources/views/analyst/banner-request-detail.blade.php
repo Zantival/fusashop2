@@ -64,7 +64,7 @@
               </div>
             @else
               <a href="{{ Storage::url($requestInfo->image_path) }}" target="_blank" class="block border border-slate-200 rounded-2xl overflow-hidden hover:opacity-95 transition-opacity shadow-sm bg-slate-900 aspect-[3/1] max-h-72">
-                <img src="{{ Storage::url($requestInfo->image_path) }}" class="w-full h-full object-cover" alt="Banner Solicitado">
+                <img loading="lazy" decoding="async" src="{{ Storage::url($requestInfo->image_path) }}" class="w-full h-full object-cover" alt="Banner Solicitado">
               </a>
             @endif
           @else
@@ -86,7 +86,7 @@
         <div>
           <h3 class="text-xs font-extrabold uppercase tracking-wider text-slate-500 mb-1.5 flex items-center gap-1.5">
             <span class="material-symbols-outlined text-sm text-emerald-600">description</span>
-            Instrucciones y Mensaje del Comerciante para el Administrador
+            Descripción pública del anuncio
           </h3>
           <div class="p-4 bg-emerald-50/40 border border-emerald-200/80 rounded-2xl text-xs md:text-sm text-slate-700 leading-relaxed font-normal">
             {{ $requestInfo->notes ?: 'El comerciante no especificó instrucciones adicionales.' }}
@@ -115,7 +115,7 @@
                   <div class="flex items-center justify-between p-2.5 rounded-xl bg-white border border-slate-200/80 text-xs shadow-2xs">
                     <div class="flex items-center gap-2.5 min-w-0">
                       @if(!empty($p['image']))
-                        <img src="{{ $p['image'] }}" alt="{{ $p['name'] }}" class="w-9 h-9 rounded-lg object-cover shrink-0 border border-slate-200">
+                        <img loading="lazy" decoding="async" src="{{ $p['image'] }}" alt="{{ $p['name'] }}" class="w-9 h-9 rounded-lg object-cover shrink-0 border border-slate-200">
                       @else
                         <div class="w-9 h-9 rounded-lg bg-slate-100 flex items-center justify-center shrink-0 text-slate-400">
                           <span class="material-symbols-outlined text-sm">inventory_2</span>
@@ -164,12 +164,21 @@
       <div class="space-y-6">
         <div>
           <h3 class="text-xs font-extrabold uppercase tracking-wider text-slate-500 mb-2">Estado del Pago en Línea</h3>
-          <div class="p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-2xl font-bold text-xs flex items-center justify-between">
-            <div class="flex items-center gap-2">
-              <span class="material-symbols-outlined text-emerald-600 text-lg">verified</span>
-              <span>Pago Seguro Verificado (${{ number_format($requestInfo->cost ?: 150000, 0, ',', '.') }} COP)</span>
+          <div class="p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-2xl space-y-2">
+            <div class="flex items-center justify-between font-bold text-xs">
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-emerald-600 text-lg">verified</span>
+                <span>Pago Seguro Verificado (${{ number_format($requestInfo->cost ?: 150000, 0, ',', '.') }} COP)</span>
+              </div>
+              <span class="text-[10px] font-mono opacity-80">{{ $requestInfo->payment_proof_path }}</span>
             </div>
-            <span class="text-[10px] font-mono opacity-80">{{ $requestInfo->payment_proof_path }}</span>
+            <div class="pt-2 border-t border-emerald-200/80 flex items-center justify-between text-[11px] text-emerald-900 font-semibold">
+              <span class="flex items-center gap-1">
+                <span class="material-symbols-outlined text-xs text-[#006c47]">account_balance</span>
+                Destino financiero del ingreso:
+              </span>
+              <span class="font-extrabold">{{ $requestInfo->formattedPayoutDestination() }}</span>
+            </div>
           </div>
         </div>
 

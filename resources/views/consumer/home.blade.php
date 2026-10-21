@@ -12,7 +12,7 @@
 <!-- ========================================== -->
 @if($topBannersList->isNotEmpty())
 <div id="top-banners-section" class="max-w-7xl mx-auto px-4 md:px-6 pt-4 pb-2">
-  <div class="w-full relative bg-slate-950 overflow-hidden rounded-2xl md:rounded-3xl shadow-xl h-[230px] sm:h-[260px] md:h-[290px]" 
+  <div class="w-full relative bg-slate-950 overflow-hidden rounded-2xl md:rounded-3xl shadow-xl h-[230px] sm:h-[260px] md:h-[290px]"
        x-data="{ currentSlide: 0, totalSlides: {{ $topBannersList->count() }}, timer: null }" 
        x-init="if (totalSlides > 1) { timer = setInterval(() => currentSlide = (currentSlide + 1) % totalSlides, 6000) }"
        @mouseenter="if (timer) clearInterval(timer)" 
@@ -24,44 +24,28 @@
       @endphp
       <div x-show="currentSlide === {{ $index }}" 
            @if($index > 0) x-cloak style="display: none;" @endif
-           class="absolute inset-0 flex items-center bg-gradient-to-r from-slate-950 via-slate-900/80 to-emerald-950/60 p-6 md:p-10 transition-opacity duration-500">
+           class="absolute inset-0 bg-slate-950 transition-opacity duration-500">
         
-        <a href="{{ $bannerTargetUrl }}" class="absolute inset-0 z-0 block" aria-label="{{ $banner->title }}">
+        <a href="{{ $bannerTargetUrl }}" class="absolute inset-0 block overflow-hidden" aria-label="{{ $banner->title }}">
           @if($banner->is_video)
-            <video src="{{ $banner->image_url }}" class="w-full h-full object-cover opacity-55" autoplay loop muted playsinline></video>
+            <video src="{{ $banner->image_url }}" class="w-full h-full object-cover" autoplay loop muted playsinline preload="none"></video>
           @else
-            <div class="w-full h-full bg-cover bg-center opacity-55 hover:scale-105 transition-transform duration-700" style="background-image: url('{{ $banner->image_url }}');"></div>
+            <img src="{{ $banner->image_url }}" alt="{{ $banner->title }}" loading="lazy" decoding="async" class="w-full h-full object-cover hover:scale-105 transition-transform duration-700">
           @endif
-          <div class="absolute inset-0 bg-gradient-to-r from-slate-950/90 via-slate-950/65 to-transparent"></div>
         </a>
 
-        <div class="w-full relative z-10 max-w-2xl space-y-2.5 pointer-events-none">
-          <div class="flex items-center gap-2">
-            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 bg-[#10B981] text-white text-[10px] font-black rounded-full uppercase tracking-wider shadow">
-              <span class="material-symbols-outlined text-[13px]">campaign</span> Espacio Publicitario
-            </span>
-            <span class="text-[10px] font-bold text-emerald-300 bg-emerald-950/80 px-2 py-0.5 rounded-full border border-emerald-800">
-              Tienda Verificada FusaShop
-            </span>
-          </div>
-
-          <h2 class="text-xl sm:text-2xl md:text-3xl font-extrabold text-white leading-tight font-heading drop-shadow">
-            {{ $banner->title }}
-          </h2>
-
-          <p class="text-slate-200 text-xs sm:text-sm line-clamp-2 leading-relaxed">
-            Haz clic en el banner para visitar directamente la tienda oficial y descubrir sus productos y promociones en Fusagasugá.
-          </p>
-
-          <div class="pt-2 flex items-center gap-3 pointer-events-auto">
-            <a href="{{ $bannerTargetUrl }}" class="px-4 py-2 bg-[#10B981] hover:bg-emerald-600 text-white font-bold text-xs rounded-xl shadow-md transition-all inline-flex items-center gap-1.5">
-              <span class="material-symbols-outlined text-[16px]">storefront</span> Ir a la Tienda / Oferta
-            </a>
-            <a href="{{ route('merchant.banner.request') }}" class="px-3 py-2 bg-white/10 hover:bg-white/20 text-white border border-white/20 font-bold text-xs rounded-xl backdrop-blur-sm transition-all hidden sm:inline-flex items-center gap-1">
-              <span class="material-symbols-outlined text-[15px]">add_circle</span> Pautar Aquí
-            </a>
-          </div>
-        </div>
+        <a href="{{ $bannerTargetUrl }}" class="absolute inset-x-0 bottom-0 z-10 px-5 sm:px-7 md:px-10 pt-9 pb-4 pr-16 flex flex-col justify-end text-white space-y-1 bg-gradient-to-t from-slate-950/80 via-slate-950/35 to-transparent">
+          @if($banner->title)
+            <h2 class="text-base sm:text-lg md:text-xl font-extrabold leading-tight font-heading line-clamp-1 drop-shadow">
+              {{ $banner->title }}
+            </h2>
+          @endif
+          @if($banner->description)
+            <p class="text-white/95 text-xs sm:text-sm leading-relaxed line-clamp-2 drop-shadow">
+              {{ $banner->description }}
+            </p>
+          @endif
+        </a>
       </div>
     @endforeach
 
@@ -80,7 +64,7 @@
         <span class="material-symbols-outlined text-lg">chevron_right</span>
       </button>
 
-      <div class="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1.5">
+      <div class="absolute bottom-3 right-5 z-20 flex items-center gap-1.5">
         <template x-for="i in totalSlides" :key="i">
           <button @click="currentSlide = i - 1" class="h-1.5 rounded-full transition-all duration-300" :class="currentSlide === (i - 1) ? 'w-6 bg-[#10B981]' : 'w-2 bg-white/40'"></button>
         </template>
@@ -440,7 +424,7 @@
 
             <div class="flex items-start gap-3">
               @if(!empty($card['image_url']))
-                <img src="{{ $card['image_url'] }}" alt="{{ $card['title'] }}" class="w-16 h-16 rounded-xl object-cover border-2 border-white/20 shadow-md shrink-0 bg-white">
+                <img loading="lazy" decoding="async" src="{{ $card['image_url'] }}" alt="{{ $card['title'] }}" class="w-16 h-16 rounded-xl object-cover border-2 border-white/20 shadow-md shrink-0 bg-white">
               @endif
               <div class="min-w-0 flex-1">
                 <h4 class="font-extrabold text-white text-base leading-snug font-heading group-hover:text-emerald-300 transition-colors line-clamp-2">
@@ -548,7 +532,7 @@
       <!-- O2O 1: Glamping Chinauta Paradise -->
       <div class="bg-slate-800/90 border border-slate-700 rounded-2xl overflow-hidden flex flex-col group hover:border-[#10B981] transition-all">
         <div class="relative h-48 overflow-hidden">
-          <img src="https://images.unsplash.com/photo-1587061949409-02df41d5e562?q=80&w=600&auto=format&fit=crop" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt="Glamping Fusagasugá">
+          <img loading="lazy" decoding="async" src="https://images.unsplash.com/photo-1587061949409-02df41d5e562?q=80&w=600&auto=format&fit=crop" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt="Glamping Fusagasugá">
           <div class="absolute top-3 left-3 bg-emerald-600 text-white text-[10px] font-black px-2.5 py-1 rounded-lg">
             ⭐ 4.9 (Fusagasugá)
           </div>
@@ -579,7 +563,7 @@
       <!-- O2O 2: Restaurante Típico El Casona del Sumapaz -->
       <div class="bg-slate-800/90 border border-slate-700 rounded-2xl overflow-hidden flex flex-col group hover:border-[#F97316] transition-all">
         <div class="relative h-48 overflow-hidden">
-          <img src="https://images.unsplash.com/photo-1555396273-367ea4eb4db5?q=80&w=600&auto=format&fit=crop" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt="Restaurante Sumapaz">
+          <img loading="lazy" decoding="async" src="https://images.unsplash.com/photo-1555396273-367ea4eb4db5?q=80&w=600&auto=format&fit=crop" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt="Restaurante Sumapaz">
           <div class="absolute top-3 left-3 bg-orange-600 text-white text-[10px] font-black px-2.5 py-1 rounded-lg">
             ⭐ 4.8 (Fusagasugá)
           </div>
@@ -610,7 +594,7 @@
       <!-- O2O 3: Vivero Ornamental Sumapaz -->
       <div class="bg-slate-800/90 border border-slate-700 rounded-2xl overflow-hidden flex flex-col group hover:border-[#10B981] transition-all">
         <div class="relative h-48 overflow-hidden">
-          <img src="https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?q=80&w=600&auto=format&fit=crop" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt="Viveros Fusagasuga">
+          <img loading="lazy" decoding="async" src="https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?q=80&w=600&auto=format&fit=crop" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt="Viveros Fusagasuga">
           <div class="absolute top-3 left-3 bg-emerald-600 text-white text-[10px] font-black px-2.5 py-1 rounded-lg">
             ⭐ 5.0 (Viveristas)
           </div>
@@ -647,7 +631,7 @@
 <!-- ========================================== -->
 @if($bottomBannersList->isNotEmpty())
 <section id="bottom-banners-section" class="max-w-7xl mx-auto px-4 md:px-6 py-4">
-  <div class="w-full relative bg-slate-950 overflow-hidden rounded-2xl md:rounded-3xl shadow-xl h-[230px] sm:h-[260px] md:h-[290px]" 
+  <div class="w-full relative bg-slate-950 overflow-hidden rounded-2xl md:rounded-3xl shadow-xl h-[230px] sm:h-[260px] md:h-[290px]"
        x-data="{ currentSlide: 0, totalSlides: {{ $bottomBannersList->count() }}, timer: null }" 
        x-init="if (totalSlides > 1) { timer = setInterval(() => currentSlide = (currentSlide + 1) % totalSlides, 6000) }"
        @mouseenter="if (timer) clearInterval(timer)" 
@@ -659,44 +643,28 @@
       @endphp
       <div x-show="currentSlide === {{ $index }}" 
            @if($index > 0) x-cloak style="display: none;" @endif
-           class="absolute inset-0 flex items-center bg-gradient-to-r from-slate-950 via-slate-900/80 to-emerald-950/60 p-6 md:p-10 transition-opacity duration-500">
+           class="absolute inset-0 bg-slate-950 transition-opacity duration-500">
         
-        <a href="{{ $bannerTargetUrl }}" class="absolute inset-0 z-0 block" aria-label="{{ $banner->title }}">
+        <a href="{{ $bannerTargetUrl }}" class="absolute inset-0 block overflow-hidden" aria-label="{{ $banner->title }}">
           @if($banner->is_video)
-            <video src="{{ $banner->image_url }}" class="w-full h-full object-cover opacity-55" autoplay loop muted playsinline></video>
+            <video src="{{ $banner->image_url }}" class="w-full h-full object-cover" autoplay loop muted playsinline preload="none"></video>
           @else
-            <div class="w-full h-full bg-cover bg-center opacity-55 hover:scale-105 transition-transform duration-700" style="background-image: url('{{ $banner->image_url }}');"></div>
+            <img src="{{ $banner->image_url }}" alt="{{ $banner->title }}" loading="lazy" decoding="async" class="w-full h-full object-cover hover:scale-105 transition-transform duration-700">
           @endif
-          <div class="absolute inset-0 bg-gradient-to-r from-slate-950/90 via-slate-950/65 to-transparent"></div>
         </a>
 
-        <div class="w-full relative z-10 max-w-2xl space-y-2.5 pointer-events-none">
-          <div class="flex items-center gap-2">
-            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 bg-[#10B981] text-white text-[10px] font-black rounded-full uppercase tracking-wider shadow">
-              <span class="material-symbols-outlined text-[13px]">campaign</span> Espacio Publicitario Destacado
-            </span>
-            <span class="text-[10px] font-bold text-emerald-300 bg-emerald-950/80 px-2 py-0.5 rounded-full border border-emerald-800">
-              Tienda Verificada FusaShop
-            </span>
-          </div>
-
-          <h2 class="text-xl sm:text-2xl md:text-3xl font-extrabold text-white leading-tight font-heading drop-shadow">
-            {{ $banner->title }}
-          </h2>
-
-          <p class="text-slate-200 text-xs sm:text-sm line-clamp-2 leading-relaxed">
-            Haz clic en el banner para visitar directamente la tienda oficial y descubrir sus productos y promociones en Fusagasugá.
-          </p>
-
-          <div class="pt-2 flex items-center gap-3 pointer-events-auto">
-            <a href="{{ $bannerTargetUrl }}" class="px-4 py-2 bg-[#10B981] hover:bg-emerald-600 text-white font-bold text-xs rounded-xl shadow-md transition-all inline-flex items-center gap-1.5">
-              <span class="material-symbols-outlined text-[16px]">storefront</span> Ir a la Tienda / Oferta
-            </a>
-            <a href="{{ route('merchant.banner.request') }}" class="px-3 py-2 bg-white/10 hover:bg-white/20 text-white border border-white/20 font-bold text-xs rounded-xl backdrop-blur-sm transition-all hidden sm:inline-flex items-center gap-1">
-              <span class="material-symbols-outlined text-[15px]">add_circle</span> Pautar Aquí
-            </a>
-          </div>
-        </div>
+        <a href="{{ $bannerTargetUrl }}" class="absolute inset-x-0 bottom-0 z-10 px-5 sm:px-7 md:px-10 pt-9 pb-4 pr-16 flex flex-col justify-end text-white space-y-1 bg-gradient-to-t from-slate-950/80 via-slate-950/35 to-transparent">
+          @if($banner->title)
+            <h2 class="text-base sm:text-lg md:text-xl font-extrabold leading-tight font-heading line-clamp-1 drop-shadow">
+              {{ $banner->title }}
+            </h2>
+          @endif
+          @if($banner->description)
+            <p class="text-white/95 text-xs sm:text-sm leading-relaxed line-clamp-2 drop-shadow">
+              {{ $banner->description }}
+            </p>
+          @endif
+        </a>
       </div>
     @endforeach
 
@@ -715,7 +683,7 @@
         <span class="material-symbols-outlined text-lg">chevron_right</span>
       </button>
 
-      <div class="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1.5">
+      <div class="absolute bottom-3 right-5 z-20 flex items-center gap-1.5">
         <template x-for="i in totalSlides" :key="i">
           <button @click="currentSlide = i - 1" class="h-1.5 rounded-full transition-all duration-300" :class="currentSlide === (i - 1) ? 'w-6 bg-[#10B981]' : 'w-2 bg-white/40'"></button>
         </template>

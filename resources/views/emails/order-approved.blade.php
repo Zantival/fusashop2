@@ -51,7 +51,7 @@
                   ¡Gracias por tu compra en <span style="color:#10B981;">Fus</span><span style="color:#2563EB;">a</span><span style="color:#F97316;">Shop</span>!
                 </h2>
                 <p style="margin:0 0 24px;font-size:14px;line-height:1.6;color:#475569;text-align:center;">
-                  Hola <strong>{{ $order->user->name }}</strong>, recibimos tu pago para el pedido <strong>{{ $order->reference }}</strong> y el comercio ya está preparando tu despacho.
+                  Hola <strong>{{ $order->user->name }}</strong>, recibimos tu pago para el pedido <strong>{{ $order->reference }}</strong>. {{ $order->isServiceReservation() ? 'Tu reserva del servicio está confirmada; encontrarás el código y el detalle de lo adquirido a continuación.' : 'El comercio ya está preparando tu pedido.' }}
                 </p>
               @endif
 
@@ -68,16 +68,24 @@
                   <tr style="border-bottom:1px solid #e2e8f0;">
                     <td style="padding:10px 14px;color:#1e293b;">
                       <strong>{{ $item->product?->name }}</strong> <span style="color:#64748b;">× {{ $item->quantity }}</span>
+                      @if($item->product?->isService())
+                        <br><span style="color:#047857;font-size:12px;font-weight:700;">Servicio reservado</span>
+                      @endif
+                      @if(!empty($item->selected_options))
+                        <br><span style="color:#64748b;font-size:12px;">{{ collect($item->selected_options)->map(fn ($value, $key) => is_array($value) ? $key . ': ' . implode(', ', $value) : $key . ': ' . $value)->implode(' · ') }}</span>
+                      @endif
                     </td>
                     <td align="right" style="padding:10px 14px;font-weight:700;color:#0f172a;">
                       ${{ number_format($item->quantity * $item->price, 0, ',', '.') }} COP
                     </td>
                   </tr>
                   @endforeach
+                  @if($order->hasShippableItems())
                   <tr style="border-bottom:1px solid #e2e8f0;">
                     <td style="padding:8px 14px;color:#64748b;">Envío ({{ strtoupper($order->shipping_carrier ?: 'Envia.com') }})</td>
                     <td align="right" style="padding:8px 14px;color:#475569;">${{ number_format($order->shipping_cost, 0, ',', '.') }} COP</td>
                   </tr>
+                  @endif
                   @if($order->discount > 0)
                   <tr style="border-bottom:1px solid #e2e8f0;background-color:#ecfdf5;">
                     <td style="padding:8px 14px;color:#047857;font-weight:600;">Descuento FusaCoins</td>
@@ -92,6 +100,13 @@
                   </tr>
                 </tbody>
               </table>
+
+              @if($order->hasServiceItems())
+                <div style="background-color:#ecfdf5;border:1px solid #a7f3d0;border-radius:12px;padding:14px;margin-bottom:24px;font-size:13px;color:#065f46;">
+                  <strong>Reserva confirmada · Código {{ $order->reference }}</strong><br>
+                  Presenta este código al comercio para validar el servicio reservado. La factura y los datos de los servicios adquiridos se incluyen en este correo.
+                </div>
+              @endif
 
               @if($order->invoice_number)
                 <div style="background-color:#eff6ff;border:1px solid #bfdbfe;border-radius:12px;padding:14px;margin-bottom:24px;font-size:12px;color:#1e40af;">

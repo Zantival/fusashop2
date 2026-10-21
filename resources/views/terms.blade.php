@@ -17,15 +17,21 @@
                 <p>Eres responsable de la veracidad de tus datos y de la seguridad de tu cuenta. Los comercios deben completar su perfil y verificación para vender.</p>
             </section>
             <section>
-                <h2 class="text-xl font-bold text-on-surface mb-3">3. Compras, pagos y envíos</h2>
+                <h2 class="text-xl font-bold text-on-surface mb-3">3. Uso de datos de ventas de los comercios</h2>
+                <p>Al registrarse como comerciante y publicar o vender productos en FusaShop, el comerciante acepta que la plataforma recopile y analice los datos de las ventas realizadas dentro de FusaShop —como pedidos, productos, cantidades, valores, fechas y estados— exclusivamente para que el Administrador pueda elaborar reportes de desempeño, comunicar cómo marcha su actividad de venta en línea y ofrecer diagnósticos o recomendaciones orientados a ayudarle a mejorar sus ventas.</p>
+                <p>El Administrador no utilizará las métricas identificables de un comercio para venderlas, publicarlas ni compartirlas con otros comerciantes para sus propios fines comerciales. El tratamiento operativo de la información necesario para ejecutar pedidos, pagos, envíos, atención de reclamos y obligaciones legales se describe en la <a href="{{ route('privacy') }}" class="text-primary font-bold underline">Política de Privacidad</a>.</p>
+                <p>Esta aceptación no limita los derechos del comerciante como titular de datos personales ni reemplaza la autorización o información que la ley exija para otros tratamientos.</p>
+            </section>
+            <section>
+                <h2 class="text-xl font-bold text-on-surface mb-3">4. Compras, pagos y envíos</h2>
                 <p>Los pagos se procesan a través de Wompi, los envíos mediante Envia.com y la facturación electrónica con Factus (DIAN). Cada comercio es responsable de la calidad y disponibilidad de sus productos.</p>
             </section>
             <section>
-                <h2 class="text-xl font-bold text-on-surface mb-3">4. Garantías y reclamos</h2>
+                <h2 class="text-xl font-bold text-on-surface mb-3">5. Garantías y reclamos</h2>
                 <p>Puedes radicar peticiones, quejas, reclamos y sugerencias desde la sección <a href="{{ route('pqrs.create') }}" class="text-primary font-bold underline">PQRS &amp; Garantías</a>.</p>
             </section>
             <section>
-                <h2 class="text-xl font-bold text-on-surface mb-3">5. Datos personales</h2>
+                <h2 class="text-xl font-bold text-on-surface mb-3">6. Datos personales</h2>
                 <p>El tratamiento de tus datos se rige por nuestra <a href="{{ route('privacy') }}" class="text-primary font-bold underline">Política de Privacidad</a>.</p>
             </section>
         </div>

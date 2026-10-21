@@ -11,7 +11,7 @@
     <p class="text-on-surface-variant mt-1">Completa tu perfil para ser verificado por el equipo analista.</p>
   </div>
 
-  @if($profile?->kyc_status === 'pending')
+  @if($profile?->kyc_status === 'pending' && !empty($profile?->rut_path))
     <div class="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-xl flex items-center gap-3">
       <span class="material-symbols-outlined text-amber-600">hourglass_empty</span>
       <p class="text-sm font-bold text-amber-800">Perfil en revisión — Aún no puedes publicar nuevos productos.</p>
@@ -148,7 +148,7 @@
           <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-3">Logo de la Empresa</label>
           @if($profile?->logo_path)
             <div class="w-20 h-20 rounded-2xl overflow-hidden border border-surface-container mb-3">
-              <img src="{{ Storage::url($profile->logo_path) }}" class="w-full h-full object-cover">
+              <img loading="lazy" decoding="async" src="{{ Storage::url($profile->logo_path) }}" class="w-full h-full object-cover">
             </div>
           @endif
           <input type="file" name="logo" accept="image/*"
@@ -162,7 +162,7 @@
               @foreach($profile->banners_path as $bPath)
                 @php $path = is_array($bPath) ? ($bPath['path'] ?? '') : $bPath; @endphp
                 @if($path)
-                  <img src="{{ Storage::url($path) }}" class="w-14 h-10 rounded-lg object-cover border border-surface-container">
+                  <img loading="lazy" decoding="async" src="{{ Storage::url($path) }}" class="w-14 h-10 rounded-lg object-cover border border-surface-container">
                 @endif
               @endforeach
             </div>
@@ -174,6 +174,9 @@
         </div>
       </div>
     </div>
+
+    <!-- Configuración de Método de Pago Preferido (Banco o Nequi/Daviplata) -->
+    @include('merchant.partials.payout-method-fields', ['profile' => $profile])
 
     <div class="flex flex-col sm:flex-row items-center justify-between mt-6 gap-4">
       @if(!$profile || $profile->kyc_status !== 'approved')

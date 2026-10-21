@@ -7,6 +7,7 @@ use App\Models\LoyaltyPoint;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\ShippingAddress;
+use App\Models\Setting;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -27,7 +28,7 @@ class CheckoutService
      * @param array{carrier:string,service:string,price:float} $rate
      * @param int[]|null $selectedItemIds
      */
-    public function createOrder(User $user, Cart $cart, ShippingAddress $address, array $rate, string $docType, string $doc, bool $usePoints, ?array $selectedItemIds = null): Order
+    public function createOrder(User $user, Cart $cart, ?ShippingAddress $address, array $rate, string $docType, string $doc, bool $usePoints, ?array $selectedItemIds = null): Order
     {
         return DB::transaction(function () use ($user, $cart, $address, $rate, $docType, $doc, $usePoints, $selectedItemIds) {
             $cart->load('items.product');
@@ -52,14 +53,17 @@ class CheckoutService
                 $discount = $this->consumePoints($user->id, $merchantIds, $eligibleSubtotal);
             }
 
-            $snapshot = $address->toSnapshot();
+            $snapshot = $address?->toSnapshot() ?? [];
             $snapshot['email'] = $user->email;
 
             // FusaCoins que ganará el usuario con esta compra (1 por cada $10.000 COP)
             $pointsEarned = (int) floor($subtotal / self::EARN_RATE_AMOUNT);
 
+            $merchantId = $items->first()?->product?->merchant_id;
+
             $order = Order::create([
                 'user_id' => $user->id,
+                'merchant_id' => $merchantId,
                 'reference' => 'FS-' . strtoupper(Str::ulid()->toBase32()),
                 'subtotal' => $subtotal,
                 'discount' => $discount,
@@ -67,15 +71,15 @@ class CheckoutService
                 'points_earned' => $pointsEarned,
                 'shipping_cost' => $shipping,
                 'total' => max(0, $subtotal - $discount) + $shipping,
-                'commission_amount' => round($subtotal * (float) config('services.fusashop.commission_rate'), 2),
+                'commission_amount' => round($subtotal * (Setting::commissionRate() / 100), 2),
                 'currency' => 'COP',
                 'status' => 'pending',
                 'payment_status' => 'pending',
                 'payment_method' => 'wompi',
-                'shipping_address_id' => $address->id,
-                'shipping_address' => strip_tags($address->fullLine()),
+                'shipping_address_id' => $address?->id,
+                'shipping_address' => $address ? strip_tags($address->fullLine()) : null,
                 'shipping_snapshot' => $snapshot,
-                'shipping_postal_code' => $address->postal_code,
+                'shipping_postal_code' => $address?->postal_code,
                 'shipping_carrier' => $rate['carrier'],
                 'shipping_service' => $rate['service'],
                 'customer_document_type' => strtoupper($docType),

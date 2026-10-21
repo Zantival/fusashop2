@@ -10,6 +10,8 @@ class WompiSandboxController extends Controller
 {
     public function show(Request $request, WompiService $wompi)
     {
+        $this->ensureSandboxIsAvailable();
+
         $reference = (string) $request->query('reference', '');
         $amountInCents = (int) $request->query('amount_in_cents', 0);
         $currency = (string) $request->query('currency', 'COP');
@@ -32,6 +34,8 @@ class WompiSandboxController extends Controller
 
     public function complete(Request $request, WompiService $wompi, OrderPaymentService $payments)
     {
+        $this->ensureSandboxIsAvailable();
+
         $data = $request->validate([
             'reference'       => 'required|string',
             'amount_in_cents' => 'required|integer|min:100',
@@ -58,5 +62,14 @@ class WompiSandboxController extends Controller
 
         $separator = str_contains($data['redirect_url'], '?') ? '&' : '?';
         return redirect()->to($data['redirect_url'] . $separator . 'id=' . urlencode($txId));
+    }
+
+    /** La pasarela simulada nunca debe poder aprobar pagos fuera de local o testing. */
+    private function ensureSandboxIsAvailable(): void
+    {
+        abort_unless(
+            app()->environment(['local', 'testing']) && config('services.wompi.env') === 'sandbox',
+            404
+        );
     }
 }

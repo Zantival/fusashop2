@@ -38,11 +38,11 @@
 
     <!-- 3 BOTONES SUPERIORES DE NAVEGACIÓN DIRECTA -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-2 border-t border-slate-100">
-      
+
       <!-- BOTÓN 1: LOGO -->
-      <button type="button" 
+      <button type="button"
               id="tab-btn-logo"
-              onclick="switchVisualTab('logo')" 
+              onclick="switchVisualTab('logo')"
               class="p-4 rounded-2xl border flex items-center justify-between text-left transition-all cursor-pointer {{ $activeTab === 'logo' ? 'bg-[#006c47] text-white shadow-md border-[#006c47]' : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200' }}">
         <div class="flex items-center gap-2.5">
           <span id="tab-icon-wrap-logo" class="p-2 rounded-xl {{ $activeTab === 'logo' ? 'bg-white/20 text-white' : 'bg-emerald-100 text-[#006c47]' }}">
@@ -57,9 +57,9 @@
       </button>
 
       <!-- BOTÓN 2: BANNERS -->
-      <button type="button" 
+      <button type="button"
               id="tab-btn-banners"
-              onclick="switchVisualTab('banners')" 
+              onclick="switchVisualTab('banners')"
               class="p-4 rounded-2xl border flex items-center justify-between text-left transition-all cursor-pointer {{ $activeTab === 'banners' ? 'bg-[#006c47] text-white shadow-md border-[#006c47]' : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200' }}">
         <div class="flex items-center gap-2.5">
           <span id="tab-icon-wrap-banners" class="p-2 rounded-xl {{ $activeTab === 'banners' ? 'bg-white/20 text-white' : 'bg-emerald-100 text-[#006c47]' }}">
@@ -74,9 +74,9 @@
       </button>
 
       <!-- BOTÓN 3: TARJETAS PROMOCIONALES -->
-      <button type="button" 
+      <button type="button"
               id="tab-btn-promos"
-              onclick="switchVisualTab('promos')" 
+              onclick="switchVisualTab('promos')"
               class="p-4 rounded-2xl border flex items-center justify-between text-left transition-all cursor-pointer relative {{ $activeTab === 'promos' ? 'bg-[#006c47] text-white shadow-md border-[#006c47]' : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200' }}">
         <div class="flex items-center gap-2.5">
           <span id="tab-icon-wrap-promos" class="p-2 rounded-xl {{ $activeTab === 'promos' ? 'bg-white/20 text-white' : 'bg-emerald-100 text-[#006c47]' }}">
@@ -98,9 +98,9 @@
       </button>
 
       <!-- BOTÓN 4: GUÍA Y VIDEOS -->
-      <button type="button" 
+      <button type="button"
               id="tab-btn-guide"
-              onclick="switchVisualTab('guide')" 
+              onclick="switchVisualTab('guide')"
               class="p-4 rounded-2xl border flex items-center justify-between text-left transition-all cursor-pointer {{ $activeTab === 'guide' ? 'bg-[#006c47] text-white shadow-md border-[#006c47]' : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200' }}">
         <div class="flex items-center gap-2.5">
           <span id="tab-icon-wrap-guide" class="p-2 rounded-xl {{ $activeTab === 'guide' ? 'bg-white/20 text-white' : 'bg-amber-100 text-amber-700' }}">
@@ -122,7 +122,7 @@
   <!-- ====================================================================== -->
   <div id="tab-content-logo" class="space-y-6" style="display: {{ $activeTab === 'logo' ? 'block' : 'none' }};">
     <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-200 space-y-6">
-      
+
       <div class="border-b border-slate-100 pb-4">
         <h2 class="text-lg font-bold font-['Manrope'] text-slate-900 flex items-center gap-2">
           <span class="material-symbols-outlined text-[#006c47]">brand_awareness</span>
@@ -134,11 +134,11 @@
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
-        
+
         <!-- Formulario de Subida -->
         <div class="space-y-4 bg-slate-50 p-5 rounded-2xl border border-slate-200">
           <h3 class="text-sm font-extrabold text-slate-800">Cargar nuevo archivo de imagen</h3>
-          
+
           <form method="POST" action="{{ route('analyst.global.logo.store') }}" enctype="multipart/form-data" class="space-y-4">
             @csrf
             <div>
@@ -171,14 +171,14 @@
         <!-- Previsualización del Logo Actual -->
         <div class="space-y-4 bg-slate-50 p-5 rounded-2xl border border-slate-200">
           <h3 class="text-sm font-extrabold text-slate-800">Previsualización del Logo en Pantalla</h3>
-          
+
           <div class="space-y-3">
             <div>
               <span class="text-[11px] font-bold text-slate-500 block mb-1">Sobre fondo claro (Encabezado Web):</span>
               <div class="p-4 bg-white rounded-xl border border-slate-200 flex items-center justify-center min-h-[90px]">
                 @if($globalLogoPath)
-                  <img src="{{ route('files.serve', ['disk' => 'system', 'path' => basename($globalLogoPath)]) }}?v={{ \Illuminate\Support\Facades\Storage::disk('public')->lastModified($globalLogoPath) }}" 
-                       alt="Logo actual de FusaShop" 
+                  <img loading="lazy" decoding="async" src="{{ route('files.serve', ['disk' => 'system', 'path' => basename($globalLogoPath)]) }}?v={{ \Illuminate\Support\Facades\Storage::disk('public')->lastModified($globalLogoPath) }}"
+                       alt="Logo actual de FusaShop"
                        class="h-10 max-w-[220px] object-contain">
                 @else
                   <x-logo size="default" :with-microcopy="false" />
@@ -190,8 +190,8 @@
               <span class="text-[11px] font-bold text-slate-500 block mb-1">Sobre fondo oscuro (Pie de Página):</span>
               <div class="p-4 bg-slate-950 rounded-xl border border-slate-900 flex items-center justify-center min-h-[90px]">
                 @if($globalLogoPath)
-                  <img src="{{ route('files.serve', ['disk' => 'system', 'path' => basename($globalLogoPath)]) }}?v={{ \Illuminate\Support\Facades\Storage::disk('public')->lastModified($globalLogoPath) }}" 
-                       alt="Logo actual de FusaShop" 
+                  <img loading="lazy" decoding="async" src="{{ route('files.serve', ['disk' => 'system', 'path' => basename($globalLogoPath)]) }}?v={{ \Illuminate\Support\Facades\Storage::disk('public')->lastModified($globalLogoPath) }}"
+                       alt="Logo actual de FusaShop"
                        class="h-10 max-w-[220px] object-contain brightness-110">
                 @else
                   <x-logo size="default" :with-microcopy="false" />
@@ -220,6 +220,9 @@
           ? $pendingRequests->filter(fn($r) => ($r->target_type ?? '') === 'promo_card')
           : collect();
     @endphp
+
+    <!-- Apartado Exclusivo del Analista: Destino de Ingresos por Banners y Publicidad -->
+    @include('analyst.partials.banner-payout-config')
 
     <!-- Bandeja de Mensajes y Solicitudes de Banners de Comerciantes (con Foto y Enlace a la Tienda) -->
     <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-200 space-y-4">
@@ -256,7 +259,7 @@
                   @if($req->is_video)
                     <video src="{{ $req->image_url }}" class="w-full h-full object-cover" muted playsinline></video>
                   @else
-                    <img src="{{ $req->image_url }}" alt="{{ $req->title }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform">
+                    <img loading="lazy" decoding="async" src="{{ $req->image_url }}" alt="{{ $req->title }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform">
                   @endif
                   <span class="absolute bottom-1.5 right-1.5 px-2 py-0.5 bg-black/70 text-white text-[9px] font-bold rounded-md flex items-center gap-1">
                     <span class="material-symbols-outlined text-[11px]">visibility</span> Ver Arte
@@ -334,16 +337,28 @@
         </span>
       </div>
 
-      <form method="POST" action="{{ route('analyst.banners.store') }}" enctype="multipart/form-data" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <form id="banner-upload-form" method="POST" action="{{ route('analyst.banners.store') }}" enctype="multipart/form-data" class="grid grid-cols-1 md:grid-cols-2 gap-4">
         @csrf
         <div>
-          <label class="block text-xs font-bold text-slate-700 mb-1">Título de la Campaña / Tienda (opcional)</label>
-          <input type="text" name="title" class="w-full rounded-xl border border-slate-200 px-3.5 py-2 text-xs focus:ring-2 focus:ring-[#10B981] outline-none" placeholder="Ej: Tienda Oficial Café del Sumapaz">
+          <label class="block text-xs font-bold text-slate-700 mb-1">Título de la campaña o tienda *</label>
+          <input type="text" name="title" required maxlength="255" class="w-full rounded-xl border border-slate-200 px-3.5 py-2 text-xs focus:ring-2 focus:ring-[#10B981] outline-none" placeholder="Ej: Tienda Oficial Café del Sumapaz">
         </div>
 
         <div>
-          <label class="block text-xs font-bold text-slate-700 mb-1">Enlace Directo a la Tienda o Promoción (URL)</label>
-          <input type="url" name="link_url" class="w-full rounded-xl border border-slate-200 px-3.5 py-2 text-xs focus:ring-2 focus:ring-[#10B981] outline-none" placeholder="{{ url('/tienda/1') }}">
+          <label class="block text-xs font-bold text-slate-700 mb-1">Descripción que verá el visitante *</label>
+          <textarea name="description" rows="2" required maxlength="1500" class="w-full rounded-xl border border-slate-200 px-3.5 py-2 text-xs focus:ring-2 focus:ring-[#10B981] outline-none" placeholder="Describe la oferta o el mensaje del anuncio"></textarea>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Buscar comercio de destino (opcional)</label>
+          <input id="banner-merchant-search" type="search" list="banner-merchant-options" autocomplete="off" class="w-full rounded-xl border border-slate-200 px-3.5 py-2 text-xs focus:ring-2 focus:ring-[#10B981] outline-none" placeholder="Escribe el nombre y selecciona un comercio">
+          <input id="banner-merchant-id" type="hidden" name="merchant_id" value="">
+          <datalist id="banner-merchant-options">
+            @foreach($bannerMerchants as $merchant)
+              <option value="{{ $merchant['label'] }}" data-merchant-id="{{ $merchant['id'] }}"></option>
+            @endforeach
+          </datalist>
+          <p class="mt-1 text-[10px] text-slate-500">Si no eliges un comercio, el banner abrirá el catálogo.</p>
         </div>
 
         <div>
@@ -357,8 +372,9 @@
           <input type="number" name="sort_order" value="{{ $banners->count() + 1 }}" min="0" class="w-full rounded-xl border border-slate-200 px-3.5 py-2 text-xs focus:ring-2 focus:ring-[#10B981] outline-none">
         </div>
 
-        <div class="md:col-span-2 pt-2">
-          <button type="submit" class="px-6 py-2.5 bg-[#006c47] hover:bg-[#10B981] text-white font-extrabold rounded-xl shadow-md transition-all flex items-center gap-2 text-xs cursor-pointer">
+        <div class="md:col-span-2 pt-2 flex flex-col items-start gap-2">
+          <p id="banner-upload-status" class="hidden text-xs font-semibold" role="status" aria-live="polite"></p>
+          <button id="banner-upload-submit" type="submit" class="px-6 py-2.5 bg-[#006c47] hover:bg-[#10B981] text-white font-extrabold rounded-xl shadow-md transition-all flex items-center gap-2 text-xs cursor-pointer">
             <span class="material-symbols-outlined text-base">publish</span>
             <span>Publicar Banner en Vitrina</span>
           </button>
@@ -372,21 +388,21 @@
         <div>
           <h3 class="text-sm font-extrabold text-slate-800 flex items-center gap-1.5">
             <span class="material-symbols-outlined text-base text-[#006c47]">view_carousel</span>
-            <span>Banners en Vitrina ({{ $activeBannersTotal }} de 8 activos)</span>
+            <span id="banner-active-count">Banners en Vitrina ({{ $activeBannersTotal }} de 8 activos)</span>
           </h3>
           <p class="text-xs text-slate-500">Si no hay banners activos para un espacio (arriba o abajo), ese espacio se oculta automáticamente en la tienda.</p>
         </div>
       </div>
 
       @if($banners->isEmpty())
-        <div class="text-center py-12 bg-slate-50 rounded-2xl border border-slate-200 text-slate-500">
+        <div id="banner-empty-state" class="text-center py-12 bg-slate-50 rounded-2xl border border-slate-200 text-slate-500">
           <span class="material-symbols-outlined text-5xl text-slate-300 mb-2">image_not_supported</span>
           <p class="font-bold text-sm">No hay banners activos publicados actualmente</p>
           <p class="text-xs text-slate-400 mt-0.5">Ambos espacios de banner en la vitrina están ocultos mientras no existan banners activos.</p>
         </div>
       @else
         @php $activePositionCounter = 0; @endphp
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div id="banner-list" class="grid grid-cols-1 md:grid-cols-2 gap-4">
           @foreach($banners as $banner)
             @php
               if ($banner->is_active) {
@@ -404,7 +420,7 @@
                 @if($isVideo)
                   <video src="{{ $banner->image_url }}" class="max-w-full max-h-full object-contain" autoplay loop muted playsinline></video>
                 @else
-                  <img src="{{ $banner->image_url }}" class="max-w-full max-h-full object-contain" alt="{{ $banner->title }}">
+                  <img loading="lazy" decoding="async" src="{{ $banner->image_url }}" class="max-w-full max-h-full object-contain" alt="{{ $banner->title }}">
                 @endif
                 <span class="absolute top-2 left-2 px-2.5 py-0.5 rounded-full text-[10px] font-black bg-slate-900/80 text-emerald-300 border border-emerald-700/50">
                   {{ $slotLabel }}
@@ -450,6 +466,9 @@
           @endforeach
         </div>
       @endif
+      @if($banners->isEmpty())
+        <div id="banner-list" class="hidden grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+      @endif
     </div>
 
   </div>
@@ -458,7 +477,7 @@
   <!-- ÁREA 3: TARJETAS PROMOCIONALES ÚNICAS Y POR CATEGORÍA                  -->
   <!-- ====================================================================== -->
   <div id="tab-content-promos" class="space-y-6" style="display: {{ $activeTab === 'promos' ? 'block' : 'none' }};">
-    
+
     <!-- SOLICITUDES PAGADAS DE TARJETAS PROMOCIONALES ÚNICAS DE COMERCIANTES -->
     <div class="bg-white rounded-3xl p-6 shadow-sm border border-orange-200 space-y-4">
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-100">
@@ -489,7 +508,7 @@
               <div class="flex flex-col sm:flex-row gap-4 flex-1 min-w-0">
                 <!-- Foto del Producto enviada por el comerciante -->
                 <a href="{{ route('analyst.banner-requests.show', $req->id) }}" class="w-full sm:w-40 h-32 rounded-xl bg-slate-900 overflow-hidden shrink-0 border border-slate-200 relative group block">
-                  <img src="{{ $req->image_url }}" alt="{{ $req->title }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform">
+                  <img loading="lazy" decoding="async" src="{{ $req->image_url }}" alt="{{ $req->title }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform">
                   <span class="absolute bottom-1.5 right-1.5 px-2 py-0.5 bg-black/70 text-white text-[9px] font-bold rounded-md">
                     Foto Producto
                   </span>
@@ -561,7 +580,7 @@
 
     <!-- CREAR TARJETA PROMOCIONAL VINCULADA A PRODUCTOS EN DESCUENTO O APLICAR CAMPAÑA -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
-      
+
       <!-- Panel A: Crear Tarjeta Promocional Única o por Categoría vinculando productos -->
       <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-200 space-y-4">
         <div class="border-b border-slate-100 pb-3">
@@ -708,7 +727,7 @@
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         @forelse($promotionalCards as $card)
         <div class="rounded-2xl border overflow-hidden flex flex-col justify-between transition-all {{ !empty($card['is_active']) ? 'border-emerald-300 bg-white shadow-sm' : 'border-slate-200 bg-slate-50 opacity-60' }}">
-          
+
           <!-- Previsualización de la Tarjeta Promocional -->
           <div class="p-5 bg-gradient-to-br {{ $card['bg_gradient'] ?? 'from-emerald-950 via-slate-900 to-emerald-900' }} text-white relative overflow-hidden">
             <div class="flex items-center justify-between gap-2 mb-2">
@@ -722,7 +741,7 @@
 
             <div class="flex items-start gap-3 mt-1">
               @if(!empty($card['image_url']))
-                <img src="{{ $card['image_url'] }}" alt="{{ $card['title'] }}" class="w-14 h-14 rounded-xl object-cover border border-white/20 shrink-0 bg-white">
+                <img loading="lazy" decoding="async" src="{{ $card['image_url'] }}" alt="{{ $card['title'] }}" class="w-14 h-14 rounded-xl object-cover border border-white/20 shrink-0 bg-white">
               @endif
               <div class="min-w-0">
                 <h4 class="font-extrabold text-white text-base leading-snug font-heading line-clamp-2">
@@ -1008,6 +1027,115 @@ function switchVisualTab(tabName) {
     url.searchParams.set('tab', tabName);
     window.history.replaceState({}, '', url);
   }
+}
+
+const bannerUploadForm = document.getElementById('banner-upload-form');
+if (bannerUploadForm) {
+  bannerUploadForm.addEventListener('submit', async function (event) {
+    event.preventDefault();
+
+    const submitButton = document.getElementById('banner-upload-submit');
+    const status = document.getElementById('banner-upload-status');
+    submitButton.disabled = true;
+    submitButton.classList.add('opacity-60', 'cursor-wait');
+    status.textContent = 'Subiendo el banner…';
+    status.className = 'text-xs font-semibold text-slate-600';
+
+    try {
+      const response = await fetch(bannerUploadForm.action, {
+        method: 'POST',
+        body: new FormData(bannerUploadForm),
+        headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+        credentials: 'same-origin'
+      });
+      const result = await response.json();
+
+      if (!response.ok) {
+        const validationMessage = result.errors
+          ? Object.values(result.errors).flat().join(' ')
+          : result.message;
+        throw new Error(validationMessage || 'No se pudo guardar el banner. Revisa los datos e inténtalo de nuevo.');
+      }
+
+      const banner = result.banner;
+      const list = document.getElementById('banner-list');
+      const emptyState = document.getElementById('banner-empty-state');
+      const card = document.createElement('article');
+      card.className = 'rounded-2xl border border-emerald-200 overflow-hidden bg-white shadow-2xs';
+
+      const media = document.createElement(banner.is_video ? 'video' : 'img');
+      media.src = banner.image_url;
+      media.className = 'max-w-full max-h-full object-contain';
+      if (banner.is_video) {
+        media.autoplay = true;
+        media.loop = true;
+        media.muted = true;
+        media.playsInline = true;
+      } else {
+        media.alt = banner.title;
+      }
+
+      const preview = document.createElement('div');
+      preview.className = 'w-full h-36 bg-slate-900 flex items-center justify-center overflow-hidden';
+      preview.appendChild(media);
+
+      const details = document.createElement('div');
+      details.className = 'p-4 space-y-2';
+      const title = document.createElement('h4');
+      title.className = 'font-extrabold text-slate-900 text-sm truncate';
+      title.textContent = banner.title;
+      details.appendChild(title);
+      if (banner.merchant_name) {
+        const merchant = document.createElement('p');
+        merchant.className = 'text-[11px] font-semibold text-emerald-700';
+        merchant.textContent = 'Destino: ' + banner.merchant_name;
+        details.appendChild(merchant);
+      } else {
+        const merchant = document.createElement('p');
+        merchant.className = 'text-[11px] font-semibold text-slate-500';
+        merchant.textContent = 'Destino: Catálogo';
+        details.appendChild(merchant);
+      }
+      if (banner.description) {
+        const description = document.createElement('p');
+        description.className = 'text-xs text-slate-600';
+        description.textContent = banner.description;
+        details.appendChild(description);
+      }
+      const published = document.createElement('p');
+      published.className = 'text-xs font-bold text-emerald-700 pt-2 border-t border-slate-100';
+      published.textContent = 'Publicado · Orden #' + banner.sort_order;
+      details.appendChild(published);
+      card.append(preview, details);
+      list.classList.remove('hidden');
+      list.appendChild(card);
+      if (emptyState) emptyState.remove();
+
+      document.getElementById('banner-active-count').textContent =
+        'Banners en Vitrina (' + result.active_count + ' de 8 activos)';
+      bannerUploadForm.reset();
+      status.textContent = result.message + ' Apareció en la lista de abajo.';
+      status.className = 'text-xs font-semibold text-emerald-700';
+      card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    } catch (error) {
+      status.textContent = error.message || 'Error al subir el banner. Inténtalo nuevamente.';
+      status.className = 'text-xs font-semibold text-rose-700';
+    } finally {
+      submitButton.disabled = false;
+      submitButton.classList.remove('opacity-60', 'cursor-wait');
+    }
+  });
+}
+
+const bannerMerchantSearch = document.getElementById('banner-merchant-search');
+const bannerMerchantId = document.getElementById('banner-merchant-id');
+const bannerMerchantOptions = document.getElementById('banner-merchant-options');
+if (bannerMerchantSearch && bannerMerchantId && bannerMerchantOptions) {
+  bannerMerchantSearch.addEventListener('input', function () {
+    const selectedOption = Array.from(bannerMerchantOptions.options)
+      .find(option => option.value === bannerMerchantSearch.value);
+    bannerMerchantId.value = selectedOption?.dataset.merchantId || '';
+  });
 }
 </script>
 @endsection

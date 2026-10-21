@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\ShippingAddress;
+use App\Support\ColombiaLocations;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Support\Facades\Http;
 use RuntimeException;
@@ -68,7 +69,7 @@ class EnviaService
         $volumetricKg = ($length * $width * $height) / 5000;
 
         return [
-            'content' => 'Mercancía FusaShop',
+            'content' => 'Mercancia FusaShop',
             'amount' => 1,
             'type' => 'box',
             'dimensions' => ['length' => $length, 'width' => $width, 'height' => $height],
@@ -80,58 +81,64 @@ class EnviaService
         ];
     }
 
+    private function origin(): array
+    {
+        $origin = config('services.envia.origin') ?: [];
+        $city = trim((string) ($origin['city'] ?? 'Fusagasuga'));
+        $state = trim((string) ($origin['state'] ?? 'CU'));
+        $country = trim((string) ($origin['country'] ?? 'CO'));
+
+        if ($country === 'CO' && !preg_match('/^\d{8}$/', $city)) {
+            $loc = ColombiaLocations::find($city, $state);
+            if ($loc) {
+                $city = $loc['dane8'];
+            }
+        }
+
+        $origin['city'] = $city;
+        $origin['state'] = ColombiaLocations::toEnviaStateCode($state);
+
+        return $origin;
+    }
+
     private function destination(array $a): array
     {
-        $city = $a['city'] ?? '';
-        $postal = $a['postal_code'] ?? '';
+        $city = trim((string) ($a['city'] ?? ''));
+        $postal = trim((string) ($a['postal_code'] ?? ''));
+        $state = trim((string) ($a['state'] ?? ''));
+        $country = trim((string) ($a['country'] ?? 'CO'));
 
-        // Si es Colombia y city no es un código DANE de 8 dígitos, intentar resolverlo por código postal
-        if (($a['country'] ?? 'CO') === 'CO' && !preg_match('/^\d{8}$/', (string)$city) && !empty($postal)) {
-            $resolved = $this->resolveDaneCode($postal);
+        // Si es Colombia y city no es un código DANE de 8 dígitos
+        if ($country === 'CO' && !preg_match('/^\d{8}$/', $city)) {
+            $resolved = null;
+            $dummyPostals = ['000000', '123456', '123465', '111111', '999999', '123123'];
+
+            // 1. Si viene un código postal no-dummy, consultar el geocoder de Envia
+            if (!empty($postal) && preg_match('/^\d{6}$/', $postal) && !in_array($postal, $dummyPostals, true)) {
+                $resolved = $this->resolveDaneCode($postal);
+            }
+
+            // 2. Si no se resolvió por código postal, buscar en el catálogo oficial de Colombia por municipio y depto
+            if (!$resolved) {
+                $loc = ColombiaLocations::find($city, $state);
+                if ($loc) {
+                    $resolved = $loc['dane8'];
+                    if (empty($postal) || in_array($postal, $dummyPostals, true)) {
+                        $postal = $loc['postal_code'];
+                    }
+                    if (empty($state)) {
+                        $state = $loc['state_code'];
+                    }
+                }
+            }
+
             if ($resolved) {
                 $city = $resolved;
             }
         }
 
-        $state = $a['state'] ?? '';
-        // Envia.com para Colombia exige código de departamento ISO de 2 dígitos (ej: CU, DC, AN, VA)
-        $stateCodes = [
-            'cundinamarca' => 'CU',
-            'bogota' => 'DC',
-            'bogotá' => 'DC',
-            'distrito capital' => 'DC',
-            'antioquia' => 'AN',
-            'valle' => 'VA',
-            'valle del cauca' => 'VA',
-            'santander' => 'SA',
-            'norte de santander' => 'NS',
-            'tolima' => 'TO',
-            'boyaca' => 'BY',
-            'boyacá' => 'BY',
-            'meta' => 'ME',
-            'huila' => 'HU',
-            'caldas' => 'CA',
-            'risaralda' => 'RI',
-            'quindio' => 'QU',
-            'quindío' => 'QU',
-            'atlantico' => 'AT',
-            'atlántico' => 'AT',
-            'bolivar' => 'BL',
-            'bolívar' => 'BL',
-            'magdalena' => 'MA',
-            'cesar' => 'CE',
-            'cordoba' => 'CO',
-            'córdoba' => 'CO',
-            'narino' => 'NA',
-            'nariño' => 'NA',
-            'cauca' => 'CA',
-        ];
-        $normState = mb_strtolower(trim($state));
-        if (isset($stateCodes[$normState])) {
-            $state = $stateCodes[$normState];
-        } elseif (strlen($state) > 3) {
-            $state = strtoupper(substr($state, 0, 2));
-        }
+        // Mapear código de departamento compatible con Envia.com
+        $enviaState = ColombiaLocations::toEnviaStateCode($state);
 
         return [
             'name' => $a['recipient'] ?? 'Cliente',
@@ -142,8 +149,8 @@ class EnviaService
             'number' => $a['number'] ?? 'S/N',
             'district' => $a['district'] ?? '',
             'city' => $city,
-            'state' => $state,
-            'country' => $a['country'] ?? 'CO',
+            'state' => $enviaState,
+            'country' => $country,
             'postalCode' => $postal,
             'reference' => $a['reference'] ?? '',
         ];
@@ -163,7 +170,7 @@ class EnviaService
                 }
             }
         } catch (\Throwable $e) {
-            // Silencioso: fallback al valor original
+            // Silencioso: fallback al catálogo local
         }
 
         return null;
@@ -189,7 +196,7 @@ class EnviaService
 
         foreach ($carriers as $carrier) {
             $payload = [
-                'origin' => config('services.envia.origin'),
+                'origin' => $this->origin(),
                 'destination' => $this->destination($destinationAddress),
                 'packages' => [$package],
                 'shipment' => ['carrier' => $carrier, 'type' => 1],
@@ -198,7 +205,8 @@ class EnviaService
 
             $res = $this->client()->post('/ship/rate/', $payload);
             if ($res->failed() || $res->json('meta') === 'error') {
-                throw new RuntimeException('Envia /rate falló (' . $res->status() . '): ' . mb_substr($res->body(), 0, 300));
+                $errorMsg = $res->json('error.message') ?? $res->json('message') ?? ('Envia /rate falló (' . $res->status() . '): ' . mb_substr($res->body(), 0, 300));
+                throw new RuntimeException($errorMsg);
             }
 
             foreach ((array) $res->json('data', []) as $r) {
@@ -222,13 +230,18 @@ class EnviaService
     public function generate(Order $order): array
     {
         $order->loadMissing('items.product', 'user');
+        $shippableItems = $order->items->filter(fn ($item) => $item->product && !$item->product->isService());
+        if ($shippableItems->isEmpty()) {
+            throw new RuntimeException('El pedido no contiene productos físicos para enviar.');
+        }
+        $declaredValue = (float) $shippableItems->sum(fn ($item) => $item->quantity * (float) $item->price);
         $snapshot = $order->shipping_snapshot ?? [];
         $snapshot['email'] = $snapshot['email'] ?? $order->user->email;
 
         $payload = [
-            'origin' => config('services.envia.origin'),
+            'origin' => $this->origin(),
             'destination' => $this->destination($snapshot),
-            'packages' => [$this->buildPackage($order->items, (float) $order->subtotal)],
+            'packages' => [$this->buildPackage($shippableItems, $declaredValue)],
             'shipment' => [
                 'carrier' => $order->shipping_carrier,
                 'service' => $order->shipping_service,

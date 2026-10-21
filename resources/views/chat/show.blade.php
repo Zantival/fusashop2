@@ -10,7 +10,7 @@
       <span class="material-symbols-outlined">arrow_back</span>
     </a>
     @if($otherUser->avatar)
-      <img src="{{ Storage::url($otherUser->avatar) }}" class="w-10 h-10 rounded-full object-cover">
+      <img loading="lazy" decoding="async" src="{{ Storage::url($otherUser->avatar) }}" class="w-10 h-10 rounded-full object-cover">
     @else
       <div class="w-10 h-10 bg-greenhouse-gradient rounded-full flex items-center justify-center text-white font-bold shrink-0">
         {{ strtoupper(substr($otherUser->name, 0, 1)) }}

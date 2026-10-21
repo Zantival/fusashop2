@@ -23,12 +23,18 @@ return [
         'client_id' => env('GOOGLE_CLIENT_ID'),
         'client_secret' => env('GOOGLE_CLIENT_SECRET'),
         'redirect' => env('GOOGLE_REDIRECT_URI', env('APP_URL', 'http://localhost:8000') . '/auth/google/callback'),
+        'guzzle' => [
+            'verify' => env('GOOGLE_SSL_VERIFY', env('APP_ENV') === 'production'),
+        ],
     ],
 
     'facebook' => [
         'client_id' => env('FACEBOOK_CLIENT_ID'),
         'client_secret' => env('FACEBOOK_CLIENT_SECRET'),
         'redirect' => env('APP_URL', 'http://localhost:8000') . '/auth/facebook/callback',
+        'guzzle' => [
+            'verify' => env('FACEBOOK_SSL_VERIFY', env('APP_ENV') === 'production'),
+        ],
     ],
 
     'resend' => [
@@ -87,9 +93,11 @@ return [
         'client_secret' => env('FACTUS_CLIENT_SECRET'),
         'username'      => env('FACTUS_USERNAME'),
         'password'      => env('FACTUS_PASSWORD'),
-        'numbering_range_id' => env('FACTUS_NUMBERING_RANGE_ID'),
-        'default_municipality_id' => env('FACTUS_DEFAULT_MUNICIPALITY_ID', 149),
-        'unit_measure_id' => env('FACTUS_UNIT_MEASURE_ID', 70),
+        'numbering_range_id' => env('FACTUS_NUMBERING_RANGE_ID', 389),
+        'default_municipality_code' => env('FACTUS_DEFAULT_MUNICIPALITY_CODE', env('FACTUS_DEFAULT_MUNICIPALITY_ID', '25290')),
+        'default_municipality_id' => env('FACTUS_DEFAULT_MUNICIPALITY_ID', 25290),
+        'unit_measure_code' => env('FACTUS_UNIT_MEASURE_CODE', env('FACTUS_UNIT_MEASURE_ID', '94')),
+        'unit_measure_id' => env('FACTUS_UNIT_MEASURE_ID', 94),
         'iva_rate'      => (float) env('FACTUS_IVA_RATE', 19),
         'prices_include_tax' => (bool) env('FACTUS_PRICES_INCLUDE_TAX', true),
     ],

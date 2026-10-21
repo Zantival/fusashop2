@@ -66,9 +66,9 @@ class CheckoutFlowTest extends TestCase
     {
         Http::fake([
             '*/oauth/token' => Http::response(['access_token' => 'tok', 'expires_in' => 3600]),
-            '*/v1/bills/validate' => Http::response(['data' => ['bill' => ['cufe' => 'CUFE123', 'number' => 'SETP990000001']]]),
-            '*/v1/bills/download-pdf/*' => Http::response(['data' => ['pdf_base_64_encoded' => base64_encode('%PDF-fake')]]),
-            '*/v1/bills/download-xml/*' => Http::response(['data' => ['xml_base_64_encoded' => base64_encode('<xml/>')]]),
+            '*/v2/bills/validate' => Http::response(['data' => ['bill' => ['cufe' => 'CUFE123', 'number' => 'SETP990000001']]]),
+            '*/v2/bills/*/download-pdf' => Http::response(['data' => ['pdf_base_64_encoded' => base64_encode('%PDF-fake')]]),
+            '*/v2/bills/*/download-xml' => Http::response(['data' => ['xml_base_64_encoded' => base64_encode('<xml/>')]]),
             '*/ship/rate/' => Http::response(['meta' => 'rate', 'data' => [['carrier' => 'servientrega', 'service' => 'ground', 'totalPrice' => 12000, 'deliveryEstimate' => '3 dias']]]),
             '*/ship/generate/' => Http::response(['meta' => 'generate', 'data' => [['trackingNumber' => 'TRK123', 'label' => 'https://labels.test/TRK123.pdf', 'carrier' => 'servientrega']]]),
         ]);
@@ -171,7 +171,7 @@ class CheckoutFlowTest extends TestCase
 
         $this->assertSame(8, $this->product->fresh()->stock, 'El stock debe descontarse una sola vez');
         $this->assertSame(1, PaymentTransaction::where('transaction_id', 'tx-1')->count());
-        $validateCalls = collect(Http::recorded())->filter(fn ($pair) => str_contains($pair[0]->url(), '/v1/bills/validate'))->count();
+        $validateCalls = collect(Http::recorded())->filter(fn ($pair) => str_contains($pair[0]->url(), '/v2/bills/validate'))->count();
         $generateCalls = collect(Http::recorded())->filter(fn ($pair) => str_contains($pair[0]->url(), '/ship/generate/'))->count();
         $this->assertSame(1, $validateCalls, 'Factus debe emitir una sola factura');
         $this->assertSame(1, $generateCalls, 'Envia debe generar una sola guía');
@@ -224,7 +224,7 @@ class CheckoutFlowTest extends TestCase
         // Factus caído: el job falla, queda logueado y el pago sigue confirmado.
         Http::fake([
             '*/oauth/token' => Http::response(['access_token' => 'tok']),
-            '*/v1/bills/validate' => Http::response(['message' => 'DIAN down'], 500),
+            '*/v2/bills/validate' => Http::response(['message' => 'DIAN down'], 500),
         ]);
         $job = new IssueFactusInvoice($order->id);
         try {

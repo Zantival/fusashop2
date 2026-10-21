@@ -18,7 +18,7 @@ $hasImage = $product->image && Storage::disk('public')->exists($product->image);
 $imageUrl = $hasImage ? url('files/' . $product->image) : null;
 @endphp
 @if($hasImage)
-    <img src="{{ $imageUrl }}"
+    <img loading="lazy" decoding="async" src="{{ $imageUrl }}"
          alt="{{ e($product->name) }}"
          class="{{ $class }} object-cover"
          onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>

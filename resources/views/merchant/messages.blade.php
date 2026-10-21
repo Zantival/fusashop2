@@ -115,7 +115,7 @@
                   <!-- Avatar -->
                   <div class="relative shrink-0">
                     @if($client->avatar)
-                      <img src="{{ Storage::url($client->avatar) }}" alt="{{ $client->name }}" class="w-11 h-11 rounded-full object-cover border-2 {{ $isActive ? 'border-emerald-500' : 'border-white' }} shadow-2xs">
+                      <img loading="lazy" decoding="async" src="{{ Storage::url($client->avatar) }}" alt="{{ $client->name }}" class="w-11 h-11 rounded-full object-cover border-2 {{ $isActive ? 'border-emerald-500' : 'border-white' }} shadow-2xs">
                     @else
                       <div class="w-11 h-11 rounded-full bg-gradient-to-tr from-emerald-600 to-teal-500 text-white font-black text-sm flex items-center justify-center shadow-2xs">
                         {{ strtoupper(substr($client->name, 0, 1)) }}
@@ -168,7 +168,7 @@
             <div class="flex items-center gap-3 min-w-0">
               <div class="relative shrink-0">
                 @if($activeUser->avatar)
-                  <img src="{{ Storage::url($activeUser->avatar) }}" alt="{{ $activeUser->name }}" class="w-10 h-10 rounded-full object-cover border border-slate-200">
+                  <img loading="lazy" decoding="async" src="{{ Storage::url($activeUser->avatar) }}" alt="{{ $activeUser->name }}" class="w-10 h-10 rounded-full object-cover border border-slate-200">
                 @else
                   <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-emerald-600 to-teal-500 text-white font-black text-sm flex items-center justify-center">
                     {{ strtoupper(substr($activeUser->name, 0, 1)) }}
@@ -245,7 +245,7 @@
                     <div class="mb-1.5 rounded-xl bg-white border border-slate-200 p-2 flex gap-2 items-center shadow-2xs">
                       <div class="w-8 h-8 rounded-lg overflow-hidden shrink-0 bg-slate-100 border border-slate-200">
                         @if($msg->product->image_url ?? $msg->product->primary_image_url)
-                          <img src="{{ asset($msg->product->image_url ?? $msg->product->primary_image_url) }}" alt="{{ $msg->product->name }}" class="w-full h-full object-cover">
+                          <img loading="lazy" decoding="async" src="{{ asset($msg->product->image_url ?? $msg->product->primary_image_url) }}" alt="{{ $msg->product->name }}" class="w-full h-full object-cover">
                         @else
                           <span class="material-symbols-outlined text-slate-400 text-sm">inventory_2</span>
                         @endif

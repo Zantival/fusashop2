@@ -1,11 +1,11 @@
 # FusaShop - E-commerce Platform
 
-Plataforma de comercio electrónico construida con Laravel y Vue.js
+Plataforma de comercio electrónico construida con Laravel, Blade y Alpine.js.
 
 ## 🚀 Despliegue
 
 Esta aplicación requiere un servidor con:
-- PHP 8.2+
+- PHP 8.3+
 - MySQL/PostgreSQL
 - Node.js para el build del frontend
 

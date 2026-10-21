@@ -45,7 +45,7 @@
     <div class="flex items-center gap-4">
       <div class="w-14 h-14 rounded-2xl bg-emerald-50 border-2 border-emerald-200 shrink-0 flex items-center justify-center shadow-inner overflow-hidden">
         @if(auth()->user()->companyProfile && auth()->user()->companyProfile->logo_path)
-          <img src="{{ Storage::url(auth()->user()->companyProfile->logo_path) }}" alt="{{ auth()->user()->companyProfile->company_name }}" class="w-full h-full object-cover">
+          <img loading="lazy" decoding="async" src="{{ Storage::url(auth()->user()->companyProfile->logo_path) }}" alt="{{ auth()->user()->companyProfile->company_name }}" class="w-full h-full object-cover">
         @else
           <span class="material-symbols-outlined text-3xl text-[#006c47]">storefront</span>
         @endif
@@ -53,14 +53,13 @@
       <div>
         <div class="flex flex-wrap items-center gap-2">
           <h1 class="text-2xl md:text-3xl font-['Manrope'] font-extrabold text-on-background flex items-center gap-1.5">
-            <span>{{ auth()->user()->companyProfile->company_name ?? auth()->user()->name }}</span>
+            <span>Bienvenido, {{ auth()->user()->companyProfile->company_name ?? auth()->user()->name }}</span>
             @if(auth()->user()->companyProfile?->kyc_status === 'approved')
               <span class="material-symbols-outlined text-[#006c47] text-2xl shrink-0" style="font-variation-settings: 'FILL' 1" title="Comercio Verificado">verified</span>
             @endif
           </h1>
           @if(auth()->user()->companyProfile?->kyc_status === 'approved')
-            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#6efcb9]/40 text-[#006c47] border border-[#6efcb9] uppercase tracking-wider inline-flex items-center gap-1">
-              <span class="material-symbols-outlined text-[12px]" style="font-variation-settings: 'FILL' 1">verified</span>
+            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#6efcb9]/40 text-[#006c47] border border-[#6efcb9] uppercase tracking-wider inline-flex items-center">
               MiPyme Oficial Verificada KYC
             </span>
           @else
@@ -72,9 +71,6 @@
             Enterprise Comerciante
           </span>
         </div>
-        <p class="text-on-surface-variant text-xs md:text-sm mt-1">
-          Gestión comercial unificada, inventario en tiempo real, logística Envia.com y analítica predictiva del Sumapaz
-        </p>
       </div>
     </div>
     
@@ -440,7 +436,7 @@
 
       <!-- Tabla de Productos -->
       <div class="overflow-x-auto">
-        <table class="w-full text-left border-collapse">
+        <table class="w-full text-left border-collapse responsive-stack-table">
           <thead>
             <tr class="border-b border-outline-variant/20 text-[11px] font-bold text-on-surface-variant uppercase tracking-wider">
               <th class="py-3 px-4">Producto</th>
@@ -456,11 +452,11 @@
               <tr class="hover:bg-slate-50 transition-colors"
                   x-show="!productSearch || '{{ strtolower($prod->name . ' ' . $prod->category) }}'.includes(productSearch.toLowerCase())">
                 
-                <td class="py-3.5 px-4">
+                <td class="py-3.5 px-4" data-label="Producto">
                   <div class="flex items-center gap-3">
                     <div class="w-10 h-10 rounded-xl bg-slate-100 overflow-hidden shrink-0 border border-slate-200">
                       @if($prod->image_url)
-                        <img src="{{ $prod->image_url }}" alt="{{ $prod->name }}" class="w-full h-full object-cover">
+                        <img loading="lazy" decoding="async" src="{{ $prod->image_url }}" alt="{{ $prod->name }}" class="w-full h-full object-cover">
                       @else
                         <div class="w-full h-full flex items-center justify-center text-slate-400">
                           <span class="material-symbols-outlined text-base">image</span>
@@ -474,7 +470,7 @@
                   </div>
                 </td>
 
-                <td class="py-3.5 px-4 font-semibold text-slate-700">
+                <td class="py-3.5 px-4 font-semibold text-slate-700" data-label="Categoría">
                   <span class="px-2 py-0.5 rounded-lg bg-slate-100 text-slate-700 text-[10px] font-bold">
                     {{ ucfirst($prod->category ?? 'General') }}
                   </span>
@@ -484,7 +480,7 @@
                   ${{ number_format($prod->price, 0, ',', '.') }}
                 </td>
 
-                <td class="py-3.5 px-4">
+                <td class="py-3.5 px-4" data-label="Estado Stock">
                   @if($prod->stock == 0)
                     <span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-rose-100 text-rose-800 uppercase tracking-wider">Agotado</span>
                   @elseif($prod->stock <= 5)
@@ -505,7 +501,7 @@
                   </form>
                 </td>
 
-                <td class="py-3.5 px-4 text-right">
+                <td class="py-3.5 px-4 text-right" data-label="Acciones">
                   <div class="flex items-center justify-end gap-1.5">
                     <a href="{{ route('merchant.products.edit', $prod->id) }}" class="p-1.5 rounded-lg text-slate-600 hover:text-[#006c47] hover:bg-slate-100 transition-colors" title="Editar producto">
                       <span class="material-symbols-outlined text-[16px]">edit</span>
@@ -559,7 +555,7 @@
         </div>
       @else
         <div class="overflow-x-auto">
-          <table class="w-full text-left border-collapse">
+          <table class="w-full text-left border-collapse responsive-stack-table">
             <thead>
               <tr class="border-b border-outline-variant/20 text-[11px] font-bold text-on-surface-variant uppercase tracking-wider">
                 <th class="py-3 px-4">Orden</th>
@@ -574,17 +570,17 @@
             <tbody class="divide-y divide-outline-variant/10 text-xs">
               @foreach($recentOrders as $order)
                 <tr class="hover:bg-slate-50 transition-colors">
-                  <td class="py-3.5 px-4 font-mono font-bold text-slate-900">
+                  <td class="py-3.5 px-4 font-mono font-bold text-slate-900" data-label="Orden">
                     #{{ $order->id }}
                     <span class="block text-[10px] text-slate-400 font-normal">{{ $order->created_at->format('d/m/Y H:i') }}</span>
                   </td>
 
-                  <td class="py-3.5 px-4">
+                  <td class="py-3.5 px-4" data-label="Cliente / Contacto">
                     <p class="font-bold text-slate-900">{{ $order->user->name ?? 'Cliente' }}</p>
                     <span class="text-[11px] text-slate-500">{{ $order->user->phone ?? 'Sin teléfono' }}</span>
                   </td>
 
-                  <td class="py-3.5 px-4">
+                  <td class="py-3.5 px-4" data-label="Productos / Cant.">
                     <div class="space-y-0.5 max-w-[200px]">
                       @foreach($order->items as $item)
                         <div class="truncate text-[11px] text-slate-700">
@@ -771,7 +767,7 @@
           <div class="bg-slate-50 rounded-2xl overflow-hidden border border-slate-200/80 flex flex-col justify-between group hover:border-[#10B981] transition-all">
             <div>
               <div class="relative h-36 overflow-hidden bg-slate-900">
-                <img src="{{ $course['thumbnail'] }}" alt="{{ $course['title'] }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 opacity-90">
+                <img loading="lazy" decoding="async" src="{{ $course['thumbnail'] }}" alt="{{ $course['title'] }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 opacity-90">
                 <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
                 <span class="absolute top-2 left-2 px-2 py-0.5 rounded text-[9px] font-black uppercase bg-white/95 text-slate-900">
                   {{ $course['category'] }}

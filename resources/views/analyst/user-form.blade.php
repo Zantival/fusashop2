@@ -36,12 +36,12 @@
       <div class="flex flex-col sm:flex-row items-center gap-5 p-4 bg-emerald-50/50 border border-emerald-200/70 rounded-2xl">
         <div class="relative shrink-0">
           @if($user && $user->avatarUrl())
-            <img id="admin-avatar-preview" src="{{ $user->avatarUrl() }}" alt="{{ $user->name }}" class="w-20 h-20 rounded-full object-cover border-2 border-[#006c47] shadow-md">
+            <img loading="lazy" decoding="async" id="admin-avatar-preview" src="{{ $user->avatarUrl() }}" alt="{{ $user->name }}" class="w-20 h-20 rounded-full object-cover border-2 border-[#006c47] shadow-md">
           @else
             <div id="admin-avatar-placeholder" class="w-20 h-20 rounded-full bg-gradient-to-tr from-[#006c47] to-[#10B981] text-white flex items-center justify-center font-black text-2xl shadow-md">
               {{ strtoupper(substr($user?->name ?? 'A', 0, 1)) }}
             </div>
-            <img id="admin-avatar-preview" src="" alt="Preview" style="display: none;" class="w-20 h-20 rounded-full object-cover border-2 border-[#006c47] shadow-md">
+            <img loading="lazy" decoding="async" id="admin-avatar-preview" src="" alt="Preview" style="display: none;" class="w-20 h-20 rounded-full object-cover border-2 border-[#006c47] shadow-md">
           @endif
         </div>
         <div class="flex-1 text-center sm:text-left">
@@ -103,7 +103,8 @@
             Contraseña {{ $user ? '(dejar vacío para no cambiar)' : '*' }}
           </label>
           <input type="password" name="password" {{ !$user ? 'required' : '' }}
-            class="w-full px-4 py-3 bg-[#f0eded] rounded-xl border-0 outline-none focus:ring-2 focus:ring-[#006c47]" placeholder="Mínimo 8 caracteres"/>
+            class="w-full px-4 py-3 bg-[#f0eded] rounded-xl border-0 outline-none focus:ring-2 focus:ring-[#006c47]" placeholder="12+ caracteres, mayúscula, número y símbolo" minlength="12"/>
+          <p class="mt-1 text-xs text-slate-500">Debe incluir mayúsculas, minúsculas, un número y un símbolo.</p>
         </div>
       </div>
 

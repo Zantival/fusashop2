@@ -34,7 +34,7 @@
         <!-- Header -->
         <div class="bg-primary/5 p-8 border-b border-surface-container flex flex-col sm:flex-row justify-between gap-6">
             <div>
-                <img src="/logo-fusa.png" alt="FusaShop" class="h-10 mb-4 brightness-0 opacity-80">
+                <img loading="lazy" decoding="async" src="/logo-fusa.png" alt="FusaShop" class="h-10 mb-4 brightness-0 opacity-80">
                 <h1 class="text-2xl font-black text-on-background">Recibo de Compra</h1>
                 <p class="text-sm text-on-surface-variant">#{{ str_pad($order->id, 8, '0', STR_PAD_LEFT) }}</p>
             </div>
@@ -63,7 +63,7 @@
                     <span class="material-symbols-outlined text-primary">
                         {{ $order->payment_method === 'card' ? 'credit_card' : ($order->payment_method === 'transfer' ? 'account_balance' : 'payments') }}
                     </span>
-                    {{ ucfirst($order->payment_method === 'card' ? 'Tarjeta' : ($order->payment_method === 'transfer' ? 'Transferencia' : 'Efectivo')) }}
+                    {{ ucfirst($order->payment_method === 'wompi' ? 'Wompi' : ($order->payment_method === 'card' ? 'Tarjeta' : ($order->payment_method === 'transfer' ? 'Transferencia' : 'Efectivo'))) }}
                 </div>
                 <div class="mt-4">
                     @if($order->status === 'cancelled')
@@ -74,6 +74,13 @@
                 </div>
             </div>
         </div>
+
+        @if($order->hasServiceItems())
+          <div class="mx-8 mb-8 rounded-2xl border border-emerald-200 bg-emerald-50 p-5 text-emerald-900">
+            <h3 class="font-black">{{ $order->isServiceReservation() ? 'Reserva confirmada' : 'Servicios reservados' }}</h3>
+            <p class="text-sm mt-1">Código de reserva: <strong>{{ $order->reference }}</strong>. Preséntalo al comercio para validar el servicio adquirido.</p>
+          </div>
+        @endif
 
         <!-- Items Table -->
         <div class="px-8 pb-8">
@@ -93,6 +100,16 @@
                             <td class="px-6 py-4">
                                 <p class="text-sm font-bold text-on-surface">{{ $item->product->name }}</p>
                                 <p class="text-[10px] text-on-surface-variant">{{ $item->product->merchant->companyProfile->company_name ?? 'FusaShop Merchant' }}</p>
+                                @if($item->product->isService())
+                                  <p class="text-[10px] font-bold text-emerald-700">Servicio reservado</p>
+                                @endif
+                                @if(!empty($item->selected_options))
+                                  <p class="text-[10px] text-on-surface-variant mt-1">
+                                    @foreach($item->selected_options as $optionName => $optionValue)
+                                      <span>{{ $optionName }}: {{ is_array($optionValue) ? implode(', ', $optionValue) : $optionValue }}</span>@if(!$loop->last) · @endif
+                                    @endforeach
+                                  </p>
+                                @endif
                             </td>
                             <td class="px-6 py-4 text-center text-sm">{{ $item->quantity }}</td>
                             <td class="px-6 py-4 text-right text-sm font-medium">${{ number_format($item->price, 0, ',', '.') }}</td>
@@ -105,11 +122,17 @@
 
             <!-- Totals -->
             <div class="mt-8 flex flex-col items-end gap-2">
-                @php $subtotal = $order->total + $order->discount; @endphp
+                @php $displaySubtotal = (float) $order->subtotal > 0 ? $order->subtotal : max(0, (float) $order->total + (float) $order->discount - (float) $order->shipping_cost); @endphp
                 <div class="flex justify-between w-full max-w-[200px] text-sm text-on-surface-variant">
                     <span>Subtotal:</span>
-                    <span>${{ number_format($subtotal, 0, ',', '.') }}</span>
+                    <span>${{ number_format($displaySubtotal, 0, ',', '.') }}</span>
                 </div>
+                @if($order->hasShippableItems())
+                  <div class="flex justify-between w-full max-w-[200px] text-sm text-on-surface-variant">
+                    <span>Envío:</span>
+                    <span>${{ number_format($order->shipping_cost, 0, ',', '.') }}</span>
+                  </div>
+                @endif
                 @if($order->discount > 0)
                 <div class="flex justify-between w-full max-w-[200px] text-sm text-red-600 font-bold">
                     <span>Descuento ({{ $order->points_used }} pts):</span>

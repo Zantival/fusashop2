@@ -105,7 +105,7 @@
       <div class="flex flex-col sm:flex-row items-center sm:items-start gap-6">
         <!-- Visualizador de Imagen / Iniciales -->
         <div class="relative w-28 h-28 rounded-3xl overflow-hidden bg-slate-100 border-2 border-primary/25 shrink-0 flex items-center justify-center shadow-md">
-          <img id="avatar-preview-img"
+          <img loading="lazy" decoding="async" id="avatar-preview-img"
                src="{{ $user->avatarUrl() ?: '' }}"
                :src="avatarPreview ? avatarPreview : '{{ $user->avatarUrl() }}'"
                alt="{{ $user->name }}"
@@ -217,6 +217,11 @@
       </div>
     </div>
 
+    @if($user->isMerchant())
+      <!-- 2.5. TARJETA DE MÉTODO DE PAGO PREFERIDO DEL COMERCIANTE -->
+      @include('merchant.partials.payout-method-fields', ['profile' => $user->companyProfile])
+    @endif
+
     <!-- 3. TARJETA DE SEGURIDAD Y CONTRASEÑA -->
     <div class="bg-surface-container-lowest rounded-3xl p-6 sm:p-8 shadow-card border border-outline-variant/20 space-y-4">
       <div class="flex items-center justify-between cursor-pointer select-none" @click="showPasswordFields = !showPasswordFields">
@@ -239,13 +244,13 @@
                  class="w-full bg-surface-container-low px-3 py-2.5 rounded-xl border border-outline-variant/30 text-xs font-medium text-on-surface outline-none focus:ring-2 focus:ring-primary/20">
         </div>
         <div>
-          <label class="block text-[11px] font-bold text-on-surface-variant uppercase tracking-wider mb-1.5">Nueva Contraseña (8+ caracteres)</label>
-          <input type="password" name="password" autocomplete="new-password" placeholder="Mínimo 8 caracteres"
+          <label class="block text-[11px] font-bold text-on-surface-variant uppercase tracking-wider mb-1.5">Nueva contraseña (12+ caracteres)</label>
+          <input type="password" name="password" autocomplete="new-password" placeholder="12+ caracteres, mayúscula, número y símbolo" minlength="12"
                  class="w-full bg-surface-container-low px-3 py-2.5 rounded-xl border border-outline-variant/30 text-xs font-medium text-on-surface outline-none focus:ring-2 focus:ring-primary/20">
         </div>
         <div>
           <label class="block text-[11px] font-bold text-on-surface-variant uppercase tracking-wider mb-1.5">Confirmar Nueva Contraseña</label>
-          <input type="password" name="password_confirmation" autocomplete="new-password" placeholder="Repite la nueva clave"
+          <input type="password" name="password_confirmation" autocomplete="new-password" placeholder="Repite la nueva clave" minlength="12"
                  class="w-full bg-surface-container-low px-3 py-2.5 rounded-xl border border-outline-variant/30 text-xs font-medium text-on-surface outline-none focus:ring-2 focus:ring-primary/20">
         </div>
       </div>

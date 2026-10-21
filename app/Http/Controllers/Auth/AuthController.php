@@ -7,6 +7,7 @@ use App\Mail\VerifyEmailCodeMail;
 use App\Models\Cart;
 use App\Models\PasswordResetOfflineRequest;
 use App\Models\User;
+use App\Support\PasswordPolicy;
 use App\Notifications\NewUserNotification;
 use App\Notifications\OfflinePasswordResetRequested;
 use App\Notifications\WelcomeNotification;
@@ -15,7 +16,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Validation\Rules\Password;
+use Illuminate\Support\Str;
 
 class AuthController extends Controller
 {
@@ -73,30 +74,72 @@ class AuthController extends Controller
 
     public function register(Request $request)
     {
-        $data = $request->validate([
+        $isSocial = session()->has('social_registration');
+        $socialData = session('social_registration', []);
+
+        $rules = [
             'name'     => ['required', 'string', 'max:255'],
-            'email'    => ['required', 'email', 'unique:users'],
-            'password' => ['required', 'confirmed', Password::min(8)],
+            'email'    => ['required', 'email', 'unique:users,email'],
             'role'     => ['required', 'in:consumer,merchant'],
             'phone'    => ['required', 'string', 'max:25'],
-        ], [
+        ];
+
+        if ($isSocial) {
+            $rules['password'] = ['nullable', 'confirmed', PasswordPolicy::rule()];
+        } else {
+            $rules['password'] = ['required', 'confirmed', PasswordPolicy::rule()];
+        }
+
+        $data = $request->validate($rules, [
             'phone.required' => 'El número de teléfono es obligatorio.',
         ]);
 
+        // Si el usuario se registra como Comerciante, validar y extraer su método de pago preferido
+        $merchantPayoutData = [];
+        if ($data['role'] === 'merchant') {
+            $hasPayoutInput = $request->filled('payout_account_number') || $request->filled('wallet_phone');
+            if ($hasPayoutInput) {
+                $merchantPayoutData = \App\Models\CompanyProfile::validateAndExtractPayoutData($request, true);
+            }
+        }
+
         $code = str_pad((string) random_int(100000, 999999), 6, '0', STR_PAD_LEFT);
+
+        $hashedPassword = !empty($data['password'])
+            ? Hash::make($data['password'])
+            : Hash::make(Str::random(32));
 
         $user = User::create([
             'name'                         => strip_tags($data['name']),
-            'email'                        => $data['email'],
-            'password'                     => Hash::make($data['password']),
+            'email'                        => strtolower($data['email']),
+            'password'                     => $hashedPassword,
             'role'                         => $data['role'],
             'phone'                        => $data['phone'] ?? null,
+            'provider'                     => $isSocial ? ($socialData['provider'] ?? null) : null,
+            'provider_id'                  => $isSocial ? ($socialData['provider_id'] ?? null) : null,
+            'avatar'                       => $isSocial ? ($socialData['avatar'] ?? null) : null,
             'verification_code'            => $code,
             'verification_code_expires_at' => now()->addMinutes(30),
+            'email_verified_at'            => null,
         ]);
+
+        if ($isSocial) {
+            session()->forget('social_registration');
+        }
 
         if ($user->isConsumer()) {
             Cart::create(['user_id' => $user->id]);
+        } elseif ($user->isMerchant() && (!empty($merchantPayoutData) || $request->filled('company_name'))) {
+            \App\Models\CompanyProfile::updateOrCreate(
+                ['merchant_id' => $user->id],
+                array_merge([
+                    'company_name'          => strip_tags(trim((string) $request->input('company_name'))) ?: $user->name,
+                    'phone'                 => $user->phone ?? '',
+                    'rut_path'              => '',
+                    'kyc_status'            => 'pending',
+                    'payout_account_holder' => $merchantPayoutData['payout_account_holder'] ?? $user->name,
+                ], $merchantPayoutData)
+            );
         }
 
         try {
@@ -189,7 +232,7 @@ class AuthController extends Controller
         }
 
         if ($user->role === 'merchant') {
-            if (!$user->companyProfile) {
+            if (!$user->companyProfile || $user->companyProfile->kyc_status !== 'approved') {
                 return redirect()->intended(route('merchant.profile'));
             }
             return redirect()->intended(route('merchant.dashboard'));

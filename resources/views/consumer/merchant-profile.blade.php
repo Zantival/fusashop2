@@ -21,7 +21,7 @@
               $subtitle = is_array($b) ? ($b['subtitle'] ?? '') : '';
             @endphp
             <div class="carousel-slide col-start-1 row-start-1 transition-opacity duration-700 {{ $i === 0 ? 'opacity-100 z-10' : 'opacity-0 z-0' }}" data-index="{{ $i }}">
-              <img src="{{ url('files/' . $path) }}" alt="{{ $title }}" class="w-full h-auto block">
+              <img loading="lazy" decoding="async" src="{{ url('files/' . $path) }}" alt="{{ $title }}" class="w-full h-auto block">
               
               @if($title || $subtitle)
                 <div class="absolute bottom-0 left-0 right-0 p-8 md:p-12 bg-gradient-to-t from-black/40 to-transparent pointer-events-none">
@@ -62,7 +62,7 @@
       <!-- Logo -->
       <div class="w-20 h-20 md:w-24 md:h-24 rounded-2xl overflow-hidden border-2 border-surface-container shrink-0">
         @if($profile->logo_path)
-          <img src="{{ url('files/' . $profile->logo_path) }}" alt="Logo" class="w-full h-full object-cover">
+          <img loading="lazy" decoding="async" src="{{ url('files/' . $profile->logo_path) }}" alt="Logo" class="w-full h-full object-cover">
         @else
           <div class="w-full h-full bg-greenhouse-gradient flex items-center justify-center text-white text-3xl font-black">
             {{ strtoupper(substr($profile->company_name, 0, 1)) }}

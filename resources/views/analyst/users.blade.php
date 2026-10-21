@@ -60,7 +60,7 @@
       <div class="flex items-center gap-4 p-4 md:p-5">
         {{-- Avatar --}}
         @if($u->avatarUrl())
-          <img src="{{ $u->avatarUrl() }}" alt="{{ $u->name }}" class="w-12 h-12 rounded-full object-cover shrink-0 border-2 border-[#10B981] bg-white">
+          <img loading="lazy" decoding="async" src="{{ $u->avatarUrl() }}" alt="{{ $u->name }}" class="w-12 h-12 rounded-full object-cover shrink-0 border-2 border-[#10B981] bg-white">
         @else
           <div class="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg shrink-0 {{ $u->is_blocked ? 'bg-gray-400' : 'bg-primary-gradient' }}">
             {{ strtoupper(substr($u->name,0,1)) }}

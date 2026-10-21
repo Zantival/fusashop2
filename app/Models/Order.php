@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Order extends Model
 {
     protected $fillable = [
-        'user_id','total','discount','points_used','points_earned',
+        'user_id','merchant_id','total','discount','points_used','points_earned',
         'status','shipping_address','payment_method',
         'payment_status','notes',
         'reference','subtotal','shipping_cost','commission_amount','currency',
@@ -41,10 +41,46 @@ class Order extends Model
     // Etapas visibles: Pendiente(pending) · Pagado(processing) · En empaque(processing+packed_at)
     //                  · Enviado(shipped) · Entregado(delivered)
 
-    public function user()  { return $this->belongsTo(User::class); }
-    public function items() { return $this->hasMany(OrderItem::class); }
+    public function user()     { return $this->belongsTo(User::class); }
+    public function merchant() { return $this->belongsTo(User::class, 'merchant_id')->withTrashed(); }
+    public function items()    { return $this->hasMany(OrderItem::class); }
     public function transactions() { return $this->hasMany(PaymentTransaction::class); }
     public function integrationLogs() { return $this->hasMany(IntegrationLog::class); }
+
+    public function merchantProfile(): ?CompanyProfile
+    {
+        $merchantIds = $this->items
+            ->map(fn ($item) => $item->product?->merchant_id)
+            ->filter()
+            ->unique();
+
+        // Las credenciales de un vendedor no deben cobrar un pedido que incluye productos de otros vendedores.
+        if ($merchantIds->count() > 1) {
+            return null;
+        }
+
+        if ($this->merchant && $this->merchant->companyProfile) {
+            return $this->merchant->companyProfile;
+        }
+
+        $merchantUser = $this->items->first()?->product?->merchant;
+        return $merchantUser?->companyProfile;
+    }
+
+    public function hasServiceItems(): bool
+    {
+        return $this->items->contains(fn ($item) => $item->product?->isService());
+    }
+
+    public function hasShippableItems(): bool
+    {
+        return $this->items->contains(fn ($item) => $item->product && !$item->product->isService());
+    }
+
+    public function isServiceReservation(): bool
+    {
+        return $this->items->isNotEmpty() && !$this->hasShippableItems();
+    }
 
     public function totalInCents(): int
     {

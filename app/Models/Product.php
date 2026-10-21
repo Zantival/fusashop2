@@ -70,11 +70,11 @@ class Product extends Model
 
     public function isService(): bool
     {
-        if (($this->type ?? '') === 'service') {
+        if (strtolower((string) ($this->type ?? '')) === 'service') {
             return true;
         }
         $cat = mb_strtolower($this->category ?? '', 'UTF-8');
-        foreach (['servicio', 'glamping', 'turismo', 'hotel', 'reparación', 'clases', 'consultoría', 'transporte', 'evento', 'belleza'] as $kw) {
+        foreach (['servicio', 'glamping', 'turismo', 'hotel', 'alojamiento', 'restaurante', 'gastronom', 'cafeter', 'reparación', 'clases', 'consultoría', 'transporte', 'evento', 'experiencia', 'belleza', 'spa'] as $kw) {
             if (str_contains($cat, $kw)) {
                 return true;
             }
