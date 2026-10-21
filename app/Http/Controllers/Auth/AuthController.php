@@ -92,6 +92,7 @@ class AuthController extends Controller
 
         $data = $request->validate($rules, [
             'phone.required' => 'El número de teléfono es obligatorio.',
+            ...PasswordPolicy::messages(),
         ]);
 
         // Si el usuario se registra como Comerciante, validar y extraer su método de pago preferido

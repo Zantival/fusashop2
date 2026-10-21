@@ -891,6 +891,7 @@ class ConsumerController extends Controller
             'current_password' => 'nullable|required_with:password|current_password',
             'password'         => ['nullable', 'confirmed', PasswordPolicy::rule()],
         ], [
+            ...PasswordPolicy::messages(),
             'name.required'                     => 'El nombre completo es obligatorio.',
             'email.required'                    => 'El correo electrónico es obligatorio.',
             'email.unique'                      => 'Este correo electrónico ya está registrado por otra cuenta.',

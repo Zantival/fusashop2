@@ -28,7 +28,7 @@ class ApiController extends Controller
             'email'    => 'required|email|unique:users',
             'password' => ['required', 'confirmed', PasswordPolicy::rule()],
             'role'     => 'required|in:consumer,merchant',
-        ]);
+        ], PasswordPolicy::messages());
         $user = User::create([
             'name'     => strip_tags($data['name']),
             'email'    => $data['email'],

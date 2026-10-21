@@ -155,7 +155,7 @@ class AnalystController extends Controller
             'admin_subrole' => 'nullable|in:super_admin,analyst_readonly,support',
             'phone'         => 'nullable|string|max:20',
             'avatar'        => 'nullable|image|max:4096',
-        ]);
+        ], PasswordPolicy::messages());
 
         if ($data['role'] === 'analyst' && !auth()->user()->isSuperAdmin()) {
             return back()->with('error', 'Solo un Super Admin puede crear cuentas con rol Administrador.');
@@ -195,7 +195,7 @@ class AnalystController extends Controller
             'phone'         => 'nullable|string|max:20',
             'password'      => ['nullable', PasswordPolicy::rule()],
             'avatar'        => 'nullable|image|max:4096',
-        ]);
+        ], PasswordPolicy::messages());
 
         $before = $user->only(['name', 'email', 'role', 'admin_subrole', 'phone', 'avatar']);
         $isEditingSelf = $user->id === auth()->id();
