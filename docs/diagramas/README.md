@@ -22,5 +22,5 @@ Desde la raíz del repositorio, con las dependencias de Node instaladas:
 node scripts/render-mermaid-diagrams.cjs
 ```
 
-El script lee las fuentes `.mmd` y usa `sharp`, incluido en el proyecto, para exportar diagramas PNG con sus nodos y una lista legible de relaciones o flujos.
+El script lee las fuentes `.mmd` y usa `sharp`, incluido en el proyecto, para exportar PNG con los nodos conectados por sus asociaciones. El diagrama de casos de uso dibuja actores, límite del sistema y casos como óvalos.
 

@@ -13,6 +13,11 @@ erDiagram
       string company_name
       string kyc_status
       string payout_method_type
+      string payout_bank_name
+      string payout_account_type
+      string payout_account_number
+      string payout_account_holder
+      string payout_id_number
     }
     PRODUCTS {
       bigint id PK
@@ -88,6 +93,12 @@ erDiagram
       string status
       decimal cost
       string target_type
+      string payout_destination_mode
+      string payout_method_type
+      string payout_bank_name
+      string payout_account_type
+      string payout_account_number
+      string payout_account_holder
     }
     MESSAGES {
       bigint id PK

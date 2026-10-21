@@ -7,7 +7,7 @@ flowchart LR
     catalogo([Explorar catálogo y tiendas])
     compra([Gestionar carrito y comprar])
     cuenta([Gestionar cuenta y direcciones])
-    reseña([Calificar productos])
+    resena([Calificar productos])
     soporte([Enviar mensajes y PQRS])
     tienda([Administrar tienda y productos])
     ventas([Gestionar pedidos e inventario])
@@ -24,7 +24,7 @@ flowchart LR
     consumidor --> catalogo
     consumidor --> compra
     consumidor --> cuenta
-    consumidor --> reseña
+    consumidor --> resena
     consumidor --> soporte
     comerciante --> tienda
     comerciante --> ventas
@@ -39,9 +39,9 @@ flowchart LR
     proveedor --> envio
     proveedor --> factura
     proveedor --> correo
-    compra --> pago
-    compra --> envio
-    ventas --> factura
+    compra -.->|<<include>>| pago
+    compra -.->|<<include>>| envio
+    ventas -.->|<<include>>| factura
 
     classDef actor fill:#e8f5ee,stroke:#087a54,stroke-width:2px,color:#12382b;
     classDef usecase fill:#ffffff,stroke:#52756a,stroke-width:1.5px,color:#172b26;
