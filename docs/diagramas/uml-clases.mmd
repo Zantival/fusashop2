@@ -1,0 +1,101 @@
+classDiagram
+    class User {
+      +id
+      +name
+      +email
+      +role
+      +email_verified_at
+      +isMerchant()
+      +isAnalyst()
+    }
+    class CompanyProfile {
+      +id
+      +merchant_id
+      +company_name
+      +kyc_status
+      +payout_method_type
+    }
+    class Product {
+      +id
+      +merchant_id
+      +name
+      +price
+      +stock
+      +is_active
+    }
+    class Cart {
+      +id
+      +user_id
+    }
+    class CartItem {
+      +id
+      +cart_id
+      +product_id
+      +quantity
+    }
+    class Order {
+      +id
+      +user_id
+      +merchant_id
+      +total
+      +status
+      +payment_status
+    }
+    class OrderItem {
+      +id
+      +order_id
+      +product_id
+      +quantity
+      +price
+    }
+    class ShippingAddress {
+      +id
+      +user_id
+      +city
+      +postal_code
+      +is_default
+    }
+    class PaymentTransaction {
+      +id
+      +order_id
+      +transaction_id
+      +status
+      +amount_in_cents
+    }
+    class IntegrationLog {
+      +id
+      +order_id
+      +service
+      +status
+      +retries
+    }
+    class Review {
+      +id
+      +user_id
+      +product_id
+      +rating
+    }
+    class Coupon {
+      +id
+      +merchant_id
+      +code
+      +type
+      +value
+    }
+
+    User "1" --> "0..1" CompanyProfile : perfil comercial
+    User "1" --> "0..*" Product : publica
+    User "1" --> "0..1" Cart : posee
+    Cart "1" *-- "0..*" CartItem : contiene
+    CartItem "*" --> "1" Product : referencia
+    User "1" --> "0..*" Order : compra
+    User "1" --> "0..*" Order : atiende como comerciante
+    Order "1" *-- "1..*" OrderItem : contiene
+    OrderItem "*" --> "1" Product : producto vendido
+    User "1" --> "0..*" ShippingAddress : guarda
+    Order "0..*" --> "0..1" ShippingAddress : usa
+    Order "1" --> "0..*" PaymentTransaction : registra
+    Order "1" --> "0..*" IntegrationLog : deja trazas
+    User "1" --> "0..*" Review : escribe
+    Product "1" --> "0..*" Review : recibe
+    User "1" --> "0..*" Coupon : administra como comerciante

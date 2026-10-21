@@ -1,0 +1,49 @@
+flowchart LR
+    consumidor["👤 Cliente"]
+    comerciante["🏪 Comerciante"]
+    admin["🛡️ Administrador / Analista"]
+    proveedor["🔌 Servicios externos"]
+
+    catalogo([Explorar catálogo y tiendas])
+    compra([Gestionar carrito y comprar])
+    cuenta([Gestionar cuenta y direcciones])
+    reseña([Calificar productos])
+    soporte([Enviar mensajes y PQRS])
+    tienda([Administrar tienda y productos])
+    ventas([Gestionar pedidos e inventario])
+    reportes([Consultar ventas y finanzas])
+    pauta([Solicitar pauta publicitaria])
+    usuarios([Administrar usuarios y KYC])
+    plataforma([Gestionar banners, PQRS y configuración])
+    analitica([Consultar reportes y ejecutar análisis])
+    pago([Procesar pagos y notificaciones])
+    envio([Cotizar, etiquetar y rastrear envíos])
+    factura([Emitir factura electrónica])
+    correo([Enviar códigos y notificaciones por correo])
+
+    consumidor --> catalogo
+    consumidor --> compra
+    consumidor --> cuenta
+    consumidor --> reseña
+    consumidor --> soporte
+    comerciante --> tienda
+    comerciante --> ventas
+    comerciante --> reportes
+    comerciante --> pauta
+    comerciante --> soporte
+    admin --> usuarios
+    admin --> plataforma
+    admin --> analitica
+    admin --> reportes
+    proveedor --> pago
+    proveedor --> envio
+    proveedor --> factura
+    proveedor --> correo
+    compra --> pago
+    compra --> envio
+    ventas --> factura
+
+    classDef actor fill:#e8f5ee,stroke:#087a54,stroke-width:2px,color:#12382b;
+    classDef usecase fill:#ffffff,stroke:#52756a,stroke-width:1.5px,color:#172b26;
+    class consumidor,comerciante,admin,proveedor actor;
+    class catalogo,compra,cuenta,reseña,soporte,tienda,ventas,reportes,pauta,usuarios,plataforma,analitica,pago,envio,factura,correo usecase;

@@ -1,0 +1,24 @@
+erDiagram
+    USER ||--o| COMPANY_PROFILE : registra
+    USER ||--o{ PRODUCT : publica
+    USER ||--o| CART : posee
+    CART ||--o{ CART_ITEM : contiene
+    PRODUCT ||--o{ CART_ITEM : agrega
+    USER ||--o{ ORDER : compra
+    USER o|--o{ ORDER : comerciante
+    ORDER ||--|{ ORDER_ITEM : incluye
+    PRODUCT ||--o{ ORDER_ITEM : vendido_en
+    USER ||--o{ SHIPPING_ADDRESS : registra
+    SHIPPING_ADDRESS o|--o{ ORDER : destino
+    ORDER o|--o{ PAYMENT_TRANSACTION : paga_con
+    ORDER o|--o{ INTEGRATION_LOG : registra
+    USER ||--o{ REVIEW : crea
+    PRODUCT ||--o{ REVIEW : recibe
+    USER ||--o{ COUPON : administra
+    USER ||--o{ BANNER_REQUEST : solicita
+    USER ||--o{ MESSAGE : envia
+    USER ||--o{ MESSAGE : recibe
+    PRODUCT o|--o{ MESSAGE : contextualiza
+    USER ||--o{ PQRS : presenta
+    USER ||--o{ LOYALTY_POINT : acumula
+    GLOBAL_BANNER }o..o| COMPANY_PROFILE : puede_dirigir

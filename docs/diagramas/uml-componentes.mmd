@@ -1,0 +1,36 @@
+flowchart LR
+    subgraph cliente[Canales y roles]
+        browser["Navegador web"]
+        shopper["Cliente"]
+        seller["Comerciante"]
+        analyst["Administrador / Analista"]
+    end
+
+    subgraph laravel[Aplicación Laravel 12]
+        routes["Rutas web y API"]
+        middleware["Middleware: sesión, rol, verificación, KYC"]
+        controllers["Controladores: Auth, Consumer, Merchant, Analyst"]
+        models["Modelos Eloquent"]
+        services["Servicios de negocio e integraciones"]
+        jobs["Cola de trabajos y reintentos"]
+    end
+
+    database[("Base de datos relacional")]
+    resend["Resend: correo"]
+    wompi["Wompi: pagos"]
+    envia["Envia: logística"]
+    factus["Factus: facturación"]
+
+    shopper --> browser
+    seller --> browser
+    analyst --> browser
+    browser --> routes --> middleware --> controllers
+    controllers --> models --> database
+    controllers --> services
+    services --> database
+    services --> wompi
+    services --> envia
+    services --> factus
+    services --> resend
+    services --> jobs
+    jobs --> services

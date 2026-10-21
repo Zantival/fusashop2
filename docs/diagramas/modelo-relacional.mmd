@@ -1,0 +1,168 @@
+erDiagram
+    USERS {
+      bigint id PK
+      string name
+      string email UK
+      string role
+      timestamp email_verified_at
+      timestamp deleted_at
+    }
+    COMPANY_PROFILES {
+      bigint id PK
+      bigint merchant_id FK
+      string company_name
+      string kyc_status
+      string payout_method_type
+    }
+    PRODUCTS {
+      bigint id PK
+      bigint merchant_id FK
+      string slug UK
+      decimal price
+      int stock
+      boolean is_active
+    }
+    CARTS {
+      bigint id PK
+      bigint user_id FK
+    }
+    CART_ITEMS {
+      bigint id PK
+      bigint cart_id FK
+      bigint product_id FK
+      int quantity
+    }
+    ORDERS {
+      bigint id PK
+      bigint user_id FK
+      bigint merchant_id FK
+      bigint shipping_address_id FK
+      string reference UK
+      decimal total
+      string status
+    }
+    ORDER_ITEMS {
+      bigint id PK
+      bigint order_id FK
+      bigint product_id FK
+      int quantity
+      decimal price
+    }
+    SHIPPING_ADDRESSES {
+      bigint id PK
+      bigint user_id FK
+      string recipient
+      string city
+      string postal_code
+    }
+    PAYMENT_TRANSACTIONS {
+      bigint id PK
+      bigint order_id FK
+      string transaction_id UK
+      string status
+      bigint amount_in_cents
+    }
+    INTEGRATION_LOGS {
+      bigint id PK
+      bigint order_id FK
+      string service
+      string status
+      int retries
+    }
+    REVIEWS {
+      bigint id PK
+      bigint user_id FK
+      bigint product_id FK
+      tinyint rating
+    }
+    COUPONS {
+      bigint id PK
+      bigint merchant_id FK
+      string code UK
+      string type
+      decimal value
+    }
+    BANNER_REQUESTS {
+      bigint id PK
+      bigint user_id FK
+      string status
+      decimal cost
+      string target_type
+    }
+    MESSAGES {
+      bigint id PK
+      bigint sender_id FK
+      bigint receiver_id FK
+      bigint product_id FK
+    }
+    PQRS {
+      bigint id PK
+      bigint user_id FK
+      string type
+      string status
+      bigint assigned_to
+    }
+    LOYALTY_POINTS {
+      bigint id PK
+      bigint user_id FK
+      bigint merchant_id FK
+      int points
+    }
+    GLOBAL_BANNERS {
+      bigint id PK
+      string title
+      text description
+      string image_path
+      string link_url
+      boolean is_active
+    }
+    ADMIN_AUDIT_LOGS {
+      bigint id PK
+      bigint admin_id FK
+      string action
+      string target_type
+      bigint target_id
+    }
+    SETTINGS {
+      bigint id PK
+      string key UK
+      text value
+      string group
+    }
+    ML_RUNS {
+      bigint id PK
+      bigint triggered_by FK
+      string status
+      json results
+    }
+    SEARCH_LOGS {
+      bigint id PK
+      string query
+      int results_count
+      bigint user_id
+    }
+    USERS ||--o{ COMPANY_PROFILES : merchant_id
+    USERS ||--o{ PRODUCTS : merchant_id
+    USERS ||--o{ CARTS : user_id
+    CARTS ||--o{ CART_ITEMS : cart_id
+    PRODUCTS ||--o{ CART_ITEMS : product_id
+    USERS ||--o{ ORDERS : user_id
+    USERS o|--o{ ORDERS : merchant_id
+    SHIPPING_ADDRESSES o|--o{ ORDERS : shipping_address_id
+    ORDERS ||--|{ ORDER_ITEMS : order_id
+    PRODUCTS ||--o{ ORDER_ITEMS : product_id
+    USERS ||--o{ SHIPPING_ADDRESSES : user_id
+    ORDERS o|--o{ PAYMENT_TRANSACTIONS : order_id
+    ORDERS o|--o{ INTEGRATION_LOGS : order_id
+    USERS ||--o{ REVIEWS : user_id
+    PRODUCTS ||--o{ REVIEWS : product_id
+    USERS ||--o{ COUPONS : merchant_id
+    USERS ||--o{ BANNER_REQUESTS : user_id
+    USERS ||--o{ MESSAGES : sender_id
+    USERS ||--o{ MESSAGES : receiver_id
+    PRODUCTS o|--o{ MESSAGES : product_id
+    USERS ||--o{ PQRS : user_id
+    USERS ||--o{ LOYALTY_POINTS : user_id
+    USERS ||--o{ LOYALTY_POINTS : merchant_id
+    USERS o|--o{ ADMIN_AUDIT_LOGS : admin_id
+    USERS o|--o{ ML_RUNS : triggered_by
