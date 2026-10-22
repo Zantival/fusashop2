@@ -58,6 +58,27 @@ class CompanyProfile extends Model
         return $this->belongsTo(User::class, 'merchant_id')->withTrashed();
     }
 
+    public function isReservationBusiness(): bool
+    {
+        $businessText = mb_strtolower(implode(' ', array_filter([
+            $this->business_type,
+            $this->sector_override,
+            $this->subsector_override,
+        ])), 'UTF-8');
+
+        foreach ([
+            'restaurante', 'gastronom', 'cafeter', 'comida rápida', 'comida rapida', 'pizzer', 'asadero',
+            'hotel', 'hostal', 'hostería', 'hospedaje', 'alojamiento', 'glamping', 'cabaña', 'cabana', 'finca turístic',
+            'turismo', 'turístic', 'operador turístico', 'agencia de viajes', 'viajes',
+        ] as $keyword) {
+            if (str_contains($businessText, $keyword)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public function logoUrl(): ?string
     {
         if (!$this->logo_path) {

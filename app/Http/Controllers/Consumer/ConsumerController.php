@@ -612,8 +612,8 @@ class ConsumerController extends Controller
 
     public function productDetail($id)
     {
-        $product = Product::active()->with('reviews.user')->findOrFail($id);
-        $related = Product::active()->where('category', $product->category)->where('id','!=',$id)->take(4)->get();
+        $product = Product::active()->with('reviews.user', 'merchant.companyProfile')->findOrFail($id);
+        $related = Product::active()->with('merchant.companyProfile')->where('category', $product->category)->where('id','!=',$id)->take(4)->get();
         
         $hasPurchased = false;
         if (Auth::check()) {
@@ -631,7 +631,7 @@ class ConsumerController extends Controller
     public function cartIndex()
     {
         $user = Auth::user();
-        $cart = $user->cart()->with('items.product')->firstOrCreate(['user_id' => $user->id]);
+        $cart = $user->cart()->with('items.product.merchant.companyProfile')->firstOrCreate(['user_id' => $user->id]);
         $userPoints = $user->totalPoints();
         return view('consumer.cart', compact('cart', 'userPoints'));
     }
@@ -643,6 +643,15 @@ class ConsumerController extends Controller
             'quantity'   => 'integer|min:1',
             'options'    => 'nullable|array'
         ]);
+
+        $product = Product::active()->with('merchant.companyProfile')->findOrFail($request->integer('product_id'));
+        if ($product->isReservationOnly()) {
+            $message = 'Este comercio gestiona este artículo como reserva. Abre su ficha y envía una solicitud de reserva.';
+            if ($request->expectsJson()) {
+                return response()->json(['success' => false, 'message' => $message], 422);
+            }
+            return redirect()->route('consumer.product', $product->id)->with('error', $message);
+        }
         
         $cart = Cart::firstOrCreate(['user_id' => Auth::id()]);
         

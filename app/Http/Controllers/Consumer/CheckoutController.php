@@ -23,7 +23,7 @@ class CheckoutController extends Controller
     public function show(Request $request)
     {
         $user = Auth::user();
-        $cart = $user->cart()->with('items.product')->first();
+        $cart = $user->cart()->with('items.product.merchant.companyProfile')->first();
         if (!$cart || $cart->items->isEmpty()) {
             return redirect()->route('consumer.cart');
         }
@@ -43,6 +43,10 @@ class CheckoutController extends Controller
                 return redirect()->route('consumer.cart')->with('error', 'Selecciona al menos un producto para proceder al pago.');
             }
             $cart->setRelation('items', $filtered);
+        }
+
+        if ($cart->items->contains(fn ($item) => $item->product?->isReservationOnly())) {
+            return redirect()->route('consumer.cart')->with('error', 'Los servicios se solicitan como reserva desde su ficha; no se compran ni se pagan en el checkout.');
         }
 
         if ($message = $this->merchantPaymentError($cart->items)) {
@@ -134,7 +138,7 @@ class CheckoutController extends Controller
         ]);
 
         $user = Auth::user();
-        $cart = $user->cart()->with('items.product')->first();
+        $cart = $user->cart()->with('items.product.merchant.companyProfile')->first();
         if (!$cart || $cart->items->isEmpty()) {
             return redirect()->route('consumer.cart');
         }
@@ -143,6 +147,10 @@ class CheckoutController extends Controller
         $cartItems = $this->selectedItems($cart, $selectedItemIds);
         if ($cartItems->isEmpty()) {
             return back()->withInput()->with('error', 'Selecciona al menos un producto para proceder al pago.');
+        }
+
+        if ($cartItems->contains(fn ($item) => $item->product?->isReservationOnly())) {
+            return redirect()->route('consumer.cart')->with('error', 'Los servicios se solicitan como reserva desde su ficha; no se compran ni se pagan en el checkout.');
         }
 
         if ($message = $this->merchantPaymentError($cartItems)) {

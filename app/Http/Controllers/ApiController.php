@@ -68,6 +68,8 @@ class ApiController extends Controller
     public function cartAdd(Request $request)
     {
         $request->validate(['product_id' => 'required|exists:products,id', 'quantity' => 'integer|min:1']);
+        $product = Product::active()->with('merchant.companyProfile')->findOrFail($request->integer('product_id'));
+        abort_if($product->isReservationOnly(), 422, 'Este comercio gestiona sus servicios mediante reservas; solicita la reserva desde la ficha del servicio.');
         $cart = Cart::firstOrCreate(['user_id' => $request->user()->id]);
         $item = CartItem::firstOrNew(['cart_id' => $cart->id, 'product_id' => $request->product_id]);
         $item->quantity = ($item->quantity ?? 0) + ($request->quantity ?? 1);

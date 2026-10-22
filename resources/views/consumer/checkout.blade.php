@@ -97,7 +97,7 @@
 
       <input type="hidden" name="shipping_rate" id="shipping-rate-input" value="{{ old('shipping_rate') }}">
       <button type="submit" id="pay-btn" disabled class="w-full py-4 bg-primary-gradient text-white font-semibold rounded-xl hover:opacity-90 active:scale-95 transition-all shadow-lg shadow-primary/20 flex items-center justify-center gap-2 text-lg disabled:opacity-40 disabled:cursor-not-allowed">
-        <span class="material-symbols-outlined">lock</span> <span id="pay-label">{{ $requiresShipping ? 'Selecciona un envío' : 'Reservar y pagar' }}</span>
+        <span class="material-symbols-outlined">lock</span> <span id="pay-label">{{ $requiresShipping ? 'Selecciona un envío' : 'Pagar pedido' }}</span>
       </button>
     </form>
 
@@ -179,7 +179,7 @@
     var total = Math.max(0, subtotal - discount) + ship;
     document.getElementById('final-total').textContent = fmt(total);
     payBtn.disabled = requiresShipping && !selected;
-    payLabel.textContent = !requiresShipping ? 'Reservar y pagar ' + fmt(total) : (selected ? 'Pagar ' + fmt(total) + ' con Wompi' : 'Selecciona un envío');
+    payLabel.textContent = !requiresShipping ? 'Pagar pedido ' + fmt(total) : (selected ? 'Pagar ' + fmt(total) + ' con Wompi' : 'Selecciona un envío');
   }
 
   function render(rates) {

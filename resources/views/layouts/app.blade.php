@@ -395,6 +395,9 @@ document.addEventListener('click', function(e) {
                 <a href="{{ route('consumer.orders') }}" class="flex items-center gap-2.5 px-3 py-2 text-slate-700 hover:bg-slate-100 rounded-xl font-semibold transition-colors">
                   <span class="material-symbols-outlined text-base text-slate-500">local_shipping</span> Mis Pedidos & Envíos
                 </a>
+                <a href="{{ route('consumer.reservations') }}" class="flex items-center gap-2.5 px-3 py-2 text-slate-700 hover:bg-slate-100 rounded-xl font-semibold transition-colors">
+                  <span class="material-symbols-outlined text-base text-slate-500">event_available</span> Mis Reservas
+                </a>
                 <a href="{{ route('consumer.addresses') }}" class="flex items-center gap-2.5 px-3 py-2 text-slate-700 hover:bg-slate-100 rounded-xl font-semibold transition-colors">
                   <span class="material-symbols-outlined text-base text-slate-500">pin_drop</span> Libreta de Direcciones
                 </a>
@@ -413,6 +416,9 @@ document.addEventListener('click', function(e) {
                 </a>
                 <a href="{{ route('merchant.orders') }}" class="flex items-center gap-2.5 px-3 py-2 text-slate-700 hover:bg-slate-100 rounded-xl font-semibold transition-colors">
                   <span class="material-symbols-outlined text-base text-slate-500">local_shipping</span> Gestión de Guías Envia
+                </a>
+                <a href="{{ route('merchant.reservations') }}" class="flex items-center gap-2.5 px-3 py-2 text-slate-700 hover:bg-slate-100 rounded-xl font-semibold transition-colors">
+                  <span class="material-symbols-outlined text-base text-slate-500">event_available</span> Solicitudes de Reserva
                 </a>
               @elseif(auth()->user()->isAnalyst())
                 <a href="{{ route('account.profile.edit') }}" class="flex items-center gap-2.5 px-3 py-2 text-emerald-900 bg-emerald-50/70 hover:bg-emerald-100 rounded-xl font-bold mb-0.5 transition-colors">
@@ -783,6 +789,9 @@ document.addEventListener('click', function(e) {
                 <a href="{{ route('consumer.orders') }}" onclick="toggleMobileMenu(false)" class="flex items-center gap-2 py-1.5 text-slate-700 hover:text-[#10B981] font-semibold">
                   <span class="material-symbols-outlined text-base text-slate-500">local_shipping</span> Mis Pedidos & Envíos
                 </a>
+                <a href="{{ route('consumer.reservations') }}" onclick="toggleMobileMenu(false)" class="flex items-center gap-2 py-1.5 text-slate-700 hover:text-[#10B981] font-semibold">
+                  <span class="material-symbols-outlined text-base text-slate-500">event_available</span> Mis Reservas
+                </a>
                 <a href="{{ route('consumer.addresses') }}" onclick="toggleMobileMenu(false)" class="flex items-center gap-2 py-1.5 text-slate-700 hover:text-[#10B981] font-semibold">
                   <span class="material-symbols-outlined text-base text-slate-500">pin_drop</span> Libreta de Direcciones
                 </a>
@@ -795,6 +804,9 @@ document.addEventListener('click', function(e) {
                 </a>
                 <a href="{{ route('merchant.orders') }}" onclick="toggleMobileMenu(false)" class="flex items-center gap-2 py-1.5 text-slate-700 font-semibold">
                   <span class="material-symbols-outlined text-base text-slate-500">local_shipping</span> Gestión de Guías Envia
+                </a>
+                <a href="{{ route('merchant.reservations') }}" onclick="toggleMobileMenu(false)" class="flex items-center gap-2 py-1.5 text-slate-700 font-semibold">
+                  <span class="material-symbols-outlined text-base text-slate-500">event_available</span> Solicitudes de Reserva
                 </a>
                 <a href="{{ route('merchant.profile') }}" onclick="toggleMobileMenu(false)" class="flex items-center gap-2 py-1.5 text-slate-700 font-semibold">
                   <span class="material-symbols-outlined text-base text-slate-500">store</span> Perfil Comercial

@@ -238,6 +238,9 @@ Route::prefix('shop')->name('consumer.')->group(function () {
         Route::get('/cart',                [ConsumerController::class, 'cartIndex'])->name('cart');
         Route::post('/cart/select',         [ConsumerController::class, 'cartSelect'])->name('cart.select');
         Route::post('/cart/add',           [ConsumerController::class, 'cartAdd'])->name('cart.add');
+        Route::post('/reservations', [\App\Http\Controllers\Consumer\ReservationController::class, 'store'])->middleware('throttle:10,1')->name('reservations.store');
+        Route::get('/reservations', [\App\Http\Controllers\Consumer\ReservationController::class, 'index'])->name('reservations');
+        Route::patch('/reservations/{reservation}/cancel', [\App\Http\Controllers\Consumer\ReservationController::class, 'cancel'])->name('reservations.cancel');
         Route::patch('/cart/item/{item}',  [ConsumerController::class, 'cartUpdate'])->name('cart.update');
         Route::delete('/cart/item/{item}', [ConsumerController::class, 'cartRemove'])->name('cart.remove');
         Route::get('/checkout',            [\App\Http\Controllers\Consumer\CheckoutController::class, 'show'])->name('checkout');
@@ -277,6 +280,8 @@ Route::middleware(['auth', 'verified', 'role:merchant'])->prefix('merchant')->na
         Route::put('/products/{product}',      [MerchantController::class, 'productUpdate'])->name('products.update');
         Route::delete('/products/{product}',   [MerchantController::class, 'productDelete'])->name('products.delete');
         Route::get('/orders',                  [MerchantController::class, 'orders'])->name('orders');
+        Route::get('/reservations', [\App\Http\Controllers\Merchant\ReservationController::class, 'index'])->name('reservations');
+        Route::patch('/reservations/{reservation}', [\App\Http\Controllers\Merchant\ReservationController::class, 'update'])->name('reservations.update');
         Route::patch('/orders/{order}/status', [MerchantController::class, 'orderUpdate'])->name('orders.update');
         Route::post('/orders/{order}/generate-label', [MerchantController::class, 'generateLabel'])->name('orders.generate-label');
         Route::get('/orders/{order}/label',           [MerchantController::class, 'printLabel'])->name('orders.label');

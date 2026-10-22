@@ -73,6 +73,13 @@ class Product extends Model
         if (strtolower((string) ($this->type ?? '')) === 'service') {
             return true;
         }
+
+        // El giro del comercio prevalece sobre el tipo del artículo: los platos
+        // de un restaurante también se solicitan como reserva, nunca como compra.
+        if ($this->merchant?->companyProfile?->isReservationBusiness()) {
+            return true;
+        }
+
         $cat = mb_strtolower($this->category ?? '', 'UTF-8');
         foreach (['servicio', 'glamping', 'turismo', 'hotel', 'alojamiento', 'restaurante', 'gastronom', 'cafeter', 'reparación', 'clases', 'consultoría', 'transporte', 'evento', 'experiencia', 'belleza', 'spa'] as $kw) {
             if (str_contains($cat, $kw)) {
@@ -80,6 +87,11 @@ class Product extends Model
             }
         }
         return false;
+    }
+
+    public function isReservationOnly(): bool
+    {
+        return $this->isService();
     }
 
     /** Unidades realmente vendibles (stock físico menos reservas de pedidos pendientes). */

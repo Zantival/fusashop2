@@ -73,7 +73,7 @@
               placeholder="Ej: Camiseta de Algodón Orgánico"/>
           </div>
 
-          @php $initialProductType = old('type', $product ? ($product->isService() ? 'service' : 'product') : 'product'); @endphp
+          @php $merchantReservationBusiness = auth()->user()->companyProfile?->isReservationBusiness() ?? false; $initialProductType = old('type', $product ? ($product->isService() ? 'service' : 'product') : ($merchantReservationBusiness ? 'service' : 'product')); @endphp
           <div class="sm:col-span-2">
             <label class="block text-sm font-bold text-on-surface mb-2">Tipo de publicación *</label>
             <select name="type" required class="w-full px-4 py-3 bg-surface-container-highest rounded-xl border-0 outline-none focus:ring-2 focus:ring-primary shadow-inner">

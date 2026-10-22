@@ -40,6 +40,12 @@ class CheckoutService
                 abort_if($items->isEmpty(), 422, 'Debes seleccionar al menos un producto para comprar.');
             }
 
+            abort_if(
+                $items->contains(fn ($item) => $item->product?->isReservationOnly()),
+                422,
+                'Los servicios solo admiten solicitudes de reserva y no se pueden incluir en una compra.'
+            );
+
             $subtotal = $items->sum(fn ($i) => $i->quantity * $i->product->effectivePrice());
             $shipping = (float) $rate['price'];
 

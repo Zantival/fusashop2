@@ -74,6 +74,10 @@
                 <div>
                   <h3 class="font-['Manrope'] font-bold text-on-background line-clamp-1">{{ e($item->product->name) }}</h3>
                   <p class="text-on-surface-variant text-[11px]">{{ $item->product->category }}</p>
+                  @if($item->product->isReservationOnly())
+                    <p class="mt-1 text-[11px] font-bold text-emerald-800">Este servicio se reserva desde su ficha y no se cobra en el carrito.</p>
+                    <a href="{{ route('consumer.product', $item->product_id) }}" class="mt-1 inline-block text-[11px] font-bold text-emerald-700 underline">Ir a solicitar reserva</a>
+                  @endif
                 </div>
               </div>
               

@@ -23,6 +23,7 @@ $rating = number_format(4.7 + (($product->id % 4) * 0.1), 1);
 $ordersCount = 12 + (($product->id * 19) % 180);
 
 $stockLeft = $product->availableStock();
+$reservationOnly = $product->isReservationOnly();
 @endphp
 
 <div class="group bg-white rounded-3xl border border-slate-200/80 hover:border-[#10B981]/50 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col overflow-hidden relative">
@@ -122,10 +123,14 @@ $stockLeft = $product->availableStock();
                         <span class="text-[10px] font-bold text-slate-500">COP</span>
                     </div>
                 @endif
-                <p class="text-[10px] font-semibold text-emerald-600 mt-0.5 flex items-center gap-0.5">
-                    <span class="material-symbols-outlined text-[12px]">credit_card</span>
-                    Hasta 12x ${{ number_format($cuotaValue, 0, ',', '.') }} con Wompi
-                </p>
+                @unless($product->isReservationOnly())
+                  <p class="text-[10px] font-semibold text-emerald-600 mt-0.5 flex items-center gap-0.5">
+                      <span class="material-symbols-outlined text-[12px]">credit_card</span>
+                      Hasta 12x ${{ number_format($cuotaValue, 0, ',', '.') }} con Wompi
+                  </p>
+                @else
+                  <p class="text-[10px] font-extrabold text-orange-700 mt-0.5 flex items-center gap-0.5"><span class="material-symbols-outlined text-[12px]">event_available</span>Solo reserva · sin pago en línea</p>
+                @endunless
             </div>
 
             <!-- Barra de Stock / Flash Deals -->
@@ -143,16 +148,16 @@ $stockLeft = $product->availableStock();
 
         <!-- Acción: Ver Producto (Único botón en la tarjeta de catálogo) -->
         <div class="pt-2.5 border-t border-slate-100">
-            @if($stockLeft > 0)
+            @if($reservationOnly || $stockLeft > 0)
                 <a href="{{ route('consumer.product', $product->id) }}"
                    class="w-full py-2.5 px-4 bg-slate-100 hover:bg-[#10B981] text-slate-800 hover:text-white rounded-xl text-xs font-extrabold transition-all duration-200 flex items-center justify-center gap-2 shadow-xs group-hover:bg-[#10B981] group-hover:text-white group-hover:shadow-md cursor-pointer no-underline"
-                   title="Ver detalle completo, opciones y comprar">
+                   title="Ver detalle completo y {{ $product->isReservationOnly() ? 'solicitar reserva' : 'comprar' }}">
                     <span class="material-symbols-outlined text-base">visibility</span>
-                    <span>Ver Producto</span>
+                    <span>{{ $reservationOnly ? 'Ver y reservar' : 'Ver Producto' }}</span>
                 </a>
             @else
                 <span class="w-full py-2.5 px-4 bg-slate-100 text-slate-400 rounded-xl text-xs font-bold text-center block">
-                    Agotado
+                    {{ $reservationOnly ? 'Consultar disponibilidad' : 'Agotado' }}
                 </span>
             @endif
         </div>

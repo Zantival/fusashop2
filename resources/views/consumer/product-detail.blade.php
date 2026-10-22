@@ -23,6 +23,9 @@ $avgRating    = $product->reviews->avg('rating') ?? 0;
 $icon = ['Ropa'=>'checkroom','Electrónica'=>'devices','Hogar'=>'chair','Deportes'=>'sports_soccer',
          'Alimentos'=>'lunch_dining','Belleza'=>'spa','Juguetes'=>'toys','Libros'=>'menu_book'][$product->category] ?? 'inventory_2';
 $availableUnits = $product->availableStock();
+$reservationOnly = $product->isReservationOnly();
+$canRequest = $reservationOnly || $availableUnits > 0;
+$maxRequestQuantity = $reservationOnly ? 100 : $availableUnits;
 
 $specIcons = [
     'material'   => 'texture', 'gender' => 'person', 'brand' => 'branding_watermark',
@@ -113,7 +116,9 @@ $specLabels = [
           @if($product->allows_points ?? true)
             <span class="pd-badge" style="background:rgba(245,158,11,.18);border-color:rgba(251,191,36,.45);color:#fde68a">🪙 Aplica FusaCoins</span>
           @endif
-          @if($availableUnits <= 5 && $availableUnits > 0)
+          @if($reservationOnly)
+            <span class="pd-badge" style="background:rgba(110,252,185,.1);border-color:rgba(110,252,185,.25);color:#6efcb9">✓ Disponibilidad por confirmar</span>
+          @elseif($availableUnits <= 5 && $availableUnits > 0)
             <span class="pd-badge" style="background:rgba(252,211,77,.12);border-color:rgba(252,211,77,.3);color:#fde68a">{{ $product->isService() ? '⚠ Solo ' . $availableUnits . ' cupos' : '⚠ Solo ' . $availableUnits . ' disp.' }}</span>
           @elseif($availableUnits <= 0)
             <span class="pd-badge" style="background:rgba(186,26,26,.12);border-color:rgba(186,26,26,.3);color:#fca5a5">{{ $product->isService() ? 'Sin cupos disponibles' : 'Agotado' }}</span>
@@ -258,10 +263,10 @@ $specLabels = [
           </div>
         @endif
 
-        @if($availableUnits > 0)
+        @if($canRequest)
           @auth
             @if(auth()->user()->isConsumer())
-              <form id="add-to-cart-form" method="POST" action="{{ route('consumer.cart.add') }}" class="pd-fi" style="--d:.3s">
+              <form id="add-to-cart-form" method="POST" action="{{ $product->isReservationOnly() ? route('consumer.reservations.store') : route('consumer.cart.add') }}" data-reservation="{{ $product->isReservationOnly() ? '1' : '0' }}" class="pd-fi" style="--d:.3s">
                 @csrf
                 <input type="hidden" name="product_id" value="{{ $product->id }}">
                 <div id="selected-options-inputs">
@@ -272,30 +277,49 @@ $specLabels = [
                     @endforeach
                   @endif
                 </div>
+                @if($product->isReservationOnly())
+                  <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-4 rounded-xl border border-emerald-200 bg-emerald-50/80 p-4 text-slate-800">
+                    <label class="text-xs font-bold">Fecha deseada (opcional)
+                      <input type="date" name="preferred_date" min="{{ now()->toDateString() }}" class="mt-1 w-full rounded-lg border border-emerald-200 bg-white px-3 py-2 text-sm font-normal">
+                    </label>
+                    <label class="text-xs font-bold">Hora deseada (opcional)
+                      <input type="time" name="preferred_time" class="mt-1 w-full rounded-lg border border-emerald-200 bg-white px-3 py-2 text-sm font-normal">
+                    </label>
+                    <label class="text-xs font-bold">Personas (opcional)
+                      <input type="number" name="party_size" min="1" max="100" value="1" class="mt-1 w-full rounded-lg border border-emerald-200 bg-white px-3 py-2 text-sm font-normal">
+                    </label>
+                    <label class="text-xs font-bold sm:col-span-3">Detalles para el comercio (opcional)
+                      <textarea name="customer_notes" maxlength="1500" rows="2" placeholder="Indica fechas, preferencias o preguntas para el comercio" class="mt-1 w-full rounded-lg border border-emerald-200 bg-white px-3 py-2 text-sm font-normal"></textarea>
+                    </label>
+                    <p class="text-[11px] text-emerald-900 sm:col-span-3">Enviar la solicitud no genera un pago ni confirma disponibilidad. El comercio debe responder para confirmar.</p>
+                  </div>
+                @endif
                 <div class="flex items-center gap-3">
                   <div class="pd-qty">
                     <button type="button" onclick="const i=document.getElementById('qty');if(i.value>1)i.value--" class="pd-qty-btn"><span class="material-symbols-outlined text-[18px]">remove</span></button>
-                    <input type="number" id="qty" name="quantity" value="1" min="1" max="{{ $availableUnits }}" class="w-12 text-center bg-transparent border-0 font-black text-white focus:ring-0 text-sm p-0 m-0 [appearance:textfield]">
-                    <button type="button" onclick="const i=document.getElementById('qty');if(i.value<{{ $availableUnits }})i.value++" class="pd-qty-btn"><span class="material-symbols-outlined text-[18px]">add</span></button>
+                    <input type="number" id="qty" name="quantity" value="1" min="1" max="{{ $maxRequestQuantity }}" class="w-12 text-center bg-transparent border-0 font-black text-white focus:ring-0 text-sm p-0 m-0 [appearance:textfield]">
+                    <button type="button" onclick="const i=document.getElementById('qty');if(i.value<{{ $maxRequestQuantity }})i.value++" class="pd-qty-btn"><span class="material-symbols-outlined text-[18px]">add</span></button>
                   </div>
                   <button type="submit" class="add-to-cart" style="--background: linear-gradient(135deg,{{ $from }},{{ $to }}); --shadow: {{ $glow2 }}">
-                    <span class="btn-text">{{ $product->isService() ? 'Reservar servicio' : 'Añadir al carrito' }}</span>
+                    <span class="btn-text">{{ $product->isReservationOnly() ? 'Solicitar reserva' : 'Añadir al carrito' }}</span>
                     <span class="btn-cart"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg></span>
                     <span class="btn-done"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>¡Listo!</span>
                   </button>
-                  <button type="submit" id="btn-buy-now" name="buy_now" value="1" formaction="{{ route('consumer.cart.add') }}" class="px-7 py-3.5 bg-gradient-to-r from-orange-500 to-[#F97316] hover:from-orange-600 hover:to-orange-700 text-white font-black rounded-2xl text-sm transition-all shadow-lg hover:shadow-orange-500/30 flex items-center justify-center gap-2 shrink-0 cursor-pointer">
-                    <span class="material-symbols-outlined text-lg">flash_on</span>
-                    <span>{{ $product->isService() ? 'Reservar ahora' : 'Comprar Ahora' }}</span>
-                  </button>
+                  @unless($product->isReservationOnly())
+                    <button type="submit" id="btn-buy-now" name="buy_now" value="1" formaction="{{ route('consumer.cart.add') }}" class="px-7 py-3.5 bg-gradient-to-r from-orange-500 to-[#F97316] hover:from-orange-600 hover:to-orange-700 text-white font-black rounded-2xl text-sm transition-all shadow-lg hover:shadow-orange-500/30 flex items-center justify-center gap-2 shrink-0 cursor-pointer">
+                      <span class="material-symbols-outlined text-lg">flash_on</span>
+                      <span>Comprar Ahora</span>
+                    </button>
+                  @endunless
                 </div>
               </form>
             @endif
           @else
             <div class="pd-fi flex items-center gap-3">
-              <a href="{{ route('login') }}?intended={{ urlencode(request()->fullUrl()) }}" class="add-to-cart no-underline flex-1" style="--background: linear-gradient(135deg,{{ $from }},{{ $to }}); --shadow: {{ $glow2 }}"><span class="btn-text">Añadir al carrito</span></a>
+              <a href="{{ route('login') }}?intended={{ urlencode(request()->fullUrl()) }}" class="add-to-cart no-underline flex-1" style="--background: linear-gradient(135deg,{{ $from }},{{ $to }}); --shadow: {{ $glow2 }}"><span class="btn-text">{{ $product->isReservationOnly() ? 'Solicitar reserva' : 'Añadir al carrito' }}</span></a>
               <a href="{{ route('login') }}?intended={{ urlencode(request()->fullUrl()) }}" class="px-7 py-3.5 bg-gradient-to-r from-orange-500 to-[#F97316] hover:from-orange-600 hover:to-orange-700 text-white font-black rounded-2xl text-sm transition-all shadow-lg hover:shadow-orange-500/30 flex items-center justify-center gap-2 shrink-0 no-underline cursor-pointer">
                 <span class="material-symbols-outlined text-lg">flash_on</span>
-                <span>Comprar Ahora</span>
+                <span>{{ $product->isReservationOnly() ? 'Reservar' : 'Comprar Ahora' }}</span>
               </a>
             </div>
           @endauth
@@ -673,7 +697,11 @@ $specLabels = [
         }
 
         const d = await r.json(); 
-        if (d.success) { 
+        if (d.success) {
+          if (cf.dataset.reservation === '1') {
+            window.location.href = d.redirect || '{{ route("consumer.reservations") }}';
+            return;
+          }
           // 1. Actualizar contador en la barra de navegación (desktop y móvil)
           if (typeof window.updateCartBadge === 'function') {
             window.updateCartBadge(d.cart_count);
