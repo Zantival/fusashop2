@@ -228,7 +228,7 @@
           <p class="text-[11px] text-on-surface-variant mt-6 italic">Nota: Al subir nuevas imágenes, estas reemplazarán por completo la galería actual. Máximo 3 banners.</p>
         </div>
 
-        {{-- Configuración de Cobros y Pagos Directos al Comercio --}}
+        {{-- Configuración de cuenta para liquidaciones --}}
         @include('merchant.partials.payout-method-fields', ['profile' => $profile])
 
         <div class="flex flex-col sm:flex-row gap-4 pt-4">

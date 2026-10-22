@@ -183,46 +183,9 @@
     </div>
   </div>
 
-  <!-- Opcional: Credenciales Wompi Directas -->
-  <details class="pt-3 border-t border-outline-variant/20 group" {{ ($cp && $cp->hasCustomWompi()) ? 'open' : '' }}>
-    <summary class="cursor-pointer list-none flex items-center justify-between text-xs font-bold text-on-surface-variant hover:text-primary transition-colors">
-      <span class="flex items-center gap-1.5">
-        <span class="material-symbols-outlined text-sm text-[#006c47]">key</span>
-        <span>Opcional Avanzado: Credenciales de Pasarela Directa Wompi Bancolombia</span>
-      </span>
-      <span class="material-symbols-outlined text-base group-open:rotate-180 transition-transform">expand_more</span>
-    </summary>
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3 pt-2">
-      <div>
-        <label class="block text-[11px] font-bold text-on-surface-variant uppercase tracking-wider mb-1">
-          Tu Llave Pública Wompi (Public Key)
-        </label>
-        <input type="text" name="wompi_public_key" value="{{ old('wompi_public_key', $cp->wompi_public_key ?? '') }}"
-               class="w-full px-3.5 py-2.5 bg-surface-container-low border border-outline-variant/25 rounded-xl text-xs font-mono focus:ring-2 focus:ring-primary/20 outline-none"
-               placeholder="pub_prod_... o pub_test_...">
-      </div>
-      <div>
-        <label class="block text-[11px] font-bold text-on-surface-variant uppercase tracking-wider mb-1">
-          Tu Secreto de Integridad (Integrity Secret)
-        </label>
-        <input type="password" name="wompi_integrity_secret" value="{{ old('wompi_integrity_secret') }}"
-               class="w-full px-3.5 py-2.5 bg-surface-container-low border border-outline-variant/25 rounded-xl text-xs font-mono focus:ring-2 focus:ring-primary/20 outline-none"
-               placeholder="Dejar vacío para conservar la llave guardada">
-      </div>
-      <div class="md:col-span-2">
-        <label class="block text-[11px] font-bold text-on-surface-variant uppercase tracking-wider mb-1">
-          Secreto de Eventos Wompi (Events Secret)
-        </label>
-        <input type="password" name="wompi_events_secret" value="{{ old('wompi_events_secret') }}"
-               class="w-full px-3.5 py-2.5 bg-surface-container-low border border-outline-variant/25 rounded-xl text-xs font-mono focus:ring-2 focus:ring-primary/20 outline-none"
-               placeholder="Dejar vacío para conservar la llave guardada">
-      </div>
-      <label class="md:col-span-2 flex items-center gap-2 text-xs text-rose-700">
-        <input type="checkbox" name="clear_wompi_credentials" value="1" class="rounded">
-        Eliminar las credenciales Wompi guardadas
-      </label>
-    </div>
-  </details>
+  <p class="pt-3 border-t border-outline-variant/20 text-xs text-on-surface-variant">
+    Los pagos de los pedidos se procesan con la cuenta central de Wompi de FusaShop. Esta cuenta bancaria o billetera se usa para liquidarte las ventas aprobadas.
+  </p>
 </div>
 
 <script>

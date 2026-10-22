@@ -45,6 +45,7 @@ class Order extends Model
     public function merchant() { return $this->belongsTo(User::class, 'merchant_id')->withTrashed(); }
     public function items()    { return $this->hasMany(OrderItem::class); }
     public function transactions() { return $this->hasMany(PaymentTransaction::class); }
+    public function suborders() { return $this->hasMany(MerchantSuborder::class); }
     public function integrationLogs() { return $this->hasMany(IntegrationLog::class); }
 
     public function merchantProfile(): ?CompanyProfile

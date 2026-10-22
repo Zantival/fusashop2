@@ -57,10 +57,13 @@
     </div>
   </div>
 
-  @php
-    $cp = auth()->user()->companyProfile;
-  @endphp
-  {{-- Card de Recepción de Pagos del Comercio --}}
+  <div class="mb-6 bg-white rounded-3xl p-6 shadow-sm border border-emerald-500/30">
+    <p class="text-sm font-bold text-[#3c4a41] uppercase tracking-wider">Saldo acreditado disponible</p>
+    <p class="mt-2 text-3xl font-black text-[#006c47]">${{ number_format($walletBalanceCents / 100, 0, ',', '.') }} COP</p>
+    <p class="text-xs text-[#3c4a41] mt-2">Se acredita cuando Wompi confirma el pago. El saldo refleja ventas netas después de la comisión de FusaShop.</p>
+  </div>
+
+  {{-- En el modelo centralizado, Wompi cobra en la cuenta de FusaShop y este saldo se dispersa manualmente. --}}
   <div class="mb-10 bg-white rounded-3xl p-6 shadow-sm border border-emerald-500/30 flex flex-col md:flex-row md:items-center justify-between gap-6 bg-gradient-to-r from-emerald-50/40 via-white to-white">
     <div class="flex items-start gap-4">
       <div class="w-12 h-12 rounded-2xl bg-[#006c47]/10 text-[#006c47] flex items-center justify-center shrink-0">
@@ -68,39 +71,27 @@
       </div>
       <div>
         <div class="flex items-center gap-2 flex-wrap">
-          <h2 class="text-base font-bold text-on-surface">Recepción de Pagos de tus Ventas</h2>
-          @if($cp && $cp->hasCustomWompi())
-            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#6efcb9]/50 text-[#003f28] inline-flex items-center gap-1">
-              <span class="material-symbols-outlined text-[12px]">verified</span> Pagos Directos a tu Wompi Activos
-            </span>
-          @elseif($cp && $cp->hasPayoutInfo())
-            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-800">
-              Cuenta Bancaria Registrada
-            </span>
-          @else
-            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800">
-              Configuración pendiente
-            </span>
-          @endif
+          <h2 class="text-base font-bold text-on-surface">Liquidación de tus ventas</h2>
         </div>
-        <p class="text-xs text-on-surface-variant mt-1">
-          @if($cp && $cp->hasCustomWompi())
-            Tus clientes pagan con tarjeta, PSE o Nequi y el dinero ingresa <strong>directamente a tu pasarela Wompi</strong> sin pasar por el administrador.
-          @elseif($cp && $cp->hasPayoutInfo())
-            Tus datos bancarios están registrados (<strong>{{ $cp->payout_bank_name }} ({{ $cp->payout_account_type }} #{{ $cp->payout_account_number }})</strong>), pero las ventas se pagan en la cuenta Wompi del comerciante y no se transfieren automáticamente a esta cuenta bancaria.
-          @else
-            Configura tus llaves Wompi para que los compradores paguen directamente a tu cuenta de Wompi. Registrar datos bancarios por sí solo no habilita pagos ni transferencias automáticas.
-          @endif
-        </p>
-        @if($cp && $cp->hasCustomWompi())
-          <p class="text-xs text-amber-800 mt-2">La comisión de FusaShop no se descuenta automáticamente de estos pagos directos.</p>
-        @endif
+        <p class="text-xs text-on-surface-variant mt-1">El cliente paga en la cuenta central de Wompi de FusaShop. El administrador revisa y dispersa los saldos acreditados a la cuenta bancaria o billetera que registraste.</p>
       </div>
     </div>
     <a href="{{ route('merchant.store.edit') }}" class="px-5 py-2.5 bg-[#006c47] hover:bg-[#10B981] text-white text-xs font-bold rounded-xl transition-all shrink-0 flex items-center gap-2 shadow-sm self-start md:self-center">
       <span class="material-symbols-outlined text-sm">settings</span>
       Configurar Pagos y Cuenta
     </a>
+  </div>
+
+  <div class="mb-10 bg-white rounded-3xl shadow-sm border border-outline-variant/30 overflow-hidden">
+    <div class="px-6 py-4 border-b border-outline-variant/30"><h2 class="font-bold">Movimientos recientes de billetera</h2></div>
+    @forelse($walletEntries as $entry)
+      <div class="px-6 py-3 border-b border-slate-100 flex justify-between gap-4 text-sm">
+        <span>Pedido {{ $entry->order?->reference ?? '—' }} · {{ $entry->entry_type === 'sale_credit' ? 'Venta acreditada' : ucfirst(str_replace('_', ' ', $entry->entry_type)) }}</span>
+        <strong class="{{ $entry->direction === 'credit' ? 'text-emerald-700' : 'text-rose-700' }}">{{ $entry->direction === 'credit' ? '+' : '-' }}${{ number_format($entry->amount_cents / 100, 0, ',', '.') }} COP</strong>
+      </div>
+    @empty
+      <p class="p-6 text-sm text-slate-500">Aún no hay movimientos acreditados.</p>
+    @endforelse
   </div>
 
   <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">

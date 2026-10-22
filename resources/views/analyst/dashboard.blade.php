@@ -1567,7 +1567,7 @@
             Gestión de Tiendas, Comisión Estimada y Estado Fiscal DIAN
           </h2>
           <p class="text-xs text-on-surface-variant mt-0.5">
-            Ventas confirmadas por Wompi. La comisión se muestra como valor estimado; el pago directo no la retiene automáticamente.
+            Ventas confirmadas por Wompi. La comisión aplicada se descuenta del saldo que se liquida a cada comerciante.
           </p>
         </div>
         <div class="flex items-center gap-2">

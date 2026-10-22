@@ -109,6 +109,8 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public function products() { return $this->hasMany(Product::class, 'merchant_id'); }
     public function orders()   { return $this->hasMany(Order::class); }
+    public function suborders() { return $this->hasMany(MerchantSuborder::class, 'merchant_id'); }
+    public function walletEntries() { return $this->hasMany(MerchantWalletEntry::class, 'merchant_id'); }
     public function cart()     { return $this->hasOne(Cart::class); }
     public function companyProfile() { return $this->hasOne(CompanyProfile::class, 'merchant_id'); }
     public function shippingAddresses() { return $this->hasMany(ShippingAddress::class); }

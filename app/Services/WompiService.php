@@ -15,8 +15,8 @@ class WompiService
     {
         $secret = $customSecret;
         if ($secret === null) {
-            $order = Order::where('reference', $reference)->first();
-            $secret = $order?->merchantProfile()?->wompi_integrity_secret ?: config('services.wompi.integrity_secret');
+            // Las ventas de la plataforma se cobran en la única cuenta Wompi central.
+            $secret = config('services.wompi.integrity_secret');
         }
 
         return hash('sha256', $reference . $amountInCents . $currency . $secret);
@@ -24,27 +24,18 @@ class WompiService
 
     public function isSandboxWithoutKeys(?Order $order = null): bool
     {
-        $merchantProfile = $order?->merchantProfile();
-        if ($merchantProfile?->hasCustomWompi()) {
-            return false;
-        }
-
         return config('services.wompi.env', 'sandbox') === 'sandbox'
             && empty(config('services.wompi.public_key'));
     }
 
-    /** URL del Web Checkout oficial de Wompi (el pago ingresa directamente al comerciante si configuró sus llaves). */
+    /** URL del checkout central de Wompi de FusaShop para una orden con uno o varios vendedores. */
     public function checkoutUrl(Order $order, string $redirectUrl): string
     {
         $cents = $order->totalInCents();
-        $merchantProfile = $order->merchantProfile();
-        $useMerchantKeys = $merchantProfile?->hasCustomWompi() ?? false;
-
         $signature = $this->integritySignature(
             $order->reference,
             $cents,
-            $order->currency,
-            $useMerchantKeys ? $merchantProfile->wompi_integrity_secret : null
+            $order->currency
         );
 
         if ($this->isSandboxWithoutKeys($order)) {
@@ -57,10 +48,10 @@ class WompiService
             ]);
         }
 
-        $publicKey = $useMerchantKeys ? $merchantProfile->wompi_public_key : config('services.wompi.public_key');
+        $publicKey = config('services.wompi.public_key');
 
         if (empty($publicKey)) {
-            throw new \RuntimeException('El pedido no tiene una cuenta Wompi válida de un único comerciante.');
+            throw new \RuntimeException('FusaShop no tiene configurada su cuenta Wompi central.');
         }
 
         return rtrim(config('services.wompi.checkout_url'), '/') . '/?' . $this->buildCheckoutQuery([
@@ -123,20 +114,17 @@ class WompiService
 
     /**
      * Valida la autenticidad de un evento de Wompi.
-     * Soporta tanto las credenciales del comerciante como las globales.
+     * Los pedidos usan las credenciales centrales; los banners conservan su configuración de plataforma.
      */
     public function verifyEvent(array $payload, ?string $headerChecksum = null): bool
     {
         $reference = Arr::get($payload, 'data.transaction.reference');
         $order = $reference ? Order::where('reference', $reference)->first() : null;
-        $merchantProfile = $order?->merchantProfile();
         $bannerRequest = !$order && $reference
             ? \App\Models\BannerRequest::where('payment_proof_path', $reference)->exists()
             : false;
 
-        if ($merchantProfile?->hasCustomWompi()) {
-            $secret = $merchantProfile->wompi_events_secret;
-        } elseif ($bannerRequest) {
+        if ($bannerRequest) {
             $bannerCredentials = \App\Models\Setting::activeBannerPayoutSnapshot();
             $secret = !empty($bannerCredentials['wompi_public_key'])
                 ? $bannerCredentials['wompi_events_secret']

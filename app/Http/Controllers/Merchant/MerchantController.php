@@ -161,9 +161,6 @@ class MerchantController extends Controller
             'google_maps_url'        => 'nullable|url|max:500',
             'latitude'               => 'nullable|numeric',
             'longitude'              => 'nullable|numeric',
-            'wompi_public_key'       => 'nullable|string|max:120',
-            'wompi_integrity_secret' => 'nullable|string|max:120',
-            'wompi_events_secret'    => 'nullable|string|max:120',
         ]);
 
         $payoutData = CompanyProfile::validateAndExtractPayoutData($request, false);
@@ -190,23 +187,6 @@ class MerchantController extends Controller
             $profile->payout_account_number = $payoutData['payout_account_number'];
             $profile->payout_account_holder = $payoutData['payout_account_holder'] ?? $user->name;
             $profile->payout_id_number      = $payoutData['payout_id_number'];
-        }
-        if ($request->has('wompi_integrity_secret')) {
-            if ($request->boolean('clear_wompi_credentials')) {
-                $profile->wompi_public_key = null;
-                $profile->wompi_integrity_secret = null;
-                $profile->wompi_events_secret = null;
-            } else {
-                if ($request->filled('wompi_integrity_secret')) {
-                    $profile->wompi_integrity_secret = strip_tags(trim((string) $request->wompi_integrity_secret));
-                }
-                if ($request->filled('wompi_events_secret')) {
-                    $profile->wompi_events_secret = strip_tags(trim((string) $request->wompi_events_secret));
-                }
-            }
-        }
-        if (!$request->boolean('clear_wompi_credentials') && $request->filled('wompi_public_key')) {
-            $profile->wompi_public_key = strip_tags(trim((string) $request->wompi_public_key));
         }
 
         if ($request->has('whatsapp')) {
@@ -320,9 +300,6 @@ class MerchantController extends Controller
             'description'            => 'nullable|string|max:2000',
             'latitude'               => 'nullable|numeric',
             'longitude'              => 'nullable|numeric',
-            'wompi_public_key'       => 'nullable|string|max:120',
-            'wompi_integrity_secret' => 'nullable|string|max:120',
-            'wompi_events_secret'    => 'nullable|string|max:120',
             'payout_bank_name'       => 'nullable|string|max:100',
             'payout_account_type'    => 'nullable|string|max:40',
             'payout_account_number'  => 'nullable|string|max:60',
@@ -350,7 +327,7 @@ class MerchantController extends Controller
             $profile->whatsapp = preg_replace('/\D/', '', $request->whatsapp);
         }
 
-        // Credenciales de pasarela y método de pago preferido para pagos directos al comerciante
+        // Cuenta preferida para la dispersión manual de liquidaciones centralizadas.
         $payoutData = CompanyProfile::validateAndExtractPayoutData($request, false);
         if (!empty($payoutData)) {
             $profile->payout_method_type    = $payoutData['payout_method_type'];
@@ -359,21 +336,6 @@ class MerchantController extends Controller
             $profile->payout_account_number = $payoutData['payout_account_number'];
             $profile->payout_account_holder = $payoutData['payout_account_holder'] ?? $user->name;
             $profile->payout_id_number      = $payoutData['payout_id_number'];
-        }
-        if ($request->boolean('clear_wompi_credentials')) {
-            $profile->wompi_public_key = null;
-            $profile->wompi_integrity_secret = null;
-            $profile->wompi_events_secret = null;
-        } else {
-            if ($request->filled('wompi_public_key')) {
-                $profile->wompi_public_key = strip_tags(trim($request->wompi_public_key));
-            }
-            if ($request->filled('wompi_integrity_secret')) {
-                $profile->wompi_integrity_secret = strip_tags(trim($request->wompi_integrity_secret));
-            }
-            if ($request->filled('wompi_events_secret')) {
-                $profile->wompi_events_secret = strip_tags(trim($request->wompi_events_secret));
-            }
         }
 
         if ($request->hasFile('logo')) {
@@ -1069,6 +1031,9 @@ class MerchantController extends Controller
     public function finances()
     {
         $merchant = Auth::user();
+        $walletBalanceCents = app(\App\Services\MerchantSettlementService::class)->balanceCents($merchant->id);
+        $walletEntries = \App\Models\MerchantWalletEntry::where('merchant_id', $merchant->id)
+            ->with('order:id,reference')->latest('posted_at')->limit(10)->get();
         $productIds = $merchant->products()->pluck('id');
 
         $orders = Order::whereHas('items', fn($q) => $q->whereIn('product_id', $productIds))
@@ -1108,7 +1073,8 @@ class MerchantController extends Controller
         $realIncome = $grossSales - $pointsDiscounts - $adSpend;
 
         return view('merchant.finances', compact(
-            'grossSales', 'pointsDiscounts', 'adSpend', 'realIncome', 'lowStockProducts'
+            'grossSales', 'pointsDiscounts', 'adSpend', 'realIncome', 'lowStockProducts',
+            'walletBalanceCents', 'walletEntries'
         ));
     }
 

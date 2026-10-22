@@ -11,9 +11,14 @@
       </h1>
       <p class="text-on-surface-variant mt-1">Registro de pagos por banners publicitarios y cuentas de comerciantes creadas en la plataforma.</p>
     </div>
-    <a href="{{ route('analyst.sales-report.print') }}" target="_blank" class="hidden md:flex items-center gap-2 px-4 py-2.5 bg-primary-gradient text-white text-sm font-bold rounded-xl shadow hover:opacity-90 transition-all">
-      <span class="material-symbols-outlined text-[18px]">picture_as_pdf</span> PDF Ventas
-    </a>
+    <div class="flex items-center gap-2">
+      <a href="{{ route('analyst.settlements.export') }}" class="flex items-center gap-2 px-4 py-2.5 bg-[#006c47] text-white text-sm font-bold rounded-xl shadow hover:opacity-90 transition-all">
+        <span class="material-symbols-outlined text-[18px]">download</span> CSV para dispersión
+      </a>
+      <a href="{{ route('analyst.sales-report.print') }}" target="_blank" class="hidden md:flex items-center gap-2 px-4 py-2.5 bg-primary-gradient text-white text-sm font-bold rounded-xl shadow hover:opacity-90 transition-all">
+        <span class="material-symbols-outlined text-[18px]">picture_as_pdf</span> PDF Ventas
+      </a>
+    </div>
   </div>
 
   {{-- KPI Cards --}}
@@ -124,7 +129,7 @@
       </div>
       <div>
         <h2 class="font-['Manrope'] font-bold text-on-background text-lg">Configuración de cobro de comerciantes</h2>
-        <p class="text-xs text-on-surface-variant">Los compradores pagan directamente a la cuenta Wompi del vendedor. Los datos bancarios registrados no ejecutan transferencias desde la plataforma.</p>
+        <p class="text-xs text-on-surface-variant">Los compradores pagan en la cuenta central de FusaShop. Las liquidaciones se acreditan en la billetera interna y se dispersan manualmente a los datos bancarios registrados.</p>
       </div>
       <span class="ml-auto px-3 py-1 bg-surface-container text-on-surface-variant text-xs font-bold rounded-full">{{ $merchantAccounts->count() }} cuentas</span>
     </div>
@@ -139,7 +144,7 @@
       <table class="w-full text-sm responsive-stack-table">
         <thead class="bg-surface-container-low">
           <tr>
-            @foreach(['#','Empresa','Propietario','Correo','Datos bancarios (no transferidos)','Estado Wompi','Estado KYC','Fecha de Registro','Acciones'] as $h)
+            @foreach(['#','Empresa','Propietario','Correo','Cuenta de liquidación','Dispersión','Estado KYC','Fecha de Registro','Acciones'] as $h)
             <th class="px-4 py-3 text-left text-xs font-semibold text-on-surface-variant uppercase whitespace-nowrap">{{ $h }}</th>
             @endforeach
           </tr>
@@ -172,11 +177,9 @@
               @endif
             </td>
             <td class="px-4 py-3">
-              @if($account['direct_wompi_active'])
-                <span class="text-xs font-semibold text-[#006c47]">Wompi del comerciante</span>
-              @else
-                <span class="text-xs font-semibold text-amber-700">No configurada</span>
-              @endif
+              <span class="text-xs font-semibold {{ !empty($account['has_payout']) ? 'text-[#006c47]' : 'text-amber-700' }}">
+                {{ !empty($account['has_payout']) ? 'Manual pendiente' : 'Cuenta requerida' }}
+              </span>
             </td>
             <td class="px-4 py-3">
               <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold {{ $kCls }}">

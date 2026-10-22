@@ -26,8 +26,10 @@ class OrderPaymentService
     public const PENDING = 'pending';
     public const REJECTED = 'rejected';
 
-    public function __construct(private StockService $stock)
-    {
+    public function __construct(
+        private StockService $stock,
+        private MerchantSettlementService $settlements,
+    ) {
     }
 
     /** @param array $tx objeto data.transaction del evento de Wompi */
@@ -129,6 +131,9 @@ class OrderPaymentService
             'paid_at' => now(),
             'reservation_expires_at' => null,
         ])->save();
+
+        // Acreditar la billetera dentro de la misma transacción que confirma el pago.
+        $this->settlements->creditPaidOrder($order);
 
         $record->update(['processed_at' => now()]);
         $this->awardPoints($order);

@@ -300,6 +300,7 @@ Route::middleware(['auth', 'role:analyst'])->prefix('admin')->name('analyst.')->
     Route::post('/settings',                      [AnalystController::class, 'updateSettings'])->name('settings.update');
     Route::post('/how-to-start-guide',            [AnalystController::class, 'updateHowToStartGuide'])->name('how-to-start.update');
     Route::get('/audit-logs',                     [AnalystController::class, 'auditLogs'])->name('audit-logs');
+    Route::get('/settlements/export',              [AnalystController::class, 'settlementsExportCsv'])->name('settlements.export');
     Route::get('/notifications',                  fn() => view('notifications.index'))->name('notifications');
 
     Route::get('/users',                          [AnalystController::class, 'users'])->name('users');

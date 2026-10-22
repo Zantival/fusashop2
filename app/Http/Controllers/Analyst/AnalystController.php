@@ -475,6 +475,40 @@ class AnalystController extends Controller
         return response()->stream($callback, 200, $headers);
     }
 
+    /** Exporta saldos devengados para dispersión manual por transferencia o billetera. */
+    public function settlementsExportCsv()
+    {
+        $allocations = \App\Models\MerchantSuborder::query()
+            ->where('payout_status', 'available')
+            ->with(['merchant:id,name,email', 'merchant.companyProfile', 'order:id,reference,paid_at'])
+            ->orderBy('merchant_id')->orderBy('id')->get();
+
+        AdminAuditLog::record('merchant_settlements.exported_csv', null, 'Exportación de ' . $allocations->count() . ' liquidaciones pendientes');
+
+        return response()->streamDownload(function () use ($allocations) {
+            $out = fopen('php://output', 'w');
+            fprintf($out, chr(0xEF) . chr(0xBB) . chr(0xBF));
+            fputcsv($out, ['Comerciante', 'Email', 'Orden general', 'Suborden', 'Fecha pago', 'Banco/Billetera', 'Tipo cuenta', 'Titular', 'Documento', 'Cuenta/Celular', 'Bruto COP', 'Comision COP', 'Neto a transferir COP', 'Moneda']);
+            foreach ($allocations as $allocation) {
+                $merchant = $allocation->merchant;
+                $profile = $merchant?->companyProfile;
+                fputcsv($out, [
+                    $merchant?->name ?? 'Comerciante eliminado', $merchant?->email ?? '',
+                    $allocation->order?->reference ?? '', $allocation->reference, $allocation->paid_at?->toDateTimeString() ?? '',
+                    $profile?->payout_bank_name ?? '', $profile?->payout_account_type ?? '',
+                    $profile?->payout_account_holder ?? '', $profile?->payout_id_number ?? '',
+                    $profile?->payout_account_number ?? '', number_format($allocation->gross_cents / 100, 2, '.', ''),
+                    number_format($allocation->commission_cents / 100, 2, '.', ''),
+                    number_format($allocation->net_cents / 100, 2, '.', ''), $allocation->currency,
+                ]);
+            }
+            fclose($out);
+        }, 'fusashop_liquidaciones_pendientes_' . now()->format('Ymd_His') . '.csv', [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Cache-Control' => 'no-store, private',
+        ]);
+    }
+
     /** Descarga de Factura Electrónica DIAN (Factus PDF / XML) para el Administrador / E-commerce */
     public function orderInvoice(Order $order, string $format)
     {
