@@ -2,7 +2,6 @@
 @section('title', 'Panel Ejecutivo Comercial | ' . (auth()->user()->companyProfile->company_name ?? auth()->user()->name) . ' | FusaShop')
 
 @push('styles')
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
   [x-cloak] { display: none !important; }
   .custom-scrollbar::-webkit-scrollbar { width: 5px; height: 5px; }
@@ -36,7 +35,7 @@
          }
        }
      }" 
-     class="max-w-7xl mx-auto px-4 md:px-6 py-6 md:py-8 space-y-6">
+     class="merchant-dashboard w-full max-w-7xl mx-auto px-4 md:px-6 py-6 md:py-8 space-y-6">
 
   <!-- ========================================================================= -->
   <!-- 1. HEADER EJECUTIVO DEL COMERCIANTE (IDÉNTICO AL PANEL DEL ANALISTA)      -->
@@ -139,11 +138,11 @@
   <!-- ========================================================================= -->
   <!-- 2. BARRA DE CONTROL DE PERIODOS Y PESTAÑAS SEGMENTADAS (ESTILO ANALISTA) -->
   <!-- ========================================================================= -->
-  <div class="bg-white p-4 rounded-2xl shadow-[0_12px_32px_rgba(27,28,28,.06)] border border-outline-variant/20 space-y-3">
+  <div class="merchant-dashboard-toolbar bg-white p-4 rounded-2xl shadow-[0_12px_32px_rgba(27,28,28,.06)] border border-outline-variant/20 space-y-3">
     
     <!-- Fila de Filtros y Periodo Global -->
-    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3 pb-3 border-b border-outline-variant/15">
-      <div class="flex flex-wrap items-center gap-2">
+    <div class="merchant-dashboard-period flex flex-col lg:flex-row lg:items-center justify-between gap-3 pb-3 border-b border-outline-variant/15">
+      <div class="flex flex-wrap items-center gap-2 min-w-0">
         <span class="material-symbols-outlined text-[#006c47] text-xl">calendar_month</span>
         <span class="text-xs font-extrabold text-on-background uppercase tracking-wider">Periodo Comercial:</span>
         @foreach(['today' => 'Hoy', '7d' => '7 Días', '30d' => '30 Días', '90d' => 'Trimestre', 'all' => 'Histórico'] as $pKey => $pLbl)
@@ -156,7 +155,7 @@
         @endforeach
       </div>
 
-      <div class="flex flex-wrap items-center gap-3 text-xs">
+      <div class="merchant-dashboard-summary flex flex-wrap items-center gap-3 text-xs">
         <div class="flex items-center gap-1.5 bg-emerald-50/80 border border-emerald-200/80 rounded-xl px-3 py-1 text-slate-700">
           <span class="font-extrabold text-[#006c47]">Comisión FusaShop:</span>
           <span class="font-black text-slate-900">8.0%</span>
@@ -987,13 +986,26 @@
 
 <!-- SCRIPT DE INICIALIZACIÓN DE GRÁFICOS CHART.JS -->
 <script>
-document.addEventListener('DOMContentLoaded', function() {
+function initializeMerchantCharts() {
+  if (!window.Chart) {
+    let loader = document.getElementById('merchant-chartjs-loader');
+    if (!loader) {
+      loader = document.createElement('script');
+      loader.id = 'merchant-chartjs-loader';
+      loader.src = 'https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js';
+      loader.onload = initializeMerchantCharts;
+      document.head.appendChild(loader);
+    }
+    return;
+  }
+
   const salesLabels = {!! json_encode(array_column($dailySales, 'label')) !!};
   const salesValues = {!! json_encode(array_column($dailySales, 'sales')) !!};
 
   // 1. Gráfico de Tendencia de Ventas (Línea con Gradiente)
   const salesCanvas = document.getElementById('merchantSalesChart');
   if (salesCanvas) {
+    window.Chart.getChart(salesCanvas)?.destroy();
     const ctx = salesCanvas.getContext('2d');
     const gradient = ctx.createLinearGradient(0, 0, 0, 260);
     gradient.addColorStop(0, 'rgba(0, 108, 71, 0.35)');
@@ -1061,6 +1073,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
   const catCanvas = document.getElementById('merchantCategoryChart');
   if (catCanvas && catLabels.length > 0) {
+    window.Chart.getChart(catCanvas)?.destroy();
     new Chart(catCanvas, {
       type: 'doughnut',
       data: {
@@ -1092,6 +1105,12 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     });
   }
-});
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initializeMerchantCharts, { once: true });
+} else {
+  initializeMerchantCharts();
+}
 </script>
 @endsection

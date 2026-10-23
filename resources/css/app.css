@@ -821,6 +821,56 @@ h3 {
     max-width: 100%;
   }
 
+  /* El menú de notificaciones debe permanecer dentro del viewport del teléfono. */
+  #main-header #notif-dropdown {
+    position: fixed !important;
+    top: calc(env(safe-area-inset-top, 0px) + 4rem) !important;
+    right: 0.5rem !important;
+    left: 0.5rem !important;
+    width: auto !important;
+    max-width: none !important;
+    max-height: calc(100dvh - 6rem) !important;
+    z-index: 80 !important;
+  }
+
+  /* El panel comercial debe poder contraerse aunque un título o cifra sea largo. */
+  .merchant-dashboard {
+    box-sizing: border-box;
+    width: 100%;
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+    overflow-x: clip;
+  }
+
+  .merchant-dashboard > *,
+  .merchant-dashboard .grid,
+  .merchant-dashboard .flex {
+    min-width: 0;
+  }
+
+  .merchant-dashboard h1,
+  .merchant-dashboard h2,
+  .merchant-dashboard h3,
+  .merchant-dashboard p {
+    overflow-wrap: anywhere;
+  }
+
+  .merchant-dashboard-toolbar {
+    padding: 0.75rem;
+  }
+
+  .merchant-dashboard-period > div:first-child {
+    row-gap: 0.5rem;
+  }
+
+  .merchant-dashboard-summary {
+    gap: 0.5rem;
+  }
+
+  .merchant-dashboard canvas {
+    max-width: 100%;
+  }
+
   /* Las ofertas muestran más producto con menos desplazamiento vertical. */
   .flash-deal-image {
     aspect-ratio: 4 / 3;
@@ -993,5 +1043,18 @@ h3 {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+  }
+
+  .merchant-dashboard > div:first-child {
+    padding: 1rem;
+  }
+
+  .merchant-dashboard > div:first-child h1 {
+    font-size: 1.25rem;
+    line-height: 1.35;
+  }
+
+  .merchant-dashboard-period > div:first-child > span:nth-of-type(2) {
+    flex-basis: 100%;
   }
 }

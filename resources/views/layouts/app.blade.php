@@ -5,6 +5,15 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <meta name="csrf-token" content="{{ csrf_token() }}">
 <title>@yield('title','FusaShop') | FusaShop — El epicentro de compras, turismo y negocios del Sumapaz</title>
+<link rel="icon" type="image/png" href="{{ asset('logo.png') }}?v={{ filemtime(public_path('logo.png')) }}">
+<script>
+window.fusaShopPageTitle = document.title;
+document.addEventListener('visibilitychange', function() {
+  document.title = document.hidden
+    ? 'Regresa, no te pierdas de las ofertas | FusaShop'
+    : (window.fusaShopPageTitle || document.title);
+});
+</script>
 
 {{-- Optimizaciones de carga --}}
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -2097,7 +2106,26 @@ document.addEventListener('submit', (event) => {
       const newScript = document.createElement('script');
       Array.from(oldScript.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value));
       newScript.textContent = oldScript.textContent;
-      oldScript.parentNode.replaceChild(newScript, oldScript);
+
+      // Las páginas cargadas por AJAX se insertan después de DOMContentLoaded.
+      // Ejecutar sus inicializadores de página al terminar el intercambio evita secciones vacías.
+      const originalAddEventListener = document.addEventListener;
+      document.addEventListener = function(type, listener, options) {
+        if (type === 'DOMContentLoaded' && document.readyState !== 'loading') {
+          queueMicrotask(() => {
+            const event = new Event('DOMContentLoaded', { bubbles: true });
+            if (typeof listener === 'function') listener.call(document, event);
+            else listener?.handleEvent?.(event);
+          });
+          return;
+        }
+        return originalAddEventListener.call(this, type, listener, options);
+      };
+      try {
+        oldScript.parentNode.replaceChild(newScript, oldScript);
+      } finally {
+        document.addEventListener = originalAddEventListener;
+      }
     });
   }
 
@@ -2156,7 +2184,8 @@ document.addEventListener('submit', (event) => {
 
     // Actualizar título del documento
     if (doc.title) {
-      document.title = doc.title;
+      window.fusaShopPageTitle = doc.title;
+      document.title = document.hidden ? 'Regresa, no te pierdas de las ofertas | FusaShop' : doc.title;
     }
 
     // Actualizar token CSRF si viene en el nuevo documento

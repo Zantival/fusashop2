@@ -51,51 +51,7 @@
 
   <!-- Right Panel: Verify OTP Code -->
   <div class="flex-1 flex items-center justify-center p-6 lg:p-12">
-    <div class="w-full max-w-lg" x-data="{
-        digits: ['', '', '', '', '', ''],
-        get code() { return this.digits.join(''); },
-        handleInput(index, event) {
-            const val = event.target.value.replace(/[^0-9]/g, '');
-            const inputs = this.$el.querySelectorAll('.otp-input');
-            if (val.length > 1) {
-                // Si el usuario pegó el código completo
-                this.digits = ['', '', '', '', '', ''];
-                const chars = val.slice(0, 6).split('');
-                chars.forEach((c, i) => {
-                    if (i < 6) this.digits[i] = c;
-                });
-                const nextFocus = Math.min(chars.length, 5);
-                this.$nextTick(() => inputs[nextFocus]?.focus());
-                return;
-            }
-            this.digits[index] = val;
-            if (val && index < 5) {
-                this.$nextTick(() => inputs[index + 1]?.focus());
-            }
-        },
-        handleKeyDown(index, event) {
-            if (event.key === 'Backspace' && !this.digits[index] && index > 0) {
-                this.$nextTick(() => this.$el.querySelectorAll('.otp-input')[index - 1]?.focus());
-            } else if (event.key === 'ArrowLeft' && index > 0) {
-                event.preventDefault();
-                this.$el.querySelectorAll('.otp-input')[index - 1]?.focus();
-            } else if (event.key === 'ArrowRight' && index < 5) {
-                event.preventDefault();
-                this.$el.querySelectorAll('.otp-input')[index + 1]?.focus();
-            }
-        },
-        handlePaste(event) {
-            event.preventDefault();
-            const pasteData = (event.clipboardData || window.clipboardData).getData('text').replace(/[^0-9]/g, '').slice(0, 6);
-            if (pasteData) {
-                pasteData.split('').forEach((c, i) => {
-                    this.digits[i] = c;
-                });
-                const targetIdx = Math.min(pasteData.length, 5);
-                this.$nextTick(() => this.$el.querySelectorAll('.otp-input')[targetIdx]?.focus());
-            }
-        }
-    }">
+    <div class="w-full max-w-lg">
       
       <!-- Brand & Header -->
       <div class="mb-6">
@@ -158,7 +114,7 @@
       <!-- OTP Form -->
       <form method="POST" action="{{ route('verification.verify-code') }}" class="space-y-6">
         @csrf
-        <input type="hidden" name="code" :value="code">
+        <input type="hidden" name="code" id="verification-code-value" value="">
 
         <div class="space-y-2">
           <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 text-center">
@@ -166,19 +122,18 @@
           </label>
           
           <!-- 6-digit visual inputs -->
-          <div class="flex items-center justify-center gap-2 sm:gap-3" @paste="handlePaste($event)">
-            <template x-for="(d, i) in digits" :key="i">
+          <div id="verification-code-inputs" class="flex items-center justify-center gap-2 sm:gap-3">
+            @for ($i = 0; $i < 6; $i++)
               <input type="text"
                      inputmode="numeric"
                      pattern="[0-9]*"
                      maxlength="1"
-                     :value="digits[i]"
-                     @input="handleInput(i, $event)"
-                     @keydown="handleKeyDown(i, $event)"
+                     value=""
+                     data-otp-index="{{ $i }}"
                      class="otp-input"
-                     autocomplete="one-time-code"
-                     required />
-            </template>
+                     autocomplete="{{ $i === 0 ? 'one-time-code' : 'off' }}"
+                     aria-label="Dígito {{ $i + 1 }} del código" />
+            @endfor
           </div>
           <p class="text-center text-[11px] text-slate-400 mt-2">
             Puedes pegar los 6 dígitos directamente en cualquier casilla.
@@ -187,7 +142,8 @@
 
         <!-- Submit Button -->
         <button type="submit"
-                :disabled="code.length < 6"
+                id="verification-submit"
+                disabled
                 class="w-full py-3.5 px-6 rounded-xl font-bold text-sm text-white bg-[#006c47] hover:bg-[#10B981] disabled:opacity-50 disabled:cursor-not-allowed shadow-md shadow-[#006c47]/20 transition-all flex items-center justify-center gap-2 cursor-pointer">
           <span class="material-symbols-outlined text-lg">check_circle</span>
           <span>Verificar Cuenta y Continuar</span>
@@ -216,4 +172,73 @@
     </div>
   </div>
 </div>
+@endsection
+
+@section('scripts')
+<script>
+(() => {
+  const container = document.getElementById('verification-code-inputs');
+  const hiddenCode = document.getElementById('verification-code-value');
+  const submitButton = document.getElementById('verification-submit');
+  const inputs = container ? Array.from(container.querySelectorAll('.otp-input')) : [];
+  if (!container || !hiddenCode || !submitButton || inputs.length !== 6) return;
+
+  const syncCode = () => {
+    hiddenCode.value = inputs.map(input => input.value).join('');
+    submitButton.disabled = hiddenCode.value.length !== 6;
+  };
+
+  const fillFrom = (startIndex, rawValue) => {
+    const digits = rawValue.replace(/[^0-9]/g, '').slice(0, 6 - startIndex);
+    if (!digits) {
+      inputs[startIndex].value = '';
+      syncCode();
+      return;
+    }
+
+    digits.split('').forEach((digit, offset) => {
+      inputs[startIndex + offset].value = digit;
+    });
+    syncCode();
+    inputs[Math.min(startIndex + digits.length, inputs.length - 1)].focus();
+  };
+
+  inputs.forEach((input, index) => {
+    input.addEventListener('input', () => {
+      const rawValue = input.value;
+      if (rawValue.length > 1) {
+        fillFrom(index, rawValue);
+        return;
+      }
+      input.value = rawValue.replace(/[^0-9]/g, '').slice(-1);
+      syncCode();
+      if (input.value && index < inputs.length - 1) inputs[index + 1].focus();
+    });
+
+    input.addEventListener('keydown', event => {
+      if (event.key === 'Backspace' && !input.value && index > 0) {
+        inputs[index - 1].value = '';
+        inputs[index - 1].focus();
+        syncCode();
+      } else if (event.key === 'ArrowLeft' && index > 0) {
+        event.preventDefault();
+        inputs[index - 1].focus();
+      } else if (event.key === 'ArrowRight' && index < inputs.length - 1) {
+        event.preventDefault();
+        inputs[index + 1].focus();
+      }
+    });
+
+    input.addEventListener('paste', event => {
+      event.preventDefault();
+      fillFrom(index, event.clipboardData?.getData('text') || '');
+    });
+  });
+
+  container.closest('form')?.addEventListener('submit', event => {
+    syncCode();
+    if (hiddenCode.value.length !== 6) event.preventDefault();
+  });
+})();
+</script>
 @endsection
