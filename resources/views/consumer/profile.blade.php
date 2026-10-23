@@ -2,7 +2,7 @@
 @section('title', 'Mi Cuenta | FusaShop Sumapaz')
 
 @section('content')
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8" 
+<div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8" 
      x-data="{ 
        currentTab: (new URLSearchParams(window.location.search).get('tab')) || '{{ $initialTab ?? request('tab', 'overview') }}', 
        qrModalOpen: false, 
@@ -80,48 +80,48 @@
   <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
     
     <!-- LEFT SIDEBAR -->
-    <aside class="lg:col-span-3 bg-surface-container-lowest rounded-3xl p-5 shadow-card border border-outline-variant/20 sticky top-24 space-y-2">
-      <div class="px-3 py-2 text-[11px] font-bold text-on-surface-variant uppercase tracking-wider">Navegación Mi Cuenta</div>
+    <aside class="lg:col-span-3 bg-surface-container-lowest rounded-2xl sm:rounded-3xl p-2.5 sm:p-5 shadow-card border border-outline-variant/20 lg:sticky lg:top-24 flex lg:flex-col overflow-x-auto lg:overflow-visible gap-1.5 sm:gap-2 scrollbar-none">
+      <div class="hidden lg:block px-3 py-2 text-[11px] font-bold text-on-surface-variant uppercase tracking-wider">Navegación Mi Cuenta</div>
       
-      <button type="button" @click="currentTab = 'overview'" :class="currentTab === 'overview' ? 'bg-primary text-white font-bold shadow-md shadow-primary/20' : 'text-on-surface-variant hover:bg-surface-container font-semibold'" class="w-full text-left px-4 py-3 rounded-2xl text-sm flex items-center gap-3 transition-all cursor-pointer">
-        <span class="material-symbols-outlined text-[20px]">dashboard</span>
+      <button type="button" @click="currentTab = 'overview'" :class="currentTab === 'overview' ? 'bg-primary text-white font-bold shadow-md shadow-primary/20' : 'text-on-surface-variant hover:bg-surface-container font-semibold'" class="shrink-0 lg:w-full text-left px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl text-xs sm:text-sm flex items-center gap-2 sm:gap-3 transition-all cursor-pointer whitespace-nowrap">
+        <span class="material-symbols-outlined text-[18px] sm:text-[20px]">dashboard</span>
         <span>Panel General</span>
       </button>
 
-      <button type="button" @click="currentTab = 'wallet'" :class="currentTab === 'wallet' ? 'bg-primary text-white font-bold shadow-md shadow-primary/20' : 'text-on-surface-variant hover:bg-surface-container font-semibold'" class="w-full text-left px-4 py-3 rounded-2xl text-sm flex items-center justify-between transition-all cursor-pointer">
-        <div class="flex items-center gap-3">
-          <span class="material-symbols-outlined text-[20px]">account_balance_wallet</span>
+      <button type="button" @click="currentTab = 'wallet'" :class="currentTab === 'wallet' ? 'bg-primary text-white font-bold shadow-md shadow-primary/20' : 'text-on-surface-variant hover:bg-surface-container font-semibold'" class="shrink-0 lg:w-full text-left px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl text-xs sm:text-sm flex items-center justify-between gap-2 transition-all cursor-pointer whitespace-nowrap">
+        <div class="flex items-center gap-2 sm:gap-3">
+          <span class="material-symbols-outlined text-[18px] sm:text-[20px]">account_balance_wallet</span>
           <span>Billetera FusaCoins</span>
         </div>
         <span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-100 text-amber-800">{{ number_format($userPoints) }}</span>
       </button>
 
-      <button type="button" @click="currentTab = 'tracking'" :class="currentTab === 'tracking' ? 'bg-primary text-white font-bold shadow-md shadow-primary/20' : 'text-on-surface-variant hover:bg-surface-container font-semibold'" class="w-full text-left px-4 py-3 rounded-2xl text-sm flex items-center justify-between transition-all cursor-pointer">
-        <div class="flex items-center gap-3">
-          <span class="material-symbols-outlined text-[20px]">local_shipping</span>
-          <span>Rastreador Envia.com</span>
+      <button type="button" @click="currentTab = 'tracking'" :class="currentTab === 'tracking' ? 'bg-primary text-white font-bold shadow-md shadow-primary/20' : 'text-on-surface-variant hover:bg-surface-container font-semibold'" class="shrink-0 lg:w-full text-left px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl text-xs sm:text-sm flex items-center justify-between gap-2 transition-all cursor-pointer whitespace-nowrap">
+        <div class="flex items-center gap-2 sm:gap-3">
+          <span class="material-symbols-outlined text-[18px] sm:text-[20px]">local_shipping</span>
+          <span>Rastreador Envia</span>
         </div>
         @if($activeShipments->count() > 0)
           <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
         @endif
       </button>
 
-      <button type="button" @click="currentTab = 'o2o'" :class="currentTab === 'o2o' ? 'bg-primary text-white font-bold shadow-md shadow-primary/20' : 'text-on-surface-variant hover:bg-surface-container font-semibold'" class="w-full text-left px-4 py-3 rounded-2xl text-sm flex items-center gap-3 transition-all cursor-pointer">
-        <span class="material-symbols-outlined text-[20px]">qr_code_scanner</span>
-        <span>Mis Reservas con QR</span>
+      <button type="button" @click="currentTab = 'o2o'" :class="currentTab === 'o2o' ? 'bg-primary text-white font-bold shadow-md shadow-primary/20' : 'text-on-surface-variant hover:bg-surface-container font-semibold'" class="shrink-0 lg:w-full text-left px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl text-xs sm:text-sm flex items-center gap-2 sm:gap-3 transition-all cursor-pointer whitespace-nowrap">
+        <span class="material-symbols-outlined text-[18px] sm:text-[20px]">qr_code_scanner</span>
+        <span>Reservas QR</span>
       </button>
 
-      <button type="button" @click="currentTab = 'invoices'" :class="currentTab === 'invoices' ? 'bg-primary text-white font-bold shadow-md shadow-primary/20' : 'text-on-surface-variant hover:bg-surface-container font-semibold'" class="w-full text-left px-4 py-3 rounded-2xl text-sm flex items-center gap-3 transition-all cursor-pointer">
-        <span class="material-symbols-outlined text-[20px]">receipt_long</span>
-        <span>Facturación DIAN (Factus)</span>
+      <button type="button" @click="currentTab = 'invoices'" :class="currentTab === 'invoices' ? 'bg-primary text-white font-bold shadow-md shadow-primary/20' : 'text-on-surface-variant hover:bg-surface-container font-semibold'" class="shrink-0 lg:w-full text-left px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl text-xs sm:text-sm flex items-center gap-2 sm:gap-3 transition-all cursor-pointer whitespace-nowrap">
+        <span class="material-symbols-outlined text-[18px] sm:text-[20px]">receipt_long</span>
+        <span>Facturación DIAN</span>
       </button>
 
-      <button type="button" @click="currentTab = 'addresses'" :class="currentTab === 'addresses' ? 'bg-primary text-white font-bold shadow-md shadow-primary/20' : 'text-on-surface-variant hover:bg-surface-container font-semibold'" class="w-full text-left px-4 py-3 rounded-2xl text-sm flex items-center gap-3 transition-all cursor-pointer">
-        <span class="material-symbols-outlined text-[20px]">pin_drop</span>
-        <span>Libreta de Direcciones</span>
+      <button type="button" @click="currentTab = 'addresses'" :class="currentTab === 'addresses' ? 'bg-primary text-white font-bold shadow-md shadow-primary/20' : 'text-on-surface-variant hover:bg-surface-container font-semibold'" class="shrink-0 lg:w-full text-left px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl text-xs sm:text-sm flex items-center gap-2 sm:gap-3 transition-all cursor-pointer whitespace-nowrap">
+        <span class="material-symbols-outlined text-[18px] sm:text-[20px]">pin_drop</span>
+        <span>Direcciones</span>
       </button>
 
-      <div class="pt-4 mt-4 border-t border-outline-variant/20">
+      <div class="hidden lg:block pt-4 mt-4 border-t border-outline-variant/20">
         <a href="{{ route('consumer.catalog') }}" class="w-full px-4 py-3 rounded-2xl text-xs font-bold text-primary bg-primary/5 hover:bg-primary/10 flex items-center justify-center gap-2 transition-all">
           <span class="material-symbols-outlined text-[18px]">shopping_basket</span> Seguir Comprando
         </a>

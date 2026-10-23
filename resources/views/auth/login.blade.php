@@ -112,6 +112,13 @@
         </div>
       @endif
 
+      @if(session('status'))
+        <div class="mb-6 p-4 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center gap-3 form-enter" role="status">
+          <span class="material-symbols-outlined text-primary text-[20px]">check_circle</span>
+          <p class="text-sm text-primary font-medium">{{ session('status') }}</p>
+        </div>
+      @endif
+
       @if($errors->any())
         <div class="mb-6 p-4 bg-error/10 border border-error/20 rounded-xl flex items-center gap-3 form-enter">
           <span class="material-symbols-outlined text-error text-[20px]">error</span>
@@ -135,7 +142,7 @@
         <div class="form-enter">
           <div class="flex items-center justify-between mb-2">
             <label class="text-sm font-semibold text-on-surface">Contraseña</label>
-            <a href="{{ route('password.request.offline') }}" class="text-xs text-primary font-semibold hover:underline">¿Olvidaste tu contraseña?</a>
+            <a href="{{ route('password.request') }}" class="text-xs text-primary font-semibold hover:underline">¿Olvidaste tu contraseña?</a>
           </div>
           <div class="input-wrap" id="wrap-pwd">
             <span class="material-symbols-outlined input-icon-box">lock</span>

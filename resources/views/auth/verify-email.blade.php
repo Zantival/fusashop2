@@ -65,17 +65,23 @@
                     if (i < 6) this.digits[i] = c;
                 });
                 const nextFocus = Math.min(chars.length, 5);
-                inputs[nextFocus]?.focus();
+                this.$nextTick(() => inputs[nextFocus]?.focus());
                 return;
             }
             this.digits[index] = val;
             if (val && index < 5) {
-                inputs[index + 1]?.focus();
+                this.$nextTick(() => inputs[index + 1]?.focus());
             }
         },
         handleKeyDown(index, event) {
             if (event.key === 'Backspace' && !this.digits[index] && index > 0) {
+                this.$nextTick(() => this.$el.querySelectorAll('.otp-input')[index - 1]?.focus());
+            } else if (event.key === 'ArrowLeft' && index > 0) {
+                event.preventDefault();
                 this.$el.querySelectorAll('.otp-input')[index - 1]?.focus();
+            } else if (event.key === 'ArrowRight' && index < 5) {
+                event.preventDefault();
+                this.$el.querySelectorAll('.otp-input')[index + 1]?.focus();
             }
         },
         handlePaste(event) {
@@ -86,7 +92,7 @@
                     this.digits[i] = c;
                 });
                 const targetIdx = Math.min(pasteData.length, 5);
-                this.$el.querySelectorAll('.otp-input')[targetIdx]?.focus();
+                this.$nextTick(() => this.$el.querySelectorAll('.otp-input')[targetIdx]?.focus());
             }
         }
     }">

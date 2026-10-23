@@ -379,56 +379,13 @@
         </div>
       </div>
 
-      <!-- Formulario de Tarjeta de Crédito / Débito / Pasarela Wompi -->
-      <div class="p-5 border border-slate-200 rounded-2xl bg-gradient-to-br from-slate-50/80 to-white space-y-4">
-        <div class="flex items-center justify-between border-b border-slate-200/60 pb-3">
-          <div class="flex items-center gap-2">
-            <span class="material-symbols-outlined text-emerald-600">credit_card</span>
-            <span class="font-bold text-slate-800 text-sm">Pago con Tarjeta de Crédito / Débito · Pasarela Wompi</span>
-          </div>
-          <div class="flex items-center gap-1.5 opacity-80">
-            <span class="px-2 py-0.5 rounded-md bg-emerald-50 border border-emerald-200 text-[10px] font-extrabold text-emerald-800">Wompi SHA-256</span>
-            <span class="text-[10px] font-bold text-slate-400">Visa / Mastercard / PSE</span>
-          </div>
+      <div class="p-5 border border-emerald-200 rounded-2xl bg-emerald-50/60 space-y-3">
+        <div class="flex items-center gap-2 font-bold text-slate-800 text-sm">
+          <span class="material-symbols-outlined text-emerald-600">payments</span>
+          Pago seguro con Wompi
         </div>
-
-        <input type="hidden" name="payment_mode" id="banner_payment_mode" value="wompi_card">
-
-        <div class="space-y-3">
-          <div>
-            <label class="block text-xs font-bold text-slate-600 mb-1">Nombre del Titular de la Tarjeta *</label>
-            <input type="text" name="card_holder" x-model="cardHolder"
-                   placeholder="Como aparece en la tarjeta"
-                   class="w-full rounded-xl border border-slate-200 px-3.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/40 text-slate-800">
-          </div>
-
-          <div>
-            <label class="block text-xs font-bold text-slate-600 mb-1">Número de Tarjeta *</label>
-            <input type="text" name="card_number" x-model="cardNumber" @input="cardNumber = formatCardNumber($event.target.value)" maxlength="19"
-                   placeholder="4000 1234 5678 9010"
-                   class="w-full rounded-xl border border-slate-200 px-3.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/40 font-mono text-slate-800">
-          </div>
-
-          <div class="grid grid-cols-2 gap-3">
-            <div>
-              <label class="block text-xs font-bold text-slate-600 mb-1">Vencimiento (MM/AA) *</label>
-              <input type="text" name="card_expiry" x-model="cardExpiry" @input="cardExpiry = formatExpiry($event.target.value)" maxlength="5"
-                     placeholder="12/28"
-                     class="w-full rounded-xl border border-slate-200 px-3.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/40 font-mono text-slate-800 text-center">
-            </div>
-            <div>
-              <label class="block text-xs font-bold text-slate-600 mb-1">Código de Seguridad (CVC) *</label>
-              <input type="password" name="card_cvc" x-model="cardCvc" maxlength="4"
-                     placeholder="123"
-                     class="w-full rounded-xl border border-slate-200 px-3.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/40 font-mono text-slate-800 text-center">
-            </div>
-          </div>
-        </div>
-
-        <p class="text-[11px] text-slate-400 mt-2 flex items-center gap-1.5">
-          <span class="material-symbols-outlined text-xs text-emerald-600">verified_user</span>
-          El pago se procesa y concilia con firma de integridad SHA-256 de Wompi Bancolombia.
-        </p>
+        <p class="text-xs text-slate-600">Al continuar, irás a la pasarela oficial de Wompi para pagar. FusaShop no solicita ni almacena los datos de tu tarjeta. La solicitud solo podrá publicarse después de que Wompi confirme el pago.</p>
+        <input type="hidden" name="payment_mode" value="wompi_checkout">
       </div>
     </div>
 
@@ -437,17 +394,9 @@
       <a href="{{ route('merchant.dashboard') }}" class="w-full sm:w-auto px-6 py-3 font-bold text-xs text-slate-500 hover:text-slate-800 rounded-xl transition-colors text-center">
         Cancelar
       </a>
-      <button type="submit"
-              onclick="document.getElementById('banner_payment_mode').value='wompi_card'"
-              class="w-full sm:flex-1 py-3.5 px-6 bg-[#10B981] hover:bg-[#047857] text-white font-black text-sm rounded-xl shadow-lg hover:shadow-xl active:scale-98 transition-all flex items-center justify-center gap-2">
-        <span class="material-symbols-outlined text-lg">check_circle</span>
-        Pagar ${{ number_format($bannerFee, 0, ',', '.') }} COP y Solicitar Pauta Publicitaria
-      </button>
-      <button type="submit"
-              onclick="document.getElementById('banner_payment_mode').value='wompi_checkout'"
-              class="w-full sm:w-auto py-3.5 px-5 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl shadow-md transition-all flex items-center justify-center gap-1.5">
-        <span class="material-symbols-outlined text-base text-emerald-400">open_in_new</span>
-        Ir a Pasarela Wompi (PSE / Nequi)
+      <button type="submit" class="w-full sm:flex-1 py-3.5 px-6 bg-[#10B981] hover:bg-[#047857] text-white font-black text-sm rounded-xl shadow-lg hover:shadow-xl active:scale-98 transition-all flex items-center justify-center gap-2">
+        <span class="material-symbols-outlined text-lg">open_in_new</span>
+        Continuar a Wompi · ${{ number_format($bannerFee, 0, ',', '.') }} COP
       </button>
     </div>
   </form>

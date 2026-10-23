@@ -1,10 +1,10 @@
 @extends('layouts.app')
 @section('title', 'Solicitudes de reserva | FusaShop')
 @section('content')
-<main class="max-w-6xl mx-auto px-4 md:px-6 py-8 space-y-6">
+<div class="max-w-6xl mx-auto px-3 sm:px-6 py-4 sm:py-8 space-y-4 sm:space-y-6">
   <header>
-    <h1 class="text-3xl font-black text-slate-900">Solicitudes de reserva</h1>
-    <p class="text-sm text-slate-600 mt-1">Las solicitudes no están pagadas. Confirma disponibilidad y coordina el servicio con el cliente.</p>
+    <h1 class="text-2xl sm:text-3xl font-black text-slate-900">Solicitudes de reserva</h1>
+    <p class="text-xs sm:text-sm text-slate-600 mt-1">Las solicitudes no están pagadas. Confirma disponibilidad y coordina el servicio con el cliente.</p>
   </header>
   @if(session('success'))<div class="rounded-xl bg-emerald-50 border border-emerald-200 p-4 text-emerald-900 text-sm font-semibold">{{ session('success') }}</div>@endif
   @if($errors->any())<div class="rounded-xl bg-rose-50 border border-rose-200 p-4 text-rose-900 text-sm">{{ $errors->first() }}</div>@endif
@@ -20,6 +20,7 @@
               <div class="flex flex-wrap items-center gap-2"><span class="font-mono text-xs font-bold text-slate-500">{{ $reservation->reference }}</span><span class="rounded-full px-3 py-1 text-xs font-extrabold {{ $status[1] }}">{{ $status[0] }}</span></div>
               <h2 class="text-lg font-extrabold text-slate-900">{{ $reservation->product->name }} · {{ $reservation->quantity }} {{ $reservation->quantity === 1 ? 'unidad' : 'unidades' }}</h2>
               <p class="text-sm text-slate-700"><strong>Cliente:</strong> {{ $reservation->customer->name }} · {{ $reservation->customer->email }} @if($reservation->customer->phone)· {{ $reservation->customer->phone }}@endif</p>
+              @if($reservation->quoted_price !== null)<p class="text-sm text-slate-700"><strong>Precio estimado al solicitar:</strong> ${{ number_format($reservation->quoted_price, 0, ',', '.') }} COP</p>@endif
               <div class="flex flex-wrap gap-x-5 gap-y-1 text-sm text-slate-600">
                 @if($reservation->preferred_date)<span>Fecha: {{ $reservation->preferred_date->format('d/m/Y') }}</span>@endif
                 @if($reservation->preferred_time)<span>Hora: {{ substr((string) $reservation->preferred_time, 0, 5) }}</span>@endif
@@ -51,5 +52,5 @@
     </div>
     <div>{{ $reservations->links() }}</div>
   @endif
-</main>
+</div>
 @endsection

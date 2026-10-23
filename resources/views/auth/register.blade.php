@@ -120,11 +120,17 @@
         </div>
       @endif
 
-      @if($errors->any())
+      @php
+        $registrationErrors = $errors->getMessages();
+        unset($registrationErrors['password'], $registrationErrors['password_confirmation']);
+      @endphp
+      @if(!empty($registrationErrors))
         <div class="mb-6 p-4 bg-error/10 border border-error/20 rounded-xl flex items-center gap-3 form-enter">
           <span class="material-symbols-outlined text-error text-[20px]">error</span>
           <div class="text-sm text-error font-medium">
-            @foreach($errors->all() as $e)<p>• {{ $e }}</p>@endforeach
+            @foreach($registrationErrors as $fieldErrors)
+              @foreach($fieldErrors as $error)<p>• {{ $error }}</p>@endforeach
+            @endforeach
           </div>
         </div>
       @endif
@@ -201,13 +207,12 @@
             <div class="input-wrap">
               <span class="material-symbols-outlined input-icon-box">lock</span>
               <input type="password" name="password" id="password" {{ session('social_registration') ? '' : 'required' }}
-                class="input-field" placeholder="{{ session('social_registration') ? 'Opcional (12+ caracteres)' : '12+ caracteres' }}" minlength="12" autocomplete="new-password" aria-describedby="password-policy-hint">
+                class="input-field" placeholder="{{ session('social_registration') ? 'Opcional (12+ caracteres)' : '12+ caracteres' }}" autocomplete="new-password" aria-describedby="password-policy-hint password-error">
               <button type="button" onclick="togglePwd('password', 'eye-pwd')" class="flex items-center justify-center w-10 min-w-10 text-on-surface-variant hover:text-primary transition-colors">
                 <span class="material-symbols-outlined text-[20px]" id="eye-pwd">visibility_off</span>
               </button>
             </div>
           </div>
-          <p id="password-policy-hint" class="text-xs text-on-surface-variant mt-1">Usa al menos 12 caracteres, con mayúsculas, minúsculas, un número y un símbolo.</p>
 
           <div class="form-enter {{ session('social_registration') ? 'md:col-span-1' : '' }}">
             <label class="block text-sm font-semibold text-on-surface mb-1.5">
@@ -219,11 +224,19 @@
             <div class="input-wrap">
               <span class="material-symbols-outlined input-icon-box">lock_reset</span>
               <input type="password" name="password_confirmation" id="password_confirmation" {{ session('social_registration') ? '' : 'required' }}
-                class="input-field" placeholder="Repite contraseña" minlength="12" autocomplete="new-password">
+                class="input-field" placeholder="Repite contraseña" autocomplete="new-password" aria-describedby="password-confirmation-error">
               <button type="button" onclick="togglePwd('password_confirmation', 'eye-pwd-conf')" class="flex items-center justify-center w-10 min-w-10 text-on-surface-variant hover:text-primary transition-colors">
                 <span class="material-symbols-outlined text-[20px]" id="eye-pwd-conf">visibility_off</span>
               </button>
             </div>
+            <p id="password-confirmation-error" class="{{ $errors->has('password_confirmation') ? 'mt-1 text-center text-xs font-semibold text-error' : 'hidden' }}" role="alert" aria-live="polite">{{ $errors->first('password_confirmation') }}</p>
+          </div>
+
+          <div class="form-enter md:col-span-2 w-full max-w-xl mx-auto">
+            <p id="password-policy-hint" class="rounded-xl border border-emerald-200 bg-emerald-50/70 px-3 py-2 text-center text-xs leading-relaxed text-on-surface-variant">
+              Usa al menos 12 caracteres, con mayúsculas, minúsculas, un número y un símbolo.
+            </p>
+            <p id="password-error" class="{{ $errors->has('password') ? 'mt-1 text-center text-xs font-semibold text-error' : 'hidden' }}" role="alert" aria-live="polite">{{ $errors->first('password') }}</p>
           </div>
         </div>
 
@@ -416,10 +429,60 @@ document.addEventListener('DOMContentLoaded', function() {
   toggleMerchantPayoutRegister();
 });
 
-document.getElementById('register-form').addEventListener('submit', function() {
+const registerForm = document.getElementById('register-form');
+const passwordInput = document.getElementById('password');
+const passwordConfirmationInput = document.getElementById('password_confirmation');
+
+function validateRegistrationPasswords() {
+  if (!passwordInput || !passwordConfirmationInput) return true;
+
+  const password = passwordInput.value;
+  const confirmation = passwordConfirmationInput.value;
+  const policyError = document.getElementById('password-error');
+  const confirmationError = document.getElementById('password-confirmation-error');
+  const isSocialRegistration = {{ session('social_registration') ? 'true' : 'false' }};
+  let passwordMessage = '';
+
+  if (password || !isSocialRegistration) {
+    if (password.length < 12) passwordMessage = 'La contraseña debe tener al menos 12 caracteres.';
+    else if (!/[a-z]/.test(password) || !/[A-Z]/.test(password)) passwordMessage = 'La contraseña debe incluir letras mayúsculas y minúsculas.';
+    else if (!/[0-9]/.test(password)) passwordMessage = 'La contraseña debe incluir al menos un número.';
+    else if (!/[^A-Za-z0-9]/.test(password)) passwordMessage = 'La contraseña debe incluir al menos un símbolo.';
+  }
+
+  const confirmationMessage = (password || confirmation) && password !== confirmation
+    ? 'La confirmación de la contraseña no coincide.'
+    : '';
+
+  if (policyError) {
+    policyError.textContent = passwordMessage;
+    policyError.classList.toggle('hidden', !passwordMessage);
+  }
+  if (confirmationError) {
+    confirmationError.textContent = confirmationMessage;
+    confirmationError.classList.toggle('hidden', !confirmationMessage);
+  }
+
+  return !passwordMessage && !confirmationMessage;
+}
+
+passwordInput?.addEventListener('input', validateRegistrationPasswords);
+passwordConfirmationInput?.addEventListener('input', validateRegistrationPasswords);
+
+registerForm?.addEventListener('submit', function(event) {
+  if (!validateRegistrationPasswords()) {
+    event.preventDefault();
+    (document.getElementById('password-error')?.textContent
+      ? passwordInput
+      : passwordConfirmationInput)?.focus();
+    return;
+  }
+
   const btn = document.getElementById('reg-btn');
-  btn.innerHTML = '<span class="material-symbols-outlined animate-spin text-[20px]">sync</span> Creando cuenta...';
-  btn.disabled = true;
+  if (btn) {
+    btn.innerHTML = '<span class="material-symbols-outlined animate-spin text-[20px]">sync</span> Creando cuenta...';
+    btn.disabled = true;
+  }
 });
 </script>
 @endsection

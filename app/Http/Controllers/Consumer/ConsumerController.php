@@ -632,6 +632,14 @@ class ConsumerController extends Controller
     {
         $user = Auth::user();
         $cart = $user->cart()->with('items.product.merchant.companyProfile')->firstOrCreate(['user_id' => $user->id]);
+        foreach ($cart->items as $item) {
+            if ($item->product) {
+                $currentPrice = $item->product->priceForOptions($item->selected_options ?? []);
+                if ((float) $item->unit_price !== $currentPrice) {
+                    $item->update(['unit_price' => $currentPrice]);
+                }
+            }
+        }
         $userPoints = $user->totalPoints();
         return view('consumer.cart', compact('cart', 'userPoints'));
     }
@@ -656,6 +664,15 @@ class ConsumerController extends Controller
         $cart = Cart::firstOrCreate(['user_id' => Auth::id()]);
         
         $selectedOptions = $request->input('options', []);
+        if (!$product->validOptionSelection($selectedOptions)) {
+            return back()->withErrors(['options' => 'Selecciona una opción válida para cada especificación del producto.'])->withInput();
+        }
+
+        $variant = $product->variantForOptions($selectedOptions);
+        if ($product->variants && !$variant) {
+            return back()->withErrors(['options' => 'La combinación seleccionada ya no está disponible.'])->withInput();
+        }
+        $unitPrice = $product->priceForOptions($selectedOptions);
         
         // Intentamos encontrar un item existente con las mismas opciones
         // Para simplificar, buscamos por JSON exacto si es posible, o simplemente creamos uno nuevo
@@ -666,13 +683,21 @@ class ConsumerController extends Controller
             ->first();
 
         if ($item) {
-            $item->increment('quantity', $request->input('quantity', 1));
+            $newQuantity = $item->quantity + (int) $request->input('quantity', 1);
+            if ($variant && $newQuantity > max(0, (int) $variant['stock'] - (int) ($variant['reserved_stock'] ?? 0))) {
+                return back()->withErrors(['quantity' => 'No hay suficientes unidades disponibles de esta combinación.'])->withInput();
+            }
+            $item->update(['quantity' => $newQuantity, 'unit_price' => $unitPrice]);
         } else {
+            if ($variant && (int) $request->input('quantity', 1) > max(0, (int) $variant['stock'] - (int) ($variant['reserved_stock'] ?? 0))) {
+                return back()->withErrors(['quantity' => 'No hay suficientes unidades disponibles de esta combinación.'])->withInput();
+            }
             $item = CartItem::create([
                 'cart_id'          => $cart->id,
                 'product_id'       => $request->product_id,
                 'quantity'         => $request->input('quantity', 1),
-                'selected_options' => $selectedOptions
+                'selected_options' => $selectedOptions,
+                'unit_price' => $unitPrice,
             ]);
         }
 
@@ -696,6 +721,10 @@ class ConsumerController extends Controller
     {
         $request->validate(['quantity' => 'required|integer|min:1']);
         if ($item->cart->user_id !== Auth::id()) abort(403);
+        $variant = $item->product?->variantForOptions($item->selected_options ?? []);
+        if ($variant && $request->integer('quantity') > max(0, (int) $variant['stock'] - (int) ($variant['reserved_stock'] ?? 0))) {
+            return back()->withErrors(['quantity' => 'La cantidad supera el stock disponible para esta combinación.']);
+        }
         $item->update(['quantity' => $request->quantity]);
         return back()->with('success', 'Carrito actualizado.');
     }
@@ -1015,7 +1044,7 @@ class ConsumerController extends Controller
      */
     public function merchantProfile($id)
     {
-        $profile = CompanyProfile::where('merchant_id', $id)->firstOrFail();
+        $profile = CompanyProfile::with('user')->where('merchant_id', $id)->firstOrFail();
 
         $products = Product::active()
             ->where('merchant_id', $profile->merchant_id)

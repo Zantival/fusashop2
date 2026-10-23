@@ -20,6 +20,18 @@
     RewriteRule ^ index.php [L]
 </IfModule>
 
+# Límite de carga para Apache con mod_php (por ejemplo, XAMPP).
+<IfModule mod_php.c>
+    php_value upload_max_filesize 5M
+    php_value post_max_size 32M
+    php_value max_file_uploads 30
+</IfModule>
+<IfModule mod_php8.c>
+    php_value upload_max_filesize 5M
+    php_value post_max_size 32M
+    php_value max_file_uploads 30
+</IfModule>
+
 # Compresión de assets en el servidor (Gzip / Deflate)
 <IfModule mod_deflate.c>
     AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css text/javascript

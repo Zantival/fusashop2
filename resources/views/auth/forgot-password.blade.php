@@ -30,7 +30,7 @@ h1,h2{font-family:'Manrope',sans-serif}
           <span class="mso material-symbols-outlined text-white">lock_reset</span>
         </div>
         <h1 class="text-2xl font-black text-[#1b1c1c]">Recuperar contraseña</h1>
-        <p class="text-[#3c4a41] text-sm mt-1">Ingresa tu correo. Un analista revisará la solicitud y restablecerá tu acceso.</p>
+        <p class="text-[#3c4a41] text-sm mt-1">Ingresa el correo asociado a tu cuenta. Te enviaremos un enlace seguro para crear una contraseña nueva.</p>
       </div>
 
       @if($errors->any())
@@ -38,14 +38,17 @@ h1,h2{font-family:'Manrope',sans-serif}
           <span class="mso material-symbols-outlined text-sm">error</span>{{ $errors->first() }}
         </div>
       @endif
-      @if(session('success'))
+      @if(session('status'))
         <div class="bg-green-50 text-green-700 px-4 py-3 rounded-xl mb-5 text-sm flex items-start gap-2">
           <span class="mso material-symbols-outlined text-sm mt-0.5">check_circle</span>
-          <span>{{ session('success') }}</span>
+          <span>{{ session('status') }}</span>
         </div>
       @endif
+      @if(session('error'))
+        <div class="bg-red-50 text-red-700 px-4 py-3 rounded-xl mb-5 text-sm">{{ session('error') }}</div>
+      @endif
 
-      <form method="POST" action="{{ route('password.offline.post') }}" class="space-y-4">
+      <form method="POST" action="{{ route('password.email') }}" class="space-y-4">
         @csrf
         <div>
           <label class="block text-sm font-semibold text-[#1b1c1c] mb-1.5">Correo electrónico</label>

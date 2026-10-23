@@ -12,6 +12,10 @@ class BannerRequest extends Model
         'title',
         'payment_proof_path',
         'status',
+        'payment_status',
+        'payment_transaction_id',
+        'paid_at',
+        'refund_status',
         'cost',
         'notes',
         'rejection_reason',
@@ -29,6 +33,7 @@ class BannerRequest extends Model
     protected $casts = [
         'selected_products' => 'array',
         'cost' => 'decimal:2',
+        'paid_at' => 'datetime',
     ];
 
     public function user()

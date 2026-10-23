@@ -164,21 +164,32 @@
       <div class="space-y-6">
         <div>
           <h3 class="text-xs font-extrabold uppercase tracking-wider text-slate-500 mb-2">Estado del Pago en Línea</h3>
-          <div class="p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-2xl space-y-2">
-            <div class="flex items-center justify-between font-bold text-xs">
+          @php
+            $paymentUi = [
+              'paid' => ['bg-emerald-50 border-emerald-200 text-emerald-800', 'verified', 'Pago confirmado por Wompi'],
+              'failed' => ['bg-rose-50 border-rose-200 text-rose-800', 'error', 'Pago rechazado por Wompi'],
+              'pending' => ['bg-amber-50 border-amber-200 text-amber-900', 'hourglass_empty', 'Pago pendiente de confirmación'],
+            ][$requestInfo->payment_status ?? 'pending'];
+          @endphp
+          <div class="p-4 border rounded-2xl space-y-2 {{ $paymentUi[0] }}">
+            <div class="flex items-center justify-between font-bold text-xs gap-2">
               <div class="flex items-center gap-2">
-                <span class="material-symbols-outlined text-emerald-600 text-lg">verified</span>
-                <span>Pago Seguro Verificado (${{ number_format($requestInfo->cost ?: 150000, 0, ',', '.') }} COP)</span>
+                <span class="material-symbols-outlined text-lg">{{ $paymentUi[1] }}</span>
+                <span>{{ $paymentUi[2] }} · ${{ number_format($requestInfo->cost ?: 150000, 0, ',', '.') }} COP</span>
               </div>
               <span class="text-[10px] font-mono opacity-80">{{ $requestInfo->payment_proof_path }}</span>
             </div>
-            <div class="pt-2 border-t border-emerald-200/80 flex items-center justify-between text-[11px] text-emerald-900 font-semibold">
-              <span class="flex items-center gap-1">
-                <span class="material-symbols-outlined text-xs text-[#006c47]">account_balance</span>
-                Destino financiero del ingreso:
-              </span>
-              <span class="font-extrabold">{{ $requestInfo->formattedPayoutDestination() }}</span>
-            </div>
+            @if(($requestInfo->payment_status ?? 'pending') === 'paid')
+              <div class="pt-2 border-t border-current/20 text-[11px] font-semibold">Confirmado el {{ optional($requestInfo->paid_at)->format('d/m/Y H:i') }} · Transacción {{ $requestInfo->payment_transaction_id }}</div>
+              <div class="pt-2 border-t border-current/20 flex items-center justify-between text-[11px] font-semibold">
+                <span>Cuenta bancaria de referencia:</span>
+                <span class="font-extrabold">{{ $requestInfo->formattedPayoutDestination() }}</span>
+              </div>
+              <p class="text-[10px]">El abono de Wompi depende de la cuenta asociada a la llave pública; este dato no realiza una transferencia automática.</p>
+            @endif
+            @if(($requestInfo->refund_status ?? 'not_required') === 'pending')
+              <div class="pt-2 border-t border-rose-300 font-bold text-xs text-rose-800">Devolución pendiente: debe gestionarse manualmente desde Wompi.</div>
+            @endif
           </div>
         </div>
 
@@ -195,7 +206,7 @@
                 }">
             @csrf
 
-            @if($requestInfo->status === 'pending')
+            @if($requestInfo->status === 'pending' && $requestInfo->payment_status === 'paid')
               <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200 space-y-4">
                 <!-- Selector: Publicar como Banner o como Tarjeta Promocional Única -->
                 <div>
@@ -298,6 +309,10 @@
                   <span class="material-symbols-outlined text-lg">verified</span>
                   <span x-text="publishAs === 'promo_card' ? 'Vincular Productos y Publicar Tarjeta Promocional' : 'Aprobar y Publicar Banner en Vitrina'"></span>
                 </button>
+              </div>
+            @elseif($requestInfo->status === 'pending')
+              <div class="p-4 bg-amber-50 border border-amber-200 rounded-xl text-center text-xs font-bold text-amber-900">
+                La publicación se habilitará cuando Wompi confirme el pago. Estado: {{ $requestInfo->payment_status ?? 'pending' }}.
               </div>
             @else
               <div class="p-4 bg-slate-100 rounded-xl text-center text-xs font-bold text-slate-500">

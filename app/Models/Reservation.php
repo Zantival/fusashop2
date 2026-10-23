@@ -8,7 +8,7 @@ class Reservation extends Model
 {
     protected $fillable = [
         'reference', 'user_id', 'merchant_id', 'product_id', 'quantity',
-        'selected_options', 'preferred_date', 'preferred_time', 'party_size',
+        'selected_options', 'quoted_price', 'preferred_date', 'preferred_time', 'party_size',
         'customer_notes', 'merchant_notes', 'status', 'responded_at',
     ];
 
@@ -18,6 +18,7 @@ class Reservation extends Model
             'selected_options' => 'array',
             'preferred_date' => 'date',
             'responded_at' => 'datetime',
+            'quoted_price' => 'decimal:2',
         ];
     }
 

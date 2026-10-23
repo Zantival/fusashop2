@@ -60,6 +60,10 @@ class CompanyProfile extends Model
 
     public function isReservationBusiness(): bool
     {
+        if ($this->isRestaurantBusiness()) {
+            return true;
+        }
+
         $businessText = mb_strtolower(implode(' ', array_filter([
             $this->business_type,
             $this->sector_override,
@@ -71,6 +75,23 @@ class CompanyProfile extends Model
             'hotel', 'hostal', 'hostería', 'hospedaje', 'alojamiento', 'glamping', 'cabaña', 'cabana', 'finca turístic',
             'turismo', 'turístic', 'operador turístico', 'agencia de viajes', 'viajes',
         ] as $keyword) {
+            if (str_contains($businessText, $keyword)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public function isRestaurantBusiness(): bool
+    {
+        $businessText = mb_strtolower(implode(' ', array_filter([
+            $this->business_type,
+            $this->sector_override,
+            $this->subsector_override,
+        ])), 'UTF-8');
+
+        foreach (['restaurante', 'gastronom', 'cafeter', 'comida rápida', 'comida rapida', 'pizzer', 'asadero'] as $keyword) {
             if (str_contains($businessText, $keyword)) {
                 return true;
             }

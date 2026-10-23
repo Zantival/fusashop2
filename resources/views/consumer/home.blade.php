@@ -11,8 +11,8 @@
 <!-- 1. ESPACIO DE BANNERS PUBLICITARIOS (1-4)  -->
 <!-- ========================================== -->
 @if($topBannersList->isNotEmpty())
-<div id="top-banners-section" class="max-w-7xl mx-auto px-4 md:px-6 pt-4 pb-2">
-  <div class="w-full relative bg-slate-950 overflow-hidden rounded-2xl md:rounded-3xl shadow-xl h-[230px] sm:h-[260px] md:h-[290px]"
+<div id="top-banners-section" class="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 pt-3 sm:pt-4 pb-2">
+  <div class="w-full relative bg-slate-950 overflow-hidden rounded-2xl md:rounded-3xl shadow-xl h-[190px] sm:h-[250px] md:h-[290px]"
        x-data="{ currentSlide: 0, totalSlides: {{ $topBannersList->count() }}, timer: null }" 
        x-init="if (totalSlides > 1) { timer = setInterval(() => currentSlide = (currentSlide + 1) % totalSlides, 6000) }"
        @mouseenter="if (timer) clearInterval(timer)" 
@@ -34,9 +34,9 @@
           @endif
         </a>
 
-        <a href="{{ $bannerTargetUrl }}" class="absolute inset-x-0 bottom-0 z-10 px-5 sm:px-7 md:px-10 pt-9 pb-4 pr-16 flex flex-col justify-end text-white space-y-1 bg-gradient-to-t from-slate-950/80 via-slate-950/35 to-transparent">
+        <a href="{{ $bannerTargetUrl }}" class="absolute inset-x-0 bottom-0 z-10 px-3.5 sm:px-7 md:px-10 pt-6 sm:pt-9 pb-3 sm:pb-4 pr-12 sm:pr-16 flex flex-col justify-end text-white space-y-1 bg-gradient-to-t from-slate-950/80 via-slate-950/35 to-transparent">
           @if($banner->title)
-            <h2 class="text-base sm:text-lg md:text-xl font-extrabold leading-tight font-heading line-clamp-1 drop-shadow">
+            <h2 class="text-sm sm:text-lg md:text-xl font-extrabold leading-tight font-heading line-clamp-1 drop-shadow">
               {{ $banner->title }}
             </h2>
           @endif
@@ -52,21 +52,21 @@
     @if($topBannersList->count() > 1)
       <button type="button" 
               @click="currentSlide = (currentSlide - 1 + totalSlides) % totalSlides" 
-              class="absolute left-3 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-black/40 hover:bg-black/70 text-white flex items-center justify-center backdrop-blur-sm transition-all"
+              class="absolute left-1.5 sm:left-3 top-1/2 -translate-y-1/2 z-20 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-black/40 hover:bg-black/70 text-white flex items-center justify-center backdrop-blur-sm transition-all"
               aria-label="Slide anterior">
-        <span class="material-symbols-outlined text-lg">chevron_left</span>
+        <span class="material-symbols-outlined text-base sm:text-lg">chevron_left</span>
       </button>
 
       <button type="button" 
               @click="currentSlide = (currentSlide + 1) % totalSlides" 
-              class="absolute right-3 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-black/40 hover:bg-black/70 text-white flex items-center justify-center backdrop-blur-sm transition-all"
+              class="absolute right-1.5 sm:right-3 top-1/2 -translate-y-1/2 z-20 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-black/40 hover:bg-black/70 text-white flex items-center justify-center backdrop-blur-sm transition-all"
               aria-label="Slide siguiente">
-        <span class="material-symbols-outlined text-lg">chevron_right</span>
+        <span class="material-symbols-outlined text-base sm:text-lg">chevron_right</span>
       </button>
 
-      <div class="absolute bottom-3 right-5 z-20 flex items-center gap-1.5">
+      <div class="absolute bottom-2 sm:bottom-3 right-3 sm:right-5 z-20 flex items-center gap-1.5">
         <template x-for="i in totalSlides" :key="i">
-          <button @click="currentSlide = i - 1" class="h-1.5 rounded-full transition-all duration-300" :class="currentSlide === (i - 1) ? 'w-6 bg-[#10B981]' : 'w-2 bg-white/40'"></button>
+          <button @click="currentSlide = i - 1" class="h-1.5 rounded-full transition-all duration-300" :class="currentSlide === (i - 1) ? 'w-5 sm:w-6 bg-[#10B981]' : 'w-1.5 sm:w-2 bg-white/40'"></button>
         </template>
       </div>
     @endif
@@ -91,23 +91,23 @@
   $buyerVideoEmbed = \App\Models\Setting::formatVideoEmbedUrl($howToStart['buyer_video_url'] ?? null);
   $sellerVideoEmbed = \App\Models\Setting::formatVideoEmbedUrl($howToStart['seller_video_url'] ?? null);
 @endphp
-<section id="tarjeta-como-empezar" class="max-w-7xl mx-auto px-4 md:px-6 pt-3 pb-2" x-data="{ howToStartModal: false, startTab: 'buyer' }">
+<section id="tarjeta-como-empezar" class="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 pt-3 pb-2" x-data="{ howToStartModal: false, startTab: 'buyer' }">
   <!-- Tarjeta Interactiva: ¿No sabes cómo empezar? -->
-  <div @click="howToStartModal = true" class="group relative cursor-pointer overflow-hidden rounded-3xl bg-gradient-to-r from-slate-950 via-[#004d32] to-emerald-950 p-6 sm:p-8 border border-emerald-500/30 shadow-xl hover:shadow-2xl hover:border-emerald-400/60 transition-all duration-300">
+  <div @click="howToStartModal = true" class="group relative cursor-pointer overflow-hidden rounded-2xl sm:rounded-3xl bg-gradient-to-r from-slate-950 via-[#004d32] to-emerald-950 p-4 sm:p-8 border border-emerald-500/30 shadow-xl hover:shadow-2xl hover:border-emerald-400/60 transition-all duration-300">
     <div class="absolute -top-16 -right-16 w-64 h-64 bg-emerald-500/20 rounded-full blur-3xl pointer-events-none group-hover:scale-125 transition-transform duration-700"></div>
     <div class="absolute -bottom-16 -left-16 w-64 h-64 bg-orange-500/20 rounded-full blur-3xl pointer-events-none group-hover:scale-125 transition-transform duration-700"></div>
 
-    <div class="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+    <div class="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 sm:gap-6">
       <div class="max-w-2xl space-y-2">
-        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-xs font-black uppercase tracking-wider">
+        <div class="inline-flex flex-wrap items-center gap-1.5 sm:gap-2 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-xs font-black uppercase tracking-wider">
           <span class="material-symbols-outlined text-sm">help</span>
           <span>{{ $howToStart['card_badge'] ?? '¿Nuevo en FusaShop?' }}</span>
-          <span class="ml-1 px-2 py-0.5 rounded-full bg-amber-500/30 text-amber-300 text-[10px] font-extrabold flex items-center gap-0.5">
+          <span class="px-2 py-0.5 rounded-full bg-amber-500/30 text-amber-300 text-[10px] font-extrabold flex items-center gap-0.5">
             <span class="material-symbols-outlined text-[12px]">smart_display</span> Videos tutoriales incluidos
           </span>
         </div>
 
-        <h3 class="text-2xl sm:text-3xl font-black font-heading text-white leading-tight group-hover:text-emerald-300 transition-colors">
+        <h3 class="text-xl sm:text-3xl font-black font-heading text-white leading-tight group-hover:text-emerald-300 transition-colors">
           {{ $howToStart['card_title'] ?? '¿No sabes cómo empezar?' }}
         </h3>
 
@@ -116,8 +116,8 @@
         </p>
       </div>
 
-      <div class="flex items-center gap-3 shrink-0">
-        <button type="button" @click.stop="howToStartModal = true" class="px-6 py-3.5 bg-gradient-to-r from-[#10B981] to-emerald-600 hover:from-emerald-500 hover:to-emerald-700 text-white font-black rounded-2xl text-xs sm:text-sm transition-all shadow-lg hover:shadow-emerald-500/30 flex items-center gap-2 group-hover:scale-105 cursor-pointer">
+      <div class="flex items-center gap-3 shrink-0 w-full md:w-auto">
+        <button type="button" @click.stop="howToStartModal = true" class="w-full md:w-auto px-5 sm:px-6 py-3 sm:py-3.5 bg-gradient-to-r from-[#10B981] to-emerald-600 hover:from-emerald-500 hover:to-emerald-700 text-white font-black rounded-xl sm:rounded-2xl text-xs sm:text-sm transition-all shadow-lg hover:shadow-emerald-500/30 flex items-center justify-center gap-2 group-hover:scale-105 cursor-pointer">
           <span class="material-symbols-outlined text-lg">play_circle</span>
           <span>{{ $howToStart['card_button_text'] ?? 'Comenzar Aquí' }}</span>
         </button>
@@ -386,7 +386,7 @@
 <!-- ============================================================== -->
 <!-- 2. TARJETAS PROMOCIONALES ÚNICAS Y POR CATEGORÍA               -->
 <!-- ============================================================== -->
-<section id="promo-cards-section" class="max-w-7xl mx-auto px-4 md:px-6 pt-4 pb-2">
+<section id="promo-cards-section" class="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 pt-3 sm:pt-4 pb-2">
   <div class="flex items-center justify-between mb-3">
     <div class="flex items-center gap-2">
       <span class="w-7 h-7 rounded-lg bg-emerald-100 text-[#006c47] flex items-center justify-center">
@@ -397,7 +397,7 @@
     <span class="text-xs text-slate-500 font-semibold hidden sm:inline">Haz clic para ver los productos en oferta</span>
   </div>
 
-  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
     @foreach($activePromoCards as $card)
       @php
         $cardTargetUrl = !empty($card['target_url'])
@@ -405,7 +405,7 @@
             : route('consumer.catalog', array_filter(['category' => $card['category'] ?? null, 'on_sale' => 1]));
         $cardProducts = isset($card['products']) && is_array($card['products']) ? $card['products'] : [];
       @endphp
-      <a href="{{ $cardTargetUrl }}" class="group block rounded-2xl p-5 bg-gradient-to-br {{ $card['bg_gradient'] ?? 'from-emerald-950 via-slate-900 to-emerald-900' }} text-white relative overflow-hidden shadow-md hover:scale-[1.01] transition-all">
+      <a href="{{ $cardTargetUrl }}" class="group block rounded-2xl p-4 sm:p-5 bg-gradient-to-br {{ $card['bg_gradient'] ?? 'from-emerald-950 via-slate-900 to-emerald-900' }} text-white relative overflow-hidden shadow-md hover:scale-[1.01] transition-all">
         @if(!empty($card['image_url']))
           <div class="absolute inset-0 bg-cover bg-center opacity-25 group-hover:scale-105 transition-transform duration-500" style="background-image: url('{{ $card['image_url'] }}');"></div>
           <div class="absolute inset-0 bg-gradient-to-t from-slate-950/95 via-slate-950/75 to-slate-900/60"></div>
@@ -468,9 +468,9 @@
 <!-- ========================================== -->
 <!-- 3. SECCIÓN RELÁMPAGO (FLASH DEALS)         -->
 <!-- ========================================== -->
-<section class="max-w-7xl mx-auto px-4 md:px-6 py-12">
-  <div class="bg-gradient-to-r from-red-500/10 via-amber-500/10 to-orange-500/10 border border-red-200/60 rounded-3xl p-6 sm:p-8">
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+<section class="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 py-6 sm:py-12">
+  <div class="bg-gradient-to-r from-red-500/10 via-amber-500/10 to-orange-500/10 border border-red-200/60 rounded-3xl p-4 sm:p-8">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 mb-5 sm:mb-8">
       <div>
         <div class="flex items-center gap-2">
           <span class="px-3 py-1 bg-[#ba1a1a] text-white text-xs font-black rounded-full uppercase tracking-wider flex items-center gap-1">
@@ -478,7 +478,7 @@
           </span>
           <span class="text-xs font-bold text-slate-500">Stock Limitado</span>
         </div>
-        <h3 class="text-2xl font-black text-slate-900 font-heading mt-2">
+        <h3 class="text-xl sm:text-2xl font-black text-slate-900 font-heading mt-2">
           Ofertas con Tiempo Límite
         </h3>
       </div>
@@ -490,7 +490,7 @@
     </div>
 
     <!-- Rejilla de Ofertas Flash -->
-    <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4 md:gap-6">
       @foreach(($flashDeals ?? $featured->take(4)) as $flashItem)
         <x-product-card :product="$flashItem" :is-flash-deal="true" />
       @endforeach
@@ -501,17 +501,17 @@
 <!-- ========================================== -->
 <!-- 4. SECCIÓN O2O: "EXPLORA Y VIVE FUSA"      -->
 <!-- ========================================== -->
-<section class="max-w-7xl mx-auto px-4 md:px-6 py-8">
-  <div class="bg-slate-900 text-white rounded-3xl p-6 sm:p-10 relative overflow-hidden shadow-2xl">
+<section class="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 py-5 sm:py-8">
+  <div class="bg-slate-900 text-white rounded-2xl sm:rounded-3xl p-4 sm:p-10 relative overflow-hidden shadow-2xl">
     <!-- Fondo decorativo -->
     <div class="absolute -top-24 -right-24 w-96 h-96 rounded-full bg-gradient-to-br from-[#10B981]/20 to-emerald-600/20 blur-3xl pointer-events-none"></div>
     
-    <div class="relative z-10 flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
+    <div class="relative z-10 flex flex-col md:flex-row md:items-end justify-between gap-4 mb-6 sm:mb-8">
       <div class="max-w-xl">
         <span class="text-xs font-black uppercase tracking-widest text-[#10B981] flex items-center gap-1.5 mb-2">
           <span class="material-symbols-outlined text-base">explore</span> Experiencias en Fusagasugá
         </span>
-        <h3 class="text-2xl sm:text-4xl font-black text-white font-heading">
+        <h3 class="text-xl sm:text-4xl font-black text-white font-heading">
           Explora y Vive Fusa: Hoteles, Gastronomía y Turismo
         </h3>
         <p class="text-slate-400 text-xs sm:text-sm mt-2">
@@ -519,15 +519,15 @@
         </p>
       </div>
 
-      <div class="flex items-center gap-2">
-        <a href="{{ route('consumer.catalog', ['category' => 'Turismo']) }}" class="px-5 py-2.5 bg-[#F97316] hover:bg-orange-600 text-white font-extrabold rounded-xl text-xs transition-all flex items-center gap-1.5 shadow-lg">
+      <div class="flex items-center gap-2 w-full md:w-auto">
+        <a href="{{ route('consumer.catalog', ['category' => 'Turismo']) }}" class="w-full md:w-auto justify-center px-4 sm:px-5 py-2.5 bg-[#F97316] hover:bg-orange-600 text-white font-extrabold rounded-xl text-xs transition-all flex items-center gap-1.5 shadow-lg">
           <span class="material-symbols-outlined text-sm">holiday_village</span> Ver Hoteles, Gastronomía y Turismo
         </a>
       </div>
     </div>
 
     <!-- Cards de Experiencias O2O -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
       
       <!-- O2O 1: Glamping Chinauta Paradise -->
       <div class="bg-slate-800/90 border border-slate-700 rounded-2xl overflow-hidden flex flex-col group hover:border-[#10B981] transition-all">
@@ -630,8 +630,8 @@
 <!-- 5. ESPACIO DE BANNERS PUBLICITARIOS (5-8)  -->
 <!-- ========================================== -->
 @if($bottomBannersList->isNotEmpty())
-<section id="bottom-banners-section" class="max-w-7xl mx-auto px-4 md:px-6 py-4">
-  <div class="w-full relative bg-slate-950 overflow-hidden rounded-2xl md:rounded-3xl shadow-xl h-[230px] sm:h-[260px] md:h-[290px]"
+<section id="bottom-banners-section" class="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 py-4">
+  <div class="w-full relative bg-slate-950 overflow-hidden rounded-2xl md:rounded-3xl shadow-xl h-[190px] sm:h-[250px] md:h-[290px]"
        x-data="{ currentSlide: 0, totalSlides: {{ $bottomBannersList->count() }}, timer: null }" 
        x-init="if (totalSlides > 1) { timer = setInterval(() => currentSlide = (currentSlide + 1) % totalSlides, 6000) }"
        @mouseenter="if (timer) clearInterval(timer)" 
@@ -653,9 +653,9 @@
           @endif
         </a>
 
-        <a href="{{ $bannerTargetUrl }}" class="absolute inset-x-0 bottom-0 z-10 px-5 sm:px-7 md:px-10 pt-9 pb-4 pr-16 flex flex-col justify-end text-white space-y-1 bg-gradient-to-t from-slate-950/80 via-slate-950/35 to-transparent">
+        <a href="{{ $bannerTargetUrl }}" class="absolute inset-x-0 bottom-0 z-10 px-3.5 sm:px-7 md:px-10 pt-6 sm:pt-9 pb-3 sm:pb-4 pr-12 sm:pr-16 flex flex-col justify-end text-white space-y-1 bg-gradient-to-t from-slate-950/80 via-slate-950/35 to-transparent">
           @if($banner->title)
-            <h2 class="text-base sm:text-lg md:text-xl font-extrabold leading-tight font-heading line-clamp-1 drop-shadow">
+            <h2 class="text-sm sm:text-lg md:text-xl font-extrabold leading-tight font-heading line-clamp-1 drop-shadow">
               {{ $banner->title }}
             </h2>
           @endif
@@ -671,21 +671,21 @@
     @if($bottomBannersList->count() > 1)
       <button type="button" 
               @click="currentSlide = (currentSlide - 1 + totalSlides) % totalSlides" 
-              class="absolute left-3 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-black/40 hover:bg-black/70 text-white flex items-center justify-center backdrop-blur-sm transition-all"
+              class="absolute left-1.5 sm:left-3 top-1/2 -translate-y-1/2 z-20 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-black/40 hover:bg-black/70 text-white flex items-center justify-center backdrop-blur-sm transition-all"
               aria-label="Slide anterior">
-        <span class="material-symbols-outlined text-lg">chevron_left</span>
+        <span class="material-symbols-outlined text-base sm:text-lg">chevron_left</span>
       </button>
 
       <button type="button" 
               @click="currentSlide = (currentSlide + 1) % totalSlides" 
-              class="absolute right-3 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-black/40 hover:bg-black/70 text-white flex items-center justify-center backdrop-blur-sm transition-all"
+              class="absolute right-1.5 sm:right-3 top-1/2 -translate-y-1/2 z-20 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-black/40 hover:bg-black/70 text-white flex items-center justify-center backdrop-blur-sm transition-all"
               aria-label="Slide siguiente">
-        <span class="material-symbols-outlined text-lg">chevron_right</span>
+        <span class="material-symbols-outlined text-base sm:text-lg">chevron_right</span>
       </button>
 
-      <div class="absolute bottom-3 right-5 z-20 flex items-center gap-1.5">
+      <div class="absolute bottom-2 sm:bottom-3 right-3 sm:right-5 z-20 flex items-center gap-1.5">
         <template x-for="i in totalSlides" :key="i">
-          <button @click="currentSlide = i - 1" class="h-1.5 rounded-full transition-all duration-300" :class="currentSlide === (i - 1) ? 'w-6 bg-[#10B981]' : 'w-2 bg-white/40'"></button>
+          <button @click="currentSlide = i - 1" class="h-1.5 rounded-full transition-all duration-300" :class="currentSlide === (i - 1) ? 'w-5 sm:w-6 bg-[#10B981]' : 'w-1.5 sm:w-2 bg-white/40'"></button>
         </template>
       </div>
     @endif
@@ -697,21 +697,21 @@
 <!-- ========================================== -->
 <!-- 6. CATÁLOGO COMPLETO & PRODUCTOS           -->
 <!-- ========================================== -->
-<section class="max-w-7xl mx-auto px-4 md:px-6 py-8">
-  <div class="flex items-center justify-between mb-8">
+<section class="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 py-6 sm:py-8">
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-4 mb-5 sm:mb-8">
     <div>
       <span class="text-xs font-bold text-[#10B981] uppercase tracking-wider">Lo Mejor de Fusagasugá</span>
-      <h3 class="text-2xl sm:text-3xl font-black text-slate-900 font-heading mt-0.5">
+      <h3 class="text-xl sm:text-3xl font-black text-slate-900 font-heading mt-0.5">
         Catálogo General Destacado
       </h3>
     </div>
-    <a href="{{ route('consumer.catalog') }}" class="text-xs font-bold text-[#10B981] hover:underline flex items-center gap-1">
+    <a href="{{ route('consumer.catalog') }}" class="text-xs font-bold text-[#10B981] hover:underline flex items-center gap-1 self-start sm:self-auto">
       <span>Ver catálogo completo ({{ $featured->count() }}+ productos)</span>
       <span class="material-symbols-outlined text-sm">arrow_forward</span>
     </a>
   </div>
 
-  <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+  <div class="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4 md:gap-6">
     @foreach($featured as $p)
       <x-product-card :product="$p" />
     @endforeach
