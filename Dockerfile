@@ -8,8 +8,13 @@ RUN mkdir -p public/assets/css
 RUN npm run build
 
 # Production PHP stage
-FROM php:8.3-apache
+FROM php:8.3.36-apache
 WORKDIR /var/www/html
+
+# Apply PHP's recommended mitigation for the session upload-progress request path.
+# This is loaded before Apache accepts requests; it complements, but does not
+# replace, keeping the PHP runtime on a patched release.
+COPY docker/php/99-fusashop-security.ini $PHP_INI_DIR/conf.d/99-fusashop-security.ini
 
 RUN apt-get update && apt-get install -y \
     git \
