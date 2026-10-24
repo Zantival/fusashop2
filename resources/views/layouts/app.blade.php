@@ -363,7 +363,7 @@ document.addEventListener('click', function(e) {
               </div>
               <div class="max-h-80 overflow-y-auto divide-y divide-slate-100 text-xs">
                 @forelse(auth()->user()->unreadNotifications()->take(6)->get() as $notif)
-                  <a href="{{ route('notifications.open', $notif->id) }}" class="p-3 hover:bg-emerald-50/70 transition-colors flex items-start gap-2.5 bg-emerald-50/40 group">
+                  <a href="{{ route('notifications.open', $notif->id) }}" data-no-ajax class="p-3 hover:bg-emerald-50/70 transition-colors flex items-start gap-2.5 bg-emerald-50/40 group">
                     <div class="w-8 h-8 rounded-full bg-emerald-100 text-[#10B981] flex items-center justify-center shrink-0 mt-0.5">
                       <span class="material-symbols-outlined text-sm">{{ $notif->data['icon'] ?? 'mail' }}</span>
                     </div>

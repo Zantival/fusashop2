@@ -96,7 +96,7 @@
       ->first(fn($n) => ($n->data['type'] ?? '') === 'merchant_sales_report');
   @endphp
   @if($latestSalesReportNotif)
-    <a href="{{ route('notifications.open', $latestSalesReportNotif->id) }}" class="bg-emerald-50/90 hover:bg-emerald-100/80 text-slate-900 border border-emerald-300 p-4 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm transition-all group block">
+    <a href="{{ route('notifications.open', $latestSalesReportNotif->id) }}" data-no-ajax class="bg-emerald-50/90 hover:bg-emerald-100/80 text-slate-900 border border-emerald-300 p-4 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm transition-all group block">
       <div class="flex items-center gap-3">
         <div class="w-9 h-9 rounded-xl bg-[#006c47] text-white flex items-center justify-center shrink-0">
           <span class="material-symbols-outlined text-lg">insights</span>

@@ -5,7 +5,9 @@
   $openPqrsCount = \App\Models\PQRS::whereIn('status', ['pending', 'in_review'])->count();
   $pendingBannersCount = \App\Models\BannerRequest::where('status', 'pending')->count();
   $unreadDbNotifs = $adminUser ? $adminUser->unreadNotifications()->count() : 0;
-  $totalAlertsCount = $pendingKycCount + $failedIntegrationsCount + $openPqrsCount + $pendingBannersCount + $unreadDbNotifs;
+  // El globo de la campana cuenta solo notificaciones sin leer.
+  // KYC, PQRS e integraciones siguen siendo alertas operativas hasta resolverse.
+  $totalAlertsCount = $unreadDbNotifs;
 @endphp
 
 <!-- Barra móvil superior para Administrador (solo en móviles < 768px) -->
@@ -172,6 +174,7 @@
         <div class="max-h-56 overflow-y-auto divide-y divide-slate-100">
           @forelse($adminUser->unreadNotifications()->take(6)->get() as $notif)
             <a href="{{ route('notifications.open', $notif->id) }}"
+               data-no-ajax
                class="p-2.5 hover:bg-emerald-50/80 transition-all flex items-start gap-2 bg-emerald-50/30 group cursor-pointer block"
                title="Haz clic para abrir y ver el mensaje">
               <div class="w-6 h-6 rounded-full bg-emerald-100 text-[#006c47] flex items-center justify-center shrink-0 mt-0.5">
