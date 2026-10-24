@@ -190,9 +190,9 @@
 
   const focusInput = index => {
     const target = inputs[Math.max(0, Math.min(index, inputs.length - 1))];
-    // En móviles, esperar al siguiente ciclo permite que el teclado virtual
-    // termine de actualizar el campo antes de mover el foco.
-    window.setTimeout(() => target.focus(), 0);
+    // En móviles el foco debe cambiar dentro del evento de escritura; diferirlo
+    // con setTimeout puede hacer que el navegador ignore el avance del teclado.
+    target.focus();
   };
 
   const fillFrom = (startIndex, rawValue) => {
@@ -223,13 +223,15 @@
     });
 
     input.addEventListener('keydown', event => {
-      // Algunos teclados físicos/navegadores no disparan input de forma fiable
-      // al escribir rápidamente; manejar la tecla también garantiza el avance.
+      // Dejar que el navegador inserte el dígito; el evento input sincroniza y
+      // mueve el foco inmediatamente, también con teclados virtuales móviles.
       if (/^[0-9]$/.test(event.key)) {
-        event.preventDefault();
-        input.value = event.key;
-        syncCode();
-        if (index < inputs.length - 1) focusInput(index + 1);
+        if (input.value && index < inputs.length - 1) {
+          event.preventDefault();
+          input.value = event.key;
+          syncCode();
+          focusInput(index + 1);
+        }
       } else if (event.key === 'Backspace' && !input.value && index > 0) {
         inputs[index - 1].value = '';
         focusInput(index - 1);

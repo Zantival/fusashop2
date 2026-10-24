@@ -236,9 +236,15 @@ class ConsumerController extends Controller
             $links[] = ['label' => '📑 Ir a Gestión de PQRS', 'url' => route('pqrs.index')];
         } elseif (preg_match('/\b(log|logs|error|errores|fallo|fallos|auditoria|wompi|envia|factus)\b/', $normalized)) {
             $failedLogsCount = \App\Models\IntegrationLog::where('status', 'failed')->where('created_at', '>=', now()->subDays(7))->count();
-            $answer = "🛡️ **Auditoría e Integraciones:**\n\n"
-                . "Se han registrado **{$failedLogsCount} incidentes** en logs de integración (Wompi / Factus / Envia.com) durante los últimos 7 días. Los pedidos en estado de reintento pueden ser reprocesados desde el módulo de logs.";
-            $links[] = ['label' => '🛡️ Ver Auditoría en Dashboard', 'url' => route('analyst.dashboard')];
+            $service = match (true) {
+                str_contains($normalized, 'envia') => 'Envia.com (cotizaciones y guías)',
+                str_contains($normalized, 'factus') => 'Factus (emisión DIAN)',
+                str_contains($normalized, 'wompi') => 'Wompi (pagos)',
+                default => 'las integraciones externas',
+            };
+            $answer = "🛡️ **Revisión de {$service}:**\n\n"
+                . "Hay **{$failedLogsCount} fallos de integraciones en los últimos 7 días**. Abre el registro de integraciones, filtra por el servicio mencionado y revisa el código HTTP y el detalle devuelto por el proveedor. Si el registro permite reintento, reprocesa solo después de corregir la causa, como una credencial o configuración inválida.";
+            $links[] = ['label' => '🛡️ Abrir registros de integraciones', 'url' => route('analyst.integrations'), 'primary' => true];
         } else {
             $answer = "Hola Administrador " . e($user->name) . " 🛡️\n\n"
                 . "Soy el Asistente Interno FusaBot. Tengo acceso a las métricas del sistema:\n"
@@ -263,6 +269,11 @@ class ConsumerController extends Controller
     {
         $links = [];
         $escalate = false;
+        $hasSpecificProductRequest = (bool) preg_match(
+            '/\b(camisa|camiseta|pantalon|vestido|falda|chaqueta|zapato|calzado|mochila|sombrero|ruana|cafe|audifono|cargador|mouse|teclado|balon|hotel|hostal|glamping|hospedaje|alojamiento|restaurante|producto|articulo)\b/',
+            $normalized
+        );
+        $isOfferRequest = (bool) preg_match('/\b(oferta|ofertas|descuento|descuentos|promocion|promociones|rebaja|rebajas|liquidacion)\b/', $normalized);
 
         // =========================================================================
         // A. ERRORES ESPECÍFICOS Y RESOLUCIÓN TÉCNICA (NUNCA ENVIAR A COMPRAR)
@@ -298,12 +309,17 @@ class ConsumerController extends Controller
         }
 
         // 2. Error de Inicio de Sesión, Registro, Código OTP de 6 Dígitos, Contraseña o Bloqueo
-        if (preg_match('/\b(error.*iniciar|error.*login|error.*registro|error.*clave|error.*contrasena|error.*codigo|codigo.*incorrecto|no.*llega.*codigo|error.*verific|no.*puedo.*entrar|no.*puedo.*ingresar|cuenta.*bloqueada|error.*google)\b/', $normalized)) {
-            $answer = "🔐 **Solución a Inconvenientes de Acceso, Registro o Verificación:**\n\n"
-                . "1. 📩 **Código de Verificación de 6 Dígitos**: Revisa tu carpeta de *Spam / Correo no deseado*. El código expira a los 30 minutos. Puedes pulsar en *'Reenviar código'* desde la pantalla de verificación.\n"
-                . "2. 🌐 **Inicio de Sesión con Google**: Si es tu primera vez registrándote, el sistema te solicitará seleccionar tu rol (Cliente o Vendedor) e indicar tu número de teléfono.\n"
-                . "3. 🔑 **Contraseña Olvidada**: En la pantalla de login haz clic en *'¿Olvidaste tu contraseña?'* para solicitar el restablecimiento seguro.\n"
-                . "4. 🚫 **Cuenta Bloqueada**: Si tu cuenta fue bloqueada por seguridad o intentos fallidos, el Administrador puede reactivarla.";
+        $otpFocusIssue = (bool) preg_match('/\b(codigo|verificacion|digito|numero|casilla)\b.*\b(casilla|numero|digito|avanza|avanzar|pasa|siguiente|escribe|escribir|teclado)\b|\b(casilla|numero|digito)\b.*\b(no avanza|no pasa|no cambia|siguiente)\b/', $normalized);
+        if ($otpFocusIssue || preg_match('/\b(error.*iniciar|error.*login|error.*registro|error.*clave|error.*contrasena|error.*codigo|codigo.*incorrecto|no.*llega.*codigo|error.*verific|no.*puedo.*entrar|no.*puedo.*ingresar|cuenta.*bloqueada|error.*google)\b/', $normalized)) {
+            if ($otpFocusIssue) {
+                $answer = "🔢 **El código no avanza a la siguiente casilla:** escribe un solo dígito en cada campo; al detectarlo, el cursor debe pasar automáticamente al siguiente. Si el navegador no cambia el foco, recarga la página y vuelve a intentarlo. También puedes pegar los seis dígitos en una casilla. Si continúa, solicita otro código y repórtalo a soporte.";
+            } else {
+                $answer = "🔐 **Solución a Inconvenientes de Acceso, Registro o Verificación:**\n\n"
+                    . "1. 📩 **Código de Verificación de 6 Dígitos**: Revisa tu carpeta de *Spam / Correo no deseado*. El código expira a los 30 minutos. Puedes pulsar en *'Reenviar código'* desde la pantalla de verificación.\n"
+                    . "2. 🌐 **Inicio de Sesión con Google**: Si es tu primera vez registrándote, el sistema te solicitará seleccionar tu rol (Cliente o Vendedor) e indicar tu número de teléfono.\n"
+                    . "3. 🔑 **Contraseña Olvidada**: En la pantalla de login haz clic en *'¿Olvidaste tu contraseña?'* para solicitar el restablecimiento seguro.\n"
+                    . "4. 🚫 **Cuenta Bloqueada**: Si tu cuenta fue bloqueada por seguridad o intentos fallidos, el Administrador puede reactivarla.";
+            }
 
             if (Auth::check()) {
                 $links[] = [
@@ -442,7 +458,7 @@ class ConsumerController extends Controller
         }
 
         // 9. FAQ: Envíos con Envia.com
-        if (preg_match('/\b(envio|envios|entrega|entregas|despacho|flete|tiempo|tiempos|cuanto tarda|cobertura|llegada|transportadora)\b/', $normalized)) {
+        if (!$hasSpecificProductRequest && !$isOfferRequest && preg_match('/\b(envio|envios|entrega|entregas|despacho|flete|tiempo|tiempos|cuanto tarda|cobertura|llegada|transportadora)\b/', $normalized)) {
             $answer = "🚚 **Envíos y Cobertura con Envia.com:**\n\n"
                 . "En FusaShop todos los envíos son gestionados por **Envia.com** con cobertura urbana en Fusagasugá, zonas turísticas (Chinauta, Silvania) y despacho a nivel nacional.\n\n"
                 . "• **Tarifa**: Se calcula de forma transparente según el peso volumétrico y tu dirección en el checkout.\n"
@@ -452,7 +468,7 @@ class ConsumerController extends Controller
         }
 
         // 10. FAQ: Métodos de Pago con Wompi
-        if (preg_match('/\b(pago|pagos|pagar|metodo|metodos|nequi|daviplata|pse|tarjeta|tarjetas|wompi|credito|debito|bancolombia)\b/', $normalized)) {
+        if (!$hasSpecificProductRequest && !$isOfferRequest && preg_match('/\b(pago|pagos|pagar|metodo|metodos|nequi|daviplata|pse|tarjeta|tarjetas|wompi|credito|debito|bancolombia)\b/', $normalized)) {
             $answer = "💳 **Métodos de Pago Seguros con Wompi:**\n\n"
                 . "Tu dinero está 100% protegido. Aceptamos:\n"
                 . "• Transferencias PSE desde cualquier banco del país.\n"
@@ -465,7 +481,7 @@ class ConsumerController extends Controller
         }
 
         // 11. FAQ: Registro como Vendedor
-        if (preg_match('/\b(vender|vendedor|vendedora|registrar|registrarme|mi negocio|publicar)\b/', $normalized)) {
+        if (!$hasSpecificProductRequest && !$isOfferRequest && preg_match('/\b(vender|vendedor|vendedora|registrar|registrarme|mi negocio|publicar)\b/', $normalized)) {
             $answer = "🏪 **¿Quieres vender tus productos en FusaShop?**\n\n"
                 . "Únete a la red comercial del Sumapaz. Regístrate seleccionando el perfil de comerciante, sube tu RUT y Cámara de Comercio, y comienza a publicar tu catálogo para llegar a miles de compradores.";
             $links[] = ['label' => '📝 Registrarme como comerciante', 'url' => route('register')];
@@ -473,7 +489,7 @@ class ConsumerController extends Controller
         }
 
         // 12. FAQ: Perfil y Gestión de Cuenta
-        if (preg_match('/\b(perfil|cuenta|nombre|correo|email|telefono|direccion|avatar|foto)\b/', $normalized)) {
+        if (!$hasSpecificProductRequest && !$isOfferRequest && preg_match('/\b(perfil|cuenta|nombre|correo|email|telefono|direccion|avatar|foto)\b/', $normalized)) {
             $answer = "👤 **Gestión de Mi Perfil:**\n\n"
                 . "Puedes cambiar tu nombre, correo, teléfono, direcciones de envío guardadas y foto desde Mi Perfil. Edita los campos y guarda los cambios al final del formulario.";
             $links[] = [
@@ -484,7 +500,7 @@ class ConsumerController extends Controller
         }
 
         // 13. FAQ: Cómo comprar / Pedidos / Carrito
-        if (preg_match('/\b(comprar|compra|como comprar|como realizo una compra|pedido|pedidos|carrito|checkout)\b/', $normalized)) {
+        if (!$hasSpecificProductRequest && !$isOfferRequest && preg_match('/\b(comprar|compra|como comprar|como realizo una compra|pedido|pedidos|carrito|checkout)\b/', $normalized)) {
             $answer = "🛍️ **Cómo comprar en FusaShop:**\n\n"
                 . "Para comprar, abre el catálogo, elige un producto y agrégalo al carrito. Después confirma tu dirección de entrega y el método de pago para completar el pedido con total seguridad.";
             $links[] = ['label' => 'Ir al catálogo', 'url' => route('consumer.catalog')];
@@ -503,7 +519,9 @@ class ConsumerController extends Controller
             'algun', 'favor', 'venden', 'vender', 'comprar', 'compra',
             'error', 'errores', 'problema', 'problemas', 'fallo', 'fallos', 'falla', 'fallas',
             'bug', 'bugs', 'presento', 'tengo', 'sucede', 'pasa', 'salio', 'sale',
-            'pantalla', 'sistema', 'pagina', 'soporte', 'ayuda'
+            'pantalla', 'sistema', 'pagina', 'soporte', 'ayuda', 'dame',
+            'oferta', 'ofertas', 'descuento', 'descuentos', 'promocion', 'promociones',
+            'rebaja', 'rebajas', 'liquidacion'
         ];
         $terms = array_values(array_unique(array_filter(
             $words,
@@ -551,13 +569,18 @@ class ConsumerController extends Controller
         }
 
         $productKeywords = array_merge(...array_map(fn ($topic) => $topic['keywords'], array_values($topics)));
-        $isProductRequest = (bool) array_intersect($terms, $productKeywords)
+        $isProductRequest = $hasSpecificProductRequest || $isOfferRequest
+            || (bool) array_intersect($terms, $productKeywords)
             || (bool) array_intersect($terms, ['producto', 'productos', 'articulo', 'articulos']);
 
         $products = collect();
-        if (!empty($terms)) {
-            $products = \App\Models\Product::active()
-                ->where(function ($builder) use ($terms, $categoryHints) {
+        if (!empty($terms) || $isOfferRequest) {
+            $productQuery = \App\Models\Product::active();
+            if ($isOfferRequest) {
+                $productQuery->where('discount_percent', '>', 0);
+            }
+            if (!empty($terms)) {
+                $productQuery->where(function ($builder) use ($terms, $categoryHints) {
                     foreach ($terms as $term) {
                         $builder->orWhere('name', 'like', "%{$term}%")
                             ->orWhere('description', 'like', "%{$term}%")
@@ -567,15 +590,16 @@ class ConsumerController extends Controller
                     foreach ($categoryHints as $hint) {
                         $builder->orWhere('category', 'like', "%{$hint}%");
                     }
-                })
-                ->orderByDesc('stock')
-                ->latest()
-                ->take(5)
-                ->get(['id', 'name', 'description', 'category', 'price', 'discount_percent', 'image', 'images']);
+                });
+            }
+            $productQuery->orderByDesc($isOfferRequest ? 'discount_percent' : 'stock')->latest();
+            $products = $productQuery->take(5)->get(['id', 'name', 'description', 'category', 'price', 'discount_percent', 'image', 'images']);
         }
 
         if ($products->isNotEmpty()) {
-            $answer = "🌸 Encontré estas excelentes opciones en los comercios de Fusagasugá para ti:";
+            $answer = $isOfferRequest
+                ? "🏷️ Estas son las ofertas activas que encontré en FusaShop:"
+                : "🌸 Encontré estas opciones que coinciden con lo que buscas:";
             $links[] = ['label' => 'Ver todo el catálogo', 'url' => route('consumer.catalog', ['search' => $rawQuery])];
         } elseif ($isProductRequest) {
             $answer = "No encontré coincidencias con ese término en el catálogo en este momento. Prueba con otro nombre o categoría.";
