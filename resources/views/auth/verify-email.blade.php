@@ -188,6 +188,13 @@
     submitButton.disabled = hiddenCode.value.length !== 6;
   };
 
+  const focusInput = index => {
+    const target = inputs[Math.max(0, Math.min(index, inputs.length - 1))];
+    // En móviles, esperar al siguiente ciclo permite que el teclado virtual
+    // termine de actualizar el campo antes de mover el foco.
+    window.setTimeout(() => target.focus(), 0);
+  };
+
   const fillFrom = (startIndex, rawValue) => {
     const digits = rawValue.replace(/[^0-9]/g, '').slice(0, 6 - startIndex);
     if (!digits) {
@@ -200,7 +207,7 @@
       inputs[startIndex + offset].value = digit;
     });
     syncCode();
-    inputs[Math.min(startIndex + digits.length, inputs.length - 1)].focus();
+    focusInput(Math.min(startIndex + digits.length, inputs.length - 1));
   };
 
   inputs.forEach((input, index) => {
@@ -212,20 +219,27 @@
       }
       input.value = rawValue.replace(/[^0-9]/g, '').slice(-1);
       syncCode();
-      if (input.value && index < inputs.length - 1) inputs[index + 1].focus();
+      if (input.value && index < inputs.length - 1) focusInput(index + 1);
     });
 
     input.addEventListener('keydown', event => {
-      if (event.key === 'Backspace' && !input.value && index > 0) {
+      // Algunos teclados físicos/navegadores no disparan input de forma fiable
+      // al escribir rápidamente; manejar la tecla también garantiza el avance.
+      if (/^[0-9]$/.test(event.key)) {
+        event.preventDefault();
+        input.value = event.key;
+        syncCode();
+        if (index < inputs.length - 1) focusInput(index + 1);
+      } else if (event.key === 'Backspace' && !input.value && index > 0) {
         inputs[index - 1].value = '';
-        inputs[index - 1].focus();
+        focusInput(index - 1);
         syncCode();
       } else if (event.key === 'ArrowLeft' && index > 0) {
         event.preventDefault();
-        inputs[index - 1].focus();
+        focusInput(index - 1);
       } else if (event.key === 'ArrowRight' && index < inputs.length - 1) {
         event.preventDefault();
-        inputs[index + 1].focus();
+        focusInput(index + 1);
       }
     });
 
