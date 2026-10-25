@@ -44,16 +44,19 @@ class AnalystController extends Controller
         $data = $request->validate([
             'commission_rate'        => 'required|numeric|min:0|max:50',
             'banner_fee'             => 'required|integer|min:0|max:5000000',
+            'promo_card_fee'         => 'required|integer|min:0|max:5000000',
             'pqrs_sla_business_days' => 'nullable|integer|min:1|max:60',
         ]);
 
         $before = [
             'commission_rate' => Setting::commissionRate(),
             'banner_fee'      => Setting::bannerFee(),
+            'promo_card_fee'  => Setting::promoCardFee(),
         ];
 
         Setting::setValue('commission_rate', $data['commission_rate'], 'financial');
         Setting::setValue('banner_fee', $data['banner_fee'], 'financial');
+        Setting::setValue('promo_card_fee', $data['promo_card_fee'], 'financial');
         if (!empty($data['pqrs_sla_business_days'])) {
             Setting::setValue('pqrs_sla_business_days', $data['pqrs_sla_business_days'], 'operations');
         }

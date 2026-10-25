@@ -61,6 +61,11 @@ class Setting extends Model
         return (int) static::getValue('banner_fee', 150000);
     }
 
+    public static function promoCardFee(): int
+    {
+        return (int) static::getValue('promo_card_fee', 150000);
+    }
+
     public static function pqrsSlaBusinessDays(): int
     {
         return (int) static::getValue('pqrs_sla_business_days', 15);

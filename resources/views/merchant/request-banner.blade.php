@@ -7,6 +7,8 @@
        previewUrl: null,
        isVideo: false,
        targetType: 'store',
+       bannerFee: {{ (int) $bannerFee }},
+       promoCardFee: {{ (int) $promoCardFee }},
        onlyDiscounted: false,
        searchQuery: '',
        selectedProducts: [],
@@ -57,7 +59,7 @@
         Solicitar Pauta Publicitaria (Banner Principal)
       </h1>
       <p class="text-slate-500 text-xs md:text-sm mt-1">
-        Sube la pieza publicitaria, escribe la descripción que verán tus clientes, elige el destino del anuncio y realiza el pago seguro para su publicación.
+        Publicar un banner dentro de tu tienda es gratis. Los espacios de la vitrina principal tienen una tarifa configurable.
       </p>
     </div>
 
@@ -207,7 +209,7 @@
             <span class="material-symbols-outlined text-xs text-emerald-600 shrink-0">link</span>
             <span class="truncate font-mono text-[10px]">{{ $storeUrl }}</span>
           </div>
-          <p class="text-[11px] text-slate-400">El analista recibe la foto del banner y el enlace para que al darle clic lleve al consumidor directamente a tu tienda.</p>
+          <p class="text-[11px] text-emerald-700 font-semibold">Gratis · Se publica directamente en el carrusel de tu tienda, sin aprobación del administrador.</p>
         </label>
 
         <!-- Opción 2: Tarjeta Promocional Única para Productos en Descuento -->
@@ -350,42 +352,46 @@
       </div>
     </div>
 
-    <!-- PASO 4: RESUMEN DE LA INVERSIÓN Y PAGO EN LÍNEA SEGURO (Y AHÍ SÍ PROCEDER AL PAGO) -->
+    <!-- PASO 4: PUBLICACIÓN O PAGO SEGÚN EL ESPACIO ELEGIDO -->
     <div class="bg-white rounded-2xl p-6 shadow-[0_8px_24px_rgba(0,0,0,0.04)] border border-slate-200/80 space-y-5">
-      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3" x-show="targetType !== 'store'">
         <div class="flex items-center gap-2.5">
           <span class="w-7 h-7 rounded-full bg-emerald-600 text-white font-extrabold text-xs flex items-center justify-center">4</span>
           <div>
-            <h2 class="font-bold text-slate-800 text-base md:text-lg">Resumen de Inversión & Pago en Línea Seguro *</h2>
-            <p class="text-slate-400 text-xs">Una vez verificado el pago en línea, la solicitud pasará al administrador para su publicación inmediata.</p>
+            <h2 class="font-bold text-slate-800 text-base md:text-lg" x-text="targetType === 'store' ? 'Publicación en tu tienda' : 'Resumen de Inversión y pago seguro'">Resumen de Inversión y Pago Seguro</h2>
+            <p class="text-slate-400 text-xs" x-text="targetType === 'store' ? 'Tu banner se publicará gratis en el carrusel de tu tienda.' : 'Al confirmarse el pago, el administrador revisará y publicará el anuncio en la vitrina principal.'"></p>
           </div>
         </div>
-        <div class="flex items-center gap-1.5 text-xs text-emerald-700 font-bold bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
+        <div x-show="targetType !== 'store'" class="flex items-center gap-1.5 text-xs text-emerald-700 font-bold bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
           <span class="material-symbols-outlined text-sm">lock</span> Transacción Cifrada SSL
         </div>
       </div>
 
       <!-- Resumen de Costos -->
-      <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3" x-show="targetType !== 'store'">
         <div class="space-y-0.5">
-          <p class="text-xs font-bold text-slate-700">Espacio Publicitario Banner Destacado (Página Principal)</p>
+          <p class="text-xs font-bold text-slate-700" x-text="targetType === 'promo_card' ? 'Tarjeta Promocional en la Vitrina Principal' : 'Banner Destacado en la Vitrina Principal'"></p>
           <p class="text-[11px] text-slate-500">Exposición prioritaria para compradores de Fusagasugá y el Sumapaz por 30 días continuos.</p>
         </div>
         <div class="text-right shrink-0">
           <span class="text-[10px] uppercase font-bold text-slate-400 block">Total a Pagar</span>
           <span class="text-xl md:text-2xl font-black text-emerald-600 font-['Manrope']">
-            ${{ number_format($bannerFee, 0, ',', '.') }} <span class="text-xs font-bold text-slate-500">COP</span>
+            $<span x-text="new Intl.NumberFormat('es-CO').format(targetType === 'promo_card' ? promoCardFee : bannerFee)"></span> <span class="text-xs font-bold text-slate-500">COP</span>
           </span>
         </div>
       </div>
 
-      <div class="p-5 border border-emerald-200 rounded-2xl bg-emerald-50/60 space-y-3">
+      <div class="p-5 border border-emerald-200 rounded-2xl bg-emerald-50/60 space-y-3" x-show="targetType !== 'store'">
         <div class="flex items-center gap-2 font-bold text-slate-800 text-sm">
           <span class="material-symbols-outlined text-emerald-600">payments</span>
           Pago seguro con Wompi
         </div>
         <p class="text-xs text-slate-600">Al continuar, irás a la pasarela oficial de Wompi para pagar. FusaShop no solicita ni almacena los datos de tu tarjeta. La solicitud solo podrá publicarse después de que Wompi confirme el pago.</p>
         <input type="hidden" name="payment_mode" value="wompi_checkout">
+      </div>
+      <div class="p-5 border border-emerald-200 rounded-2xl bg-emerald-50/60" x-show="targetType === 'store'">
+        <p class="font-bold text-emerald-800 text-sm">Publicación gratuita en tu tienda</p>
+        <p class="text-xs text-slate-600 mt-1">El banner aparecerá directamente en el carrusel de tu tienda, sin pago ni revisión del administrador.</p>
       </div>
     </div>
 
@@ -395,8 +401,8 @@
         Cancelar
       </a>
       <button type="submit" class="w-full sm:flex-1 py-3.5 px-6 bg-[#10B981] hover:bg-[#047857] text-white font-black text-sm rounded-xl shadow-lg hover:shadow-xl active:scale-98 transition-all flex items-center justify-center gap-2">
-        <span class="material-symbols-outlined text-lg">open_in_new</span>
-        Continuar a Wompi · ${{ number_format($bannerFee, 0, ',', '.') }} COP
+        <span class="material-symbols-outlined text-lg" x-text="targetType === 'store' ? 'campaign' : 'open_in_new'"></span>
+        <span x-text="targetType === 'store' ? 'Publicar gratis en mi tienda' : 'Continuar a Wompi · $' + new Intl.NumberFormat('es-CO').format(targetType === 'promo_card' ? promoCardFee : bannerFee) + ' COP'"></span>
       </button>
     </div>
   </form>

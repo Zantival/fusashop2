@@ -1041,10 +1041,11 @@ class MerchantController extends Controller
             ->get();
         $discountedProducts = $products->filter(fn($p) => $p->hasDiscount())->values();
         $bannerFee = \App\Models\Setting::bannerFee();
+        $promoCardFee = \App\Models\Setting::promoCardFee();
         $storeUrl = route('consumer.merchant.profile', $merchant->id);
         $myRequests = \App\Models\BannerRequest::where('user_id', $merchant->id)->latest()->take(6)->get();
 
-        return view('merchant.request-banner', compact('products', 'discountedProducts', 'bannerFee', 'storeUrl', 'merchant', 'myRequests'));
+        return view('merchant.request-banner', compact('products', 'discountedProducts', 'bannerFee', 'promoCardFee', 'storeUrl', 'merchant', 'myRequests'));
     }
 
     public function bannerRequestStore(Request $request, \App\Services\WompiService $wompi)
@@ -1052,13 +1053,13 @@ class MerchantController extends Controller
         $targetType = $request->input('target_type', 'store');
 
         $rules = [
-            'image'         => 'required|file|mimes:jpg,jpeg,png,webp,mp4,webm,mov|max:10240',
+            'image'         => 'required|file|mimes:' . ($targetType === 'store' ? 'jpg,jpeg,png,webp' : 'jpg,jpeg,png,webp,mp4,webm,mov') . '|max:10240',
             'title'         => 'nullable|string|max:150',
             'description'   => 'required|string|max:1500',
             'target_type'   => 'required|in:store,products,promo_card',
             'product_ids'   => in_array($targetType, ['products', 'promo_card'], true) ? 'required|array|min:1' : 'nullable|array',
             'product_ids.*' => 'integer|exists:products,id',
-            'payment_mode'  => 'required|in:wompi_checkout',
+            'payment_mode'  => 'required_if:target_type,products,promo_card|in:wompi_checkout',
         ];
 
         $request->validate($rules, [
@@ -1069,6 +1070,26 @@ class MerchantController extends Controller
         ]);
 
         $merchant = Auth::user();
+
+        // Los banners visibles solo dentro de la tienda son gratuitos y se publican directamente.
+        if ($targetType === 'store') {
+            $profile = $merchant->companyProfile;
+            if (!$profile) {
+                return back()->withErrors(['target_type' => 'Completa primero el perfil de tu tienda para publicar un banner.'])->withInput();
+            }
+
+            $imagePath = $request->file('image')->store('merchants/banners', 'public');
+            $banners = is_array($profile->banners_path) ? $profile->banners_path : [];
+            $banners[] = [
+                'path' => $imagePath,
+                'title' => strip_tags((string) $request->input('title', '')),
+                'subtitle' => strip_tags((string) $request->input('description')),
+            ];
+            $profile->update(['banners_path' => $banners]);
+
+            return redirect()->route('merchant.banner.request')->with('success', 'Tu banner gratuito ya está publicado en tu tienda.');
+        }
+
         $imagePath = $request->file('image')->store('banners/requests', 'public');
         $paymentRef = 'FS-BANNER-' . strtoupper(substr(md5(uniqid()), 0, 10));
 
@@ -1101,7 +1122,9 @@ class MerchantController extends Controller
             }
         }
 
-        $cost = (float) \App\Models\Setting::bannerFee();
+        $cost = (float) ($targetType === 'promo_card'
+            ? \App\Models\Setting::promoCardFee()
+            : \App\Models\Setting::bannerFee());
         $activePayout = \App\Models\Setting::activeBannerPayoutSnapshot();
 
         $bannerRequest = \App\Models\BannerRequest::create([
