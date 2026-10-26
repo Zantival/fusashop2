@@ -21,10 +21,6 @@ return Application::configure(basePath: dirname(__DIR__))
     })
     ->withExceptions(function (Exceptions $exceptions) {
         $exceptions->render(function (\Illuminate\Http\Exceptions\PostTooLargeException $e, $request) {
-            if ($request->expectsJson()) {
-                return response()->json(['message' => 'El archivo supera el tamaño permitido.'], 413);
-            }
-
-            return response()->view('errors.413', [], 413);
+            return back()->with('error', 'Los archivos son demasiado pesados. Intenta subir imágenes más pequeñas (máximo 3MB cada una) o sube de una en una.');
         });
     })->create();

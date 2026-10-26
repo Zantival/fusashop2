@@ -5,7 +5,6 @@ namespace App\Notifications;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
-use Illuminate\Support\Facades\URL;
 
 class PromotionDiscountNotification extends Notification
 {
@@ -30,7 +29,6 @@ class PromotionDiscountNotification extends Notification
     {
         $url = $this->targetUrl
             ?: ($this->productId ? route('consumer.product', $this->productId) : route('consumer.catalog', ['category' => $this->category]));
-        $unsubscribeUrl = URL::signedRoute('marketing.unsubscribe.show', ['user' => $notifiable->id]);
 
         return (new MailMessage)
             ->subject("🔥 {$this->discountBadge} en {$this->category} · {$this->title}")
@@ -38,7 +36,7 @@ class PromotionDiscountNotification extends Notification
             ->line("Tenemos una nueva promoción activa en FusaShop: **{$this->title}** ({$this->discountBadge}).")
             ->line($this->subtitle)
             ->action('Aprovechar Descuento Ahora', $url)
-            ->line('Solo recibes estos correos porque autorizaste recibir promociones. Puedes [cancelar la suscripción](' . $unsubscribeUrl . ') en cualquier momento.');
+            ->line('Recuerda que también puedes acumular y redimir tus puntos FusaCoins en el checkout.');
     }
 
     public function toArray($notifiable): array

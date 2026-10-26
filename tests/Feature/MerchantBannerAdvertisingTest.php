@@ -83,8 +83,8 @@ class MerchantBannerAdvertisingTest extends TestCase
         $response->assertOk();
         // Paso 1: Imagen primero
         $response->assertSee('Imagen o Video de la Publicación');
-        // Paso 2: texto público del anuncio
-        $response->assertSee('Descripción que verán tus clientes');
+        // Paso 2: Descripción para el admin
+        $response->assertSee('Descripción e Instrucciones para el Administrador');
         // Paso 3: Destino (Tienda o productos en oferta)
         $response->assertSee('Modalidad de Pauta:');
         $response->assertSee('Banner Directo a mi Tienda');
@@ -93,9 +93,8 @@ class MerchantBannerAdvertisingTest extends TestCase
         $response->assertSee('Bonsái Guayacán Real');
         // Paso 4: Pago seguro
         $response->assertSee('Resumen de Inversión');
-        $response->assertSee('Pago seguro con Wompi');
-        $response->assertSee('FusaShop no solicita ni almacena los datos de tu tarjeta.');
-        $response->assertDontSee('Número de Tarjeta');
+        $response->assertSee('Pago en Línea Seguro');
+        $response->assertSee('Número de Tarjeta');
     }
 
     public function test_merchant_can_submit_banner_request_targeting_store(): void
@@ -107,10 +106,13 @@ class MerchantBannerAdvertisingTest extends TestCase
             'title' => 'Festival Floral de Fusagasugá',
             'description' => 'Favor publicar con aviso de envíos gratis en la cabecera municipal.',
             'target_type' => 'store',
-            'payment_mode' => 'wompi_checkout',
+            'card_holder' => 'Pedro Perez',
+            'card_number' => '4000 1234 5678 9010',
+            'card_expiry' => '12/28',
+            'card_cvc' => '123',
         ]);
 
-        $response->assertRedirectContains(route('wompi.sandbox.checkout', [], false));
+        $response->assertRedirect(route('merchant.dashboard'));
         $this->assertDatabaseHas('banner_requests', [
             'user_id' => $this->merchant->id,
             'title' => 'Festival Floral de Fusagasugá',
@@ -135,10 +137,13 @@ class MerchantBannerAdvertisingTest extends TestCase
             'description' => 'Vincular a las orquídeas en promoción.',
             'target_type' => 'products',
             'product_ids' => [$this->product1->id, $this->product2->id],
-            'payment_mode' => 'wompi_checkout',
+            'card_holder' => 'Pedro Perez',
+            'card_number' => '4000 1234 5678 9010',
+            'card_expiry' => '12/28',
+            'card_cvc' => '123',
         ]);
 
-        $response->assertRedirectContains(route('wompi.sandbox.checkout', [], false));
+        $response->assertRedirect(route('merchant.dashboard'));
 
         $bannerRequest = BannerRequest::where('user_id', $this->merchant->id)->first();
         $this->assertNotNull($bannerRequest);
@@ -155,7 +160,6 @@ class MerchantBannerAdvertisingTest extends TestCase
             'title' => 'Promoción Exclusiva de Temporada',
             'image_path' => 'banners/requests/fake_banner.jpg',
             'payment_proof_path' => 'paid_online_12345',
-            'payment_status' => 'paid',
             'status' => 'pending',
             'cost' => 150000,
             'notes' => 'Publicar en carrusel principal.',

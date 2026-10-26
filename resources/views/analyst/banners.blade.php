@@ -268,7 +268,6 @@
 
                 <div class="space-y-1.5 min-w-0 flex-1">
                   <div class="flex items-center gap-2 flex-wrap">
-                    <x-user-avatar :user="$req->user" size="w-8 h-8" text-size="text-[10px]" />
                     <span class="font-extrabold text-slate-900 text-sm">{{ $req->user->companyProfile->company_name ?? $req->user->name }}</span>
                     <span class="px-2 py-0.5 text-[10px] font-black rounded-full {{ $req->status === 'approved' ? 'bg-emerald-100 text-[#006c47]' : ($req->status === 'rejected' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-800') }}">
                       {{ $req->status === 'approved' ? 'Publicado' : ($req->status === 'rejected' ? 'Rechazado' : 'Pendiente') }}
@@ -517,7 +516,6 @@
 
                 <div class="space-y-2 min-w-0 flex-1">
                   <div class="flex items-center gap-2 flex-wrap">
-                    <x-user-avatar :user="$req->user" size="w-8 h-8" text-size="text-[10px]" />
                     <span class="font-extrabold text-slate-900 text-sm">{{ $req->user->companyProfile->company_name ?? $req->user->name }}</span>
                     <span class="px-2 py-0.5 text-[10px] font-black rounded-full {{ $req->status === 'approved' ? 'bg-emerald-100 text-[#006c47]' : ($req->status === 'rejected' ? 'bg-red-100 text-red-700' : 'bg-orange-100 text-orange-800') }}">
                       {{ $req->status === 'approved' ? 'Vinculada y Activa' : ($req->status === 'rejected' ? 'Rechazada' : 'Pendiente de Vincular') }}

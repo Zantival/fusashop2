@@ -51,8 +51,8 @@ $specLabels = [
   <div class="pd-bg" style="background: radial-gradient(ellipse 55% 55% at 78% 48%, {{ $glow1 }} 0%, transparent 70%), radial-gradient(ellipse 35% 40% at 22% 75%, {{ $glow2 }} 0%, transparent 65%), linear-gradient(145deg,#0c0e0d 0%,#111a15 100%);"></div>
   <canvas id="pd-canvas" class="pd-canvas" aria-hidden="true"></canvas>
 
-  <div class="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 py-4 sm:py-10 relative z-10">
-    <nav class="flex items-center gap-1.5 sm:gap-2 text-xs text-white/50 mb-4 sm:mb-8 font-medium overflow-x-auto whitespace-nowrap scrollbar-none pb-1">
+  <div class="max-w-7xl mx-auto px-4 md:px-6 py-10 relative z-10">
+    <nav class="flex items-center gap-2 text-xs text-white/50 mb-8 font-medium">
       <a href="{{ route('consumer.home') }}" class="hover:text-white transition-colors flex items-center gap-1 font-bold">
         <span class="material-symbols-outlined text-[14px]">home</span> Inicio
       </a>
@@ -64,7 +64,7 @@ $specLabels = [
       <span class="text-white/70 truncate max-w-[200px]">{{ $product->name }}</span>
     </nav>
 
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-12 items-start">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
       {{-- Imagen --}}
       <div class="pd-stage-wrap sticky top-24">
         <div class="pd-stage" id="pd-stage">
@@ -96,11 +96,11 @@ $specLabels = [
         @if(count($galleryImages) > 0)
           <div class="flex gap-2 mt-4 justify-center pd-fi" style="--d:.4s">
             @if($mainImageUrl)
-              <button type="button" aria-label="Ver imagen principal de {{ e($product->name) }}" onclick="changeMainImg('{{ $mainImageUrl }}')" class="w-14 h-14 rounded-lg border-2 border-white/20 overflow-hidden hover:border-white transition-all bg-white/5"><img loading="lazy" decoding="async" src="{{ $mainImageUrl }}" alt="" class="w-full h-full object-cover"></button>
+              <button onclick="changeMainImg('{{ $mainImageUrl }}')" class="w-14 h-14 rounded-lg border-2 border-white/20 overflow-hidden hover:border-white transition-all bg-white/5"><img loading="lazy" decoding="async" src="{{ $mainImageUrl }}" class="w-full h-full object-cover"></button>
             @endif
             @foreach($galleryImages as $img)
               @php $galleryUrl = url('storage/' . $img); @endphp
-              <button type="button" aria-label="Ver otra imagen de {{ e($product->name) }}" onclick="changeMainImg('{{ $galleryUrl }}')" class="w-14 h-14 rounded-lg border-2 border-white/10 overflow-hidden hover:border-white transition-all bg-white/5"><img loading="lazy" decoding="async" src="{{ $galleryUrl }}" alt="" class="w-full h-full object-cover"></button>
+              <button onclick="changeMainImg('{{ $galleryUrl }}')" class="w-14 h-14 rounded-lg border-2 border-white/10 overflow-hidden hover:border-white transition-all bg-white/5"><img loading="lazy" decoding="async" src="{{ $galleryUrl }}" class="w-full h-full object-cover"></button>
             @endforeach
           </div>
         @endif
@@ -141,19 +141,19 @@ $specLabels = [
           @if($product->hasDiscount())
             <div class="flex items-center gap-2.5 flex-wrap">
               <span class="text-xs font-bold uppercase tracking-wider text-white/50">Precio real:</span>
-              <span id="variant-original-price" class="text-lg font-bold text-white/50 line-through">${{ number_format($product->originalPrice(),0,',','.') }} COP</span>
+              <span class="text-lg font-bold text-white/50 line-through">${{ number_format($product->originalPrice(),0,',','.') }} COP</span>
               <span class="px-2.5 py-0.5 rounded-full text-xs font-black bg-[#ba1a1a] text-white">-{{ $product->discount_percent }}% DESCUENTO</span>
-              <span id="variant-savings" class="text-xs font-bold text-emerald-400">Ahorras ${{ number_format($product->discountAmount(),0,',','.') }} COP</span>
+              <span class="text-xs font-bold text-emerald-400">Ahorras ${{ number_format($product->discountAmount(),0,',','.') }} COP</span>
             </div>
             <div class="flex items-baseline gap-2 flex-wrap">
               <span class="text-xs font-extrabold uppercase tracking-wider text-emerald-400">Precio con descuento:</span>
-              <span id="variant-price" data-base-price="{{ $product->price }}" class="text-3xl sm:text-4xl md:text-5xl font-black text-white">${{ number_format($product->effectivePrice(),0,',','.') }}</span>
-              <span class="text-xs sm:text-sm text-white/40">COP</span>
+              <span class="text-5xl font-black text-white">${{ number_format($product->effectivePrice(),0,',','.') }}</span>
+              <span class="text-sm text-white/40">COP</span>
             </div>
           @else
             <div class="flex items-baseline gap-2">
-              <span id="variant-price" data-base-price="{{ $product->price }}" class="text-3xl sm:text-4xl md:text-5xl font-black text-white">${{ number_format($product->effectivePrice(),0,',','.') }}</span>
-              <span class="text-xs sm:text-sm text-white/40">COP</span>
+              <span class="text-5xl font-black text-white">${{ number_format($product->effectivePrice(),0,',','.') }}</span>
+              <span class="text-sm text-white/40">COP</span>
             </div>
           @endif
 
@@ -173,9 +173,7 @@ $specLabels = [
         <div class="flex items-center gap-2 pd-fi" style="--d:.21s">
           <a href="{{ route('consumer.merchant.profile', $product->merchant_id) }}" class="pd-merchant flex-1">
             @if($product->merchant->companyProfile?->logo_path)
-              <img loading="lazy" decoding="async" src="{{ Storage::url($product->merchant->companyProfile->logo_path) }}" alt="Logo de {{ $product->merchant->companyProfile->company_name }}" class="w-10 h-10 rounded-full object-cover">
-            @elseif($product->merchant->avatarUrl())
-              <img loading="lazy" decoding="async" src="{{ $product->merchant->avatarUrl() }}" alt="Foto de perfil de {{ $product->merchant->name }}" class="w-10 h-10 rounded-full object-cover">
+              <img loading="lazy" decoding="async" src="{{ Storage::url($product->merchant->companyProfile->logo_path) }}" class="w-10 h-10 rounded-full object-cover">
             @else
               <div class="w-10 h-10 rounded-full flex items-center justify-center text-white font-black" style="background:{{ $from }}">{{ strtoupper(substr($product->merchant->name,0,1)) }}</div>
             @endif
@@ -274,13 +272,12 @@ $specLabels = [
                 <div id="selected-options-inputs">
                   @if($product->available_options)
                     @foreach($product->available_options as $opt)
-                      @php $firstVal = $opt['values'][0] ?? null; $valName = is_array($firstVal) ? ($firstVal['name'] ?? '') : ($firstVal ?? ''); @endphp
+                      @php $firstVal = $opt['values'][0]; $valName = is_array($firstVal) ? $firstVal['name'] : $firstVal; @endphp
                       <input type="hidden" name="options[{{ $opt['name'] }}]" id="opt-input-{{ Str::slug($opt['name']) }}" value="{{ $valName }}">
                     @endforeach
                   @endif
                 </div>
                 @if($product->isReservationOnly())
-                  @php $reservationBusinessText = mb_strtolower(($product->category ?? '') . ' ' . ($product->merchant?->companyProfile?->business_type ?? ''), 'UTF-8'); $isRestaurantReservation = str_contains($reservationBusinessText, 'restaur') || str_contains($reservationBusinessText, 'gastronom'); @endphp
                   <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-4 rounded-xl border border-emerald-200 bg-emerald-50/80 p-4 text-slate-800">
                     <label class="text-xs font-bold">Fecha deseada (opcional)
                       <input type="date" name="preferred_date" min="{{ now()->toDateString() }}" class="mt-1 w-full rounded-lg border border-emerald-200 bg-white px-3 py-2 text-sm font-normal">
@@ -288,33 +285,29 @@ $specLabels = [
                     <label class="text-xs font-bold">Hora deseada (opcional)
                       <input type="time" name="preferred_time" class="mt-1 w-full rounded-lg border border-emerald-200 bg-white px-3 py-2 text-sm font-normal">
                     </label>
-                    <label class="text-xs font-bold">{{ $isRestaurantReservation ? 'Personas / comensales' : 'Personas' }} (opcional)
+                    <label class="text-xs font-bold">Personas (opcional)
                       <input type="number" name="party_size" min="1" max="100" value="1" class="mt-1 w-full rounded-lg border border-emerald-200 bg-white px-3 py-2 text-sm font-normal">
                     </label>
                     <label class="text-xs font-bold sm:col-span-3">Detalles para el comercio (opcional)
                       <textarea name="customer_notes" maxlength="1500" rows="2" placeholder="Indica fechas, preferencias o preguntas para el comercio" class="mt-1 w-full rounded-lg border border-emerald-200 bg-white px-3 py-2 text-sm font-normal"></textarea>
                     </label>
-                    <p class="text-[11px] text-emerald-900 sm:col-span-3">{{ $isRestaurantReservation ? 'Esta solicitud es solo para reservar mesa; los platos mostrados son informativos y no se compran aquí.' : 'Enviar la solicitud no genera un pago ni confirma disponibilidad. El comercio debe responder para confirmar.' }}</p>
+                    <p class="text-[11px] text-emerald-900 sm:col-span-3">Enviar la solicitud no genera un pago ni confirma disponibilidad. El comercio debe responder para confirmar.</p>
                   </div>
                 @endif
-                <div class="flex flex-wrap sm:flex-nowrap items-stretch gap-2.5 sm:gap-3">
-                  @if(!empty($isRestaurantReservation))
-                    <input type="hidden" id="qty" name="quantity" value="1" min="1" max="1">
-                  @else
-                  <div class="pd-qty shrink-0">
+                <div class="flex items-center gap-3">
+                  <div class="pd-qty">
                     <button type="button" onclick="const i=document.getElementById('qty');if(i.value>1)i.value--" class="pd-qty-btn"><span class="material-symbols-outlined text-[18px]">remove</span></button>
-                    <input type="number" id="qty" name="quantity" value="1" min="1" max="{{ $maxRequestQuantity }}" class="w-10 sm:w-12 text-center bg-transparent border-0 font-black text-white focus:ring-0 text-sm p-0 m-0 [appearance:textfield]">
+                    <input type="number" id="qty" name="quantity" value="1" min="1" max="{{ $maxRequestQuantity }}" class="w-12 text-center bg-transparent border-0 font-black text-white focus:ring-0 text-sm p-0 m-0 [appearance:textfield]">
                     <button type="button" onclick="const i=document.getElementById('qty');if(i.value<{{ $maxRequestQuantity }})i.value++" class="pd-qty-btn"><span class="material-symbols-outlined text-[18px]">add</span></button>
                   </div>
-                  @endif
-                  <button type="submit" class="add-to-cart flex-1" style="--background: linear-gradient(135deg,{{ $from }},{{ $to }}); --shadow: {{ $glow2 }}">
+                  <button type="submit" class="add-to-cart" style="--background: linear-gradient(135deg,{{ $from }},{{ $to }}); --shadow: {{ $glow2 }}">
                     <span class="btn-text">{{ $product->isReservationOnly() ? 'Solicitar reserva' : 'Añadir al carrito' }}</span>
                     <span class="btn-cart"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg></span>
                     <span class="btn-done"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>¡Listo!</span>
                   </button>
                   @unless($product->isReservationOnly())
-                    <button type="submit" id="btn-buy-now" name="buy_now" value="1" formaction="{{ route('consumer.cart.add') }}" class="w-full sm:w-auto px-5 sm:px-7 py-3 sm:py-3.5 bg-gradient-to-r from-orange-500 to-[#F97316] hover:from-orange-600 hover:to-orange-700 text-white font-black rounded-2xl text-xs sm:text-sm transition-all shadow-lg hover:shadow-orange-500/30 flex items-center justify-center gap-2 shrink-0 cursor-pointer">
-                      <span class="material-symbols-outlined text-base sm:text-lg">flash_on</span>
+                    <button type="submit" id="btn-buy-now" name="buy_now" value="1" formaction="{{ route('consumer.cart.add') }}" class="px-7 py-3.5 bg-gradient-to-r from-orange-500 to-[#F97316] hover:from-orange-600 hover:to-orange-700 text-white font-black rounded-2xl text-sm transition-all shadow-lg hover:shadow-orange-500/30 flex items-center justify-center gap-2 shrink-0 cursor-pointer">
+                      <span class="material-symbols-outlined text-lg">flash_on</span>
                       <span>Comprar Ahora</span>
                     </button>
                   @endunless
@@ -322,10 +315,10 @@ $specLabels = [
               </form>
             @endif
           @else
-            <div class="pd-fi flex flex-wrap sm:flex-nowrap items-stretch gap-2.5 sm:gap-3">
+            <div class="pd-fi flex items-center gap-3">
               <a href="{{ route('login') }}?intended={{ urlencode(request()->fullUrl()) }}" class="add-to-cart no-underline flex-1" style="--background: linear-gradient(135deg,{{ $from }},{{ $to }}); --shadow: {{ $glow2 }}"><span class="btn-text">{{ $product->isReservationOnly() ? 'Solicitar reserva' : 'Añadir al carrito' }}</span></a>
-              <a href="{{ route('login') }}?intended={{ urlencode(request()->fullUrl()) }}" class="w-full sm:w-auto px-5 sm:px-7 py-3 sm:py-3.5 bg-gradient-to-r from-orange-500 to-[#F97316] hover:from-orange-600 hover:to-orange-700 text-white font-black rounded-2xl text-xs sm:text-sm transition-all shadow-lg hover:shadow-orange-500/30 flex items-center justify-center gap-2 shrink-0 no-underline cursor-pointer">
-                <span class="material-symbols-outlined text-base sm:text-lg">flash_on</span>
+              <a href="{{ route('login') }}?intended={{ urlencode(request()->fullUrl()) }}" class="px-7 py-3.5 bg-gradient-to-r from-orange-500 to-[#F97316] hover:from-orange-600 hover:to-orange-700 text-white font-black rounded-2xl text-sm transition-all shadow-lg hover:shadow-orange-500/30 flex items-center justify-center gap-2 shrink-0 no-underline cursor-pointer">
+                <span class="material-symbols-outlined text-lg">flash_on</span>
                 <span>{{ $product->isReservationOnly() ? 'Reservar' : 'Comprar Ahora' }}</span>
               </a>
             </div>
@@ -428,7 +421,14 @@ $specLabels = [
 
           {{-- Información de Autor --}}
           <div class="flex items-center gap-3.5 pt-4 border-t border-surface-container/40">
-            <x-user-avatar :user="$rev->user" size="w-11 h-11" text-size="text-sm" class="shadow-inner" />
+            @if($rev->user->avatar)
+              <img loading="lazy" decoding="async" src="{{ Storage::url($rev->user->avatar) }}" class="w-11 h-11 rounded-full object-cover shadow-inner">
+            @else
+              <div class="w-11 h-11 rounded-full flex items-center justify-center font-black text-sm shrink-0 shadow-inner"
+                   style="background: {{ $avatarBg }}; color: {{ $avatarText }}">
+                {{ strtoupper(substr($rev->user->name ?? 'A', 0, 1)) }}
+              </div>
+            @endif
             
             <div>
               <p class="font-black text-sm text-on-surface leading-tight">
@@ -561,42 +561,6 @@ $specLabels = [
   </div>
 </section>
 
-@if($related->isNotEmpty())
-  <section class="bg-white py-14 md:py-20 border-t border-surface-container-low">
-    <div class="max-w-7xl mx-auto px-4 md:px-6">
-      <div class="flex items-end justify-between gap-4 mb-7">
-        <div>
-          <p class="text-xs font-black uppercase tracking-widest text-primary mb-2">También te puede interesar</p>
-          <h2 class="text-2xl md:text-3xl font-black text-on-surface">Más productos relacionados</h2>
-        </div>
-        <a href="{{ route('consumer.catalog') }}" class="hidden sm:inline-flex items-center gap-1 text-sm font-bold text-primary hover:underline">
-          Ver catálogo <span class="material-symbols-outlined text-base">arrow_forward</span>
-        </a>
-      </div>
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-        @foreach($related as $item)
-          <a href="{{ route('consumer.product', $item->id) }}" class="group overflow-hidden rounded-2xl border border-surface-container bg-surface shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
-            <div class="aspect-square overflow-hidden bg-surface-container-low">
-              <x-product-image :product="$item" class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />
-            </div>
-            <div class="p-3 md:p-4">
-              <p class="mb-1 text-[10px] font-black uppercase tracking-wider text-primary">{{ $item->category }}</p>
-              <h3 class="line-clamp-2 min-h-10 text-sm font-bold text-on-surface">{{ $item->name }}</h3>
-              <p class="mt-2 text-lg font-black text-primary">${{ number_format($item->startingPrice(), 0, ',', '.') }} <span class="text-[10px] font-bold text-on-surface-variant">COP</span></p>
-              @if($item->merchant?->companyProfile?->company_name)
-                <p class="mt-1 truncate text-xs text-on-surface-variant">{{ $item->merchant->companyProfile->company_name }}</p>
-              @endif
-            </div>
-          </a>
-        @endforeach
-      </div>
-      <a href="{{ route('consumer.catalog') }}" class="mt-6 inline-flex items-center gap-1 text-sm font-bold text-primary hover:underline sm:hidden">
-        Ver catálogo <span class="material-symbols-outlined text-base">arrow_forward</span>
-      </a>
-    </div>
-  </section>
-@endif
-
 <style>
 .pd-hero { position: relative; overflow: hidden; padding-bottom: 3rem; contain: layout style; }
 .pd-bg { position: absolute; inset: 0; }
@@ -615,12 +579,7 @@ $specLabels = [
 .pd-qty { display: flex; align-items: center; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.12); border-radius: .875rem; overflow: hidden; }
 .pd-qty-btn { padding: .75rem 1rem; color: rgba(255,255,255,.6); background: transparent; border: none; cursor: pointer; }
 /* Nuevo diseño premium para añadir al carrito */
-.add-to-cart { display: inline-grid; place-items: center; position: relative; overflow: hidden; padding: 0 20px; background: var(--background); color: white; border-radius: .875rem; border: none; font-size: 15px; font-weight: 800; cursor: pointer; height: 48px; min-width: 140px; box-shadow: 0 8px 28px var(--shadow); transition: transform 0.2s ease, filter 0.2s; user-select: none; flex: 1; }
-@media (max-width: 639.98px) {
-  .pd-stage { width: min(340px, 88vw); }
-  .add-to-cart { min-width: 120px; height: 44px; font-size: 13px; padding: 0 12px; }
-  .pd-qty-btn { padding: .5rem .75rem; }
-}
+.add-to-cart { display: inline-grid; place-items: center; position: relative; overflow: hidden; padding: 0 24px; background: var(--background); color: white; border-radius: .875rem; border: none; font-size: 16px; font-weight: 800; cursor: pointer; height: 50px; min-width: 180px; box-shadow: 0 8px 28px var(--shadow); transition: transform 0.2s ease, filter 0.2s; user-select: none; flex: 1; }
 .add-to-cart:hover { transform: translateY(-2px); filter: brightness(1.05); }
 .add-to-cart:active { transform: translateY(1px); }
 .add-to-cart > span { grid-area: 1 / 1; display: flex; align-items: center; justify-content: center; width: 100%; gap: 6px; }
@@ -665,7 +624,8 @@ $specLabels = [
   
   window.updateVariant = (r, n) => { 
     // Sincronizar con el formulario oculto para el carrito
-    const h = [...document.querySelectorAll('#selected-options-inputs input')].find(input => input.name === `options[${n}]`);
+    const s = n.toLowerCase().replace(/[^a-z0-9]/g,'-');
+    const h = document.getElementById('opt-input-'+s); 
     if(h) h.value=r.value; 
     
     // Cambiar imagen si existe
@@ -673,8 +633,6 @@ $specLabels = [
     if(img && img !== '' && img !== 'null') {
       changeMainImg(img);
     }
-
-    updateSelectedVariantDetails();
 
     // ACTUALIZAR ESTADO VISUAL MANUALMENTE (Para mayor seguridad)
     const container = r.closest('.flex-wrap');
@@ -685,39 +643,6 @@ $specLabels = [
     }
   };
 
-  const productVariants = @json($product->variants ?? []);
-  const discountPercent = {{ (int) ($product->discount_percent ?? 0) }};
-  function updateSelectedVariantDetails() {
-    const selected = {};
-    document.querySelectorAll('input[name^="options-ui["]:checked').forEach(input => {
-      const match = input.name.match(/^options-ui\[(.*)\]$/);
-      if (match) selected[match[1]] = input.value;
-    });
-    const sortObject = value => Object.fromEntries(Object.keys(value || {}).sort().map(key => [key, value[key]]));
-    const variant = productVariants.find(item => JSON.stringify(sortObject(item.options)) === JSON.stringify(sortObject(selected)));
-    const price = Number(variant?.price ?? document.getElementById('variant-price')?.dataset.basePrice ?? 0);
-    const finalPrice = discountPercent > 0 ? Math.round(price * (1 - discountPercent / 100)) : price;
-    const priceEl = document.getElementById('variant-price');
-    if (priceEl) priceEl.textContent = '$' + Math.round(finalPrice).toLocaleString('es-CO');
-    const originalPriceEl = document.getElementById('variant-original-price');
-    const savingsEl = document.getElementById('variant-savings');
-    if (originalPriceEl) originalPriceEl.textContent = '$' + Math.round(price).toLocaleString('es-CO') + ' COP';
-    if (savingsEl) savingsEl.textContent = 'Ahorras $' + Math.round(price - finalPrice).toLocaleString('es-CO') + ' COP';
-    const quantity = document.getElementById('qty');
-    const hasVariants = productVariants.length > 0;
-    const selectionComplete = Object.keys(selected).length === Object.keys(productVariants[0]?.options || {}).length;
-    const available = variant ? Math.max(0, Number(variant.stock || 0) - Number(variant.reserved_stock || 0)) : (hasVariants && !selectionComplete ? 0 : Number(@json((int) $product->availableStock())));
-    if (quantity) {
-      quantity.max = String(Math.max(1, available));
-      if (Number(quantity.value) > available) quantity.value = String(Math.max(1, available));
-    }
-    document.querySelectorAll('#add-to-cart-form button[type="submit"]').forEach(button => {
-      button.disabled = available <= 0;
-      button.classList.toggle('opacity-50', available <= 0);
-      button.classList.toggle('cursor-not-allowed', available <= 0);
-    });
-  }
-
   // Inicializar el estado "selected" para los primeros elementos
   document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('input[type="radio"]:checked').forEach(r => {
@@ -727,11 +652,6 @@ $specLabels = [
         if(label) label.classList.add('selected');
       }
     });
-    document.querySelectorAll('#add-to-cart-form input[type="radio"]:checked').forEach(input => {
-      const option = input.name.match(/^options-ui\[(.*)\]$/);
-      if (option) window.updateVariant(input, option[1]);
-    });
-    if (!document.querySelector('#add-to-cart-form input[type="radio"]:checked')) updateSelectedVariantDetails();
   });
 
   const cf = document.getElementById('add-to-cart-form');

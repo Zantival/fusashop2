@@ -1,19 +1,10 @@
 <!DOCTYPE html>
-<html lang="es" class="light overflow-x-clip">
+<html lang="es" class="light">
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <meta name="csrf-token" content="{{ csrf_token() }}">
 <title>@yield('title','FusaShop') | FusaShop — El epicentro de compras, turismo y negocios del Sumapaz</title>
-<link rel="icon" type="image/png" href="{{ asset('logo.png') }}?v={{ substr(md5((string) @filemtime(public_path('logo.png'))), 0, 8) }}">
-<script>
-window.fusaShopPageTitle = document.title;
-document.addEventListener('visibilitychange', function() {
-  document.title = document.hidden
-    ? 'Regresa, no te pierdas de las ofertas | FusaShop'
-    : (window.fusaShopPageTitle || document.title);
-});
-</script>
 
 {{-- Optimizaciones de carga --}}
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -21,7 +12,7 @@ document.addEventListener('visibilitychange', function() {
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&family=Manrope:wght@500;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
 
-<link rel="stylesheet" href="{{ asset('assets/css/app.css') }}?v={{ substr(md5((string) @filemtime(public_path('assets/css/app.css'))), 0, 8) }}">
+<link rel="stylesheet" href="{{ asset('assets/css/app.css') }}?v={{ filemtime(public_path('assets/css/app.css')) }}">
 <script>
 
 window.toggleMobileMenu = function(forceState) {
@@ -187,66 +178,6 @@ document.addEventListener('click', function(e) {
     z-index: 99999 !important;
   }
 
-  /* Prevenir desbordamiento horizontal en todo el sitio */
-  html, body {
-    max-width: 100vw;
-    overflow-x: clip;
-  }
-
-  /* =========================================================================
-     COLAPSO PROGRESIVO DE BOTONES DE NAVEGACIÓN (Priority+ Pattern)
-     A medida que la pantalla se reduce, los botones pasan al menú "Ver más"
-     ========================================================================= */
-  /* Mayoristas B2B: en barra >= 1280px, en "Ver más" < 1280px */
-  @media (min-width: 1280px) {
-    .nav-bar-b2b { display: inline-flex !important; }
-    .nav-drop-b2b { display: none !important; }
-  }
-  @media (max-width: 1279.98px) {
-    .nav-bar-b2b { display: none !important; }
-    .nav-drop-b2b { display: flex !important; }
-  }
-
-  /* Restaurantes: en barra >= 1120px, en "Ver más" < 1120px */
-  @media (min-width: 1120px) {
-    .nav-bar-restaurantes { display: inline-flex !important; }
-    .nav-drop-restaurantes { display: none !important; }
-  }
-  @media (max-width: 1119.98px) {
-    .nav-bar-restaurantes { display: none !important; }
-    .nav-drop-restaurantes { display: flex !important; }
-  }
-
-  /* Turismo: en barra >= 980px, en "Ver más" < 980px */
-  @media (min-width: 980px) {
-    .nav-bar-turismo { display: inline-flex !important; }
-    .nav-drop-turismo { display: none !important; }
-  }
-  @media (max-width: 979.98px) {
-    .nav-bar-turismo { display: none !important; }
-    .nav-drop-turismo { display: flex !important; }
-  }
-
-  /* Viveros & Agro: en barra >= 860px, en "Ver más" < 860px */
-  @media (min-width: 860px) {
-    .nav-bar-viveros { display: inline-flex !important; }
-    .nav-drop-viveros { display: none !important; }
-  }
-  @media (max-width: 859.98px) {
-    .nav-bar-viveros { display: none !important; }
-    .nav-drop-viveros { display: flex !important; }
-  }
-
-  /* Moda & Calzado: en barra >= 768px, en "Ver más" < 768px */
-  @media (min-width: 768px) {
-    .nav-bar-moda { display: inline-flex !important; }
-    .nav-drop-moda { display: none !important; }
-  }
-  @media (max-width: 767.98px) {
-    .nav-bar-moda { display: none !important; }
-    .nav-drop-moda { display: flex !important; }
-  }
-
   /* Scrollbar personalizado para el dropdown de categorías */
   #categories-more-list::-webkit-scrollbar {
     width: 6px;
@@ -265,7 +196,7 @@ document.addEventListener('click', function(e) {
 </style>
 @stack('styles')
 </head>
-<body class="bg-[#f7fcf8] text-slate-800 min-h-screen flex flex-col antialiased overflow-x-clip" x-data="{ omniFilter: 'all' }">
+<body class="bg-[#f7fcf8] text-slate-800 min-h-screen flex flex-col antialiased" x-data="{ omniFilter: 'all' }">
 
 @php
   $isAdmin = request()->is('admin*') || (auth()->check() && auth()->user()->isAnalyst() && !request()->routeIs('consumer.*') && !request()->is('catalogo*') && !request()->is('producto*') && !request()->is('carrito*') && !request()->is('checkout*'));
@@ -281,11 +212,11 @@ document.addEventListener('click', function(e) {
     <!-- ============================================== -->
     <!-- NAVBAR NORMAL PARA CLIENTES / TIENDA PÚBLICA   -->
     <!-- ============================================== -->
-    <div class="w-full max-w-7xl mx-auto px-2.5 sm:px-4 md:px-6 py-2 sm:py-2.5 flex items-center justify-between gap-1.5 sm:gap-3 md:gap-6">
+    <div class="max-w-7xl mx-auto px-4 md:px-6 py-2.5 flex items-center justify-between gap-3 md:gap-6">
 
       <!-- Logotipo Oficial Oficial -->
-      <div class="flex min-w-0 items-center gap-1.5 sm:gap-3">
-        <button onclick="toggleMobileMenu()" id="hamburger-btn" class="md:hidden p-1.5 text-slate-600 hover:text-slate-900 rounded-lg shrink-0" aria-label="Abrir menú">
+      <div class="flex items-center gap-3">
+        <button onclick="toggleMobileMenu()" id="hamburger-btn" class="md:hidden p-1.5 text-slate-600 hover:text-slate-900 rounded-lg" aria-label="Abrir menú">
           <span class="material-symbols-outlined text-2xl">menu</span>
         </button>
         <x-logo size="default" :with-microcopy="false" />
@@ -323,16 +254,17 @@ document.addEventListener('click', function(e) {
       </div>
 
       <!-- Acciones Derechas Comprador -->
-      <div class="flex shrink-0 items-center gap-1 sm:gap-2 md:gap-3">
+      <div class="flex items-center gap-2 sm:gap-3">
 
         <!-- Botón Fusabot con Ilustración Oficial (al lado de la Campana) -->
         <button id="fusabot-launcher" type="button" aria-label="Abrir Asistente FusaBot" aria-haspopup="dialog" aria-controls="fusabot-modal"
-                class="fusabot-launcher-btn group relative flex items-center justify-center p-0.5 rounded-full hover:scale-110 active:scale-95 transition-all duration-300 cursor-pointer select-none focus:outline-none w-9 h-9 sm:w-11 sm:h-11 shrink-0 bg-transparent border-0 shadow-none"
+                class="fusabot-launcher-btn group relative flex items-center justify-center p-0.5 rounded-full hover:scale-110 active:scale-95 transition-all duration-300 cursor-pointer select-none focus:outline-none"
+                style="width: 44px; height: 44px; min-width: 44px; min-height: 44px; background: transparent; border: none; box-shadow: none;"
                 title="Abrir Asistente FusaBot IA">
           <div class="relative w-full h-full rounded-full overflow-hidden shadow-md group-hover:shadow-xl transition-all duration-300 ring-2 ring-emerald-400/50 group-hover:ring-emerald-500 bg-white">
             <img loading="lazy" decoding="async" src="{{ asset('fusabot.png') }}" alt="Fusabot IA" class="w-full h-full object-cover pointer-events-none select-none">
           </div>
-          <span class="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-emerald-500 border-2 border-white animate-pulse"></span>
+          <span class="absolute -top-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-500 border-2 border-white animate-pulse"></span>
         </button>
 
         @auth
@@ -363,7 +295,7 @@ document.addEventListener('click', function(e) {
               </div>
               <div class="max-h-80 overflow-y-auto divide-y divide-slate-100 text-xs">
                 @forelse(auth()->user()->unreadNotifications()->take(6)->get() as $notif)
-                  <a href="{{ route('notifications.open', $notif->id) }}" data-no-ajax class="p-3 hover:bg-emerald-50/70 transition-colors flex items-start gap-2.5 bg-emerald-50/40 group">
+                  <a href="{{ route('notifications.open', $notif->id) }}" class="p-3 hover:bg-emerald-50/70 transition-colors flex items-start gap-2.5 bg-emerald-50/40 group">
                     <div class="w-8 h-8 rounded-full bg-emerald-100 text-[#10B981] flex items-center justify-center shrink-0 mt-0.5">
                       <span class="material-symbols-outlined text-sm">{{ $notif->data['icon'] ?? 'mail' }}</span>
                     </div>
@@ -512,10 +444,10 @@ document.addEventListener('click', function(e) {
 
         @else
           <!-- No autenticado -->
-          <a href="{{ route('login') }}" class="px-2.5 sm:px-3.5 py-1.5 text-xs font-bold text-slate-700 hover:text-slate-900 rounded-xl hover:bg-slate-100 transition-colors">
+          <a href="{{ route('login') }}" class="px-3.5 py-1.5 text-xs font-bold text-slate-700 hover:text-slate-900 rounded-xl hover:bg-slate-100 transition-colors">
             Ingresar
           </a>
-          <a href="{{ route('register') }}" class="hidden sm:inline-flex px-3.5 sm:px-4 py-1.5 text-xs font-bold text-white bg-[#10B981] hover:bg-[#047857] rounded-xl shadow-sm transition-all">
+          <a href="{{ route('register') }}" class="px-4 py-1.5 text-xs font-bold text-white bg-[#10B981] hover:bg-[#047857] rounded-xl shadow-sm transition-all">
             Registrarme
           </a>
         @endauth
@@ -526,7 +458,7 @@ document.addEventListener('click', function(e) {
     <!-- ========================================== -->
     <!-- 3. MEGA MENÚ DE CATEGORÍAS (COMPRADORES)   -->
     <!-- ========================================== -->
-    <div id="top-nav-category-wrapper" class="hidden md:block w-full border-t border-slate-100 bg-slate-50/70 relative z-30">
+    <div id="top-nav-category-wrapper" class="hidden md:block border-t border-slate-100 bg-slate-50/70 overflow-x-auto md:overflow-visible scrollbar-none relative">
       <div id="top-nav-category-container" class="relative max-w-7xl mx-auto px-3 sm:px-4 md:px-6 flex items-center gap-1 py-1 text-[10.5px] font-semibold whitespace-nowrap">
 
         <!-- Pestañita verde animada que enmarca el botón activo y se desliza suavemente -->
@@ -560,44 +492,44 @@ document.addEventListener('click', function(e) {
           <span>Tecnología</span>
         </a>
 
-        <!-- 2. Moda & Calzado (Colapsa progresivamente < 768px hacia Ver más) -->
+        <!-- 2. Moda & Calzado -->
         <a href="{{ route('consumer.catalog', ['category' => 'Ropa']) }}" data-nav-category="moda" data-tab-index="4"
-           class="top-nav-btn nav-bar-moda relative z-10 px-2.5 py-1 rounded-lg {{ request('category') === 'Ropa' ? 'is-active font-bold' : 'text-slate-600 hover:text-[#10B981]' }} flex items-center gap-1 transition-colors select-none">
+           class="top-nav-btn relative z-10 px-2.5 py-1 rounded-lg {{ request('category') === 'Ropa' ? 'is-active font-bold' : 'text-slate-600 hover:text-[#10B981]' }} flex items-center gap-1 transition-colors select-none">
           <span class="material-symbols-outlined text-[14px] text-[#10B981]">checkroom</span>
           <span>Moda & Calzado</span>
         </a>
 
-        <!-- 3. Viveros & Agro (Colapsa progresivamente < 860px hacia Ver más) -->
+        <!-- 3. Viveros & Agro -->
         <a href="{{ route('consumer.catalog', ['category' => 'Alimentos']) }}" data-nav-category="viveros" data-tab-index="5"
-           class="top-nav-btn nav-bar-viveros relative z-10 px-2.5 py-1 rounded-lg {{ request('category') === 'Alimentos' ? 'is-active font-bold' : 'text-slate-600 hover:text-[#10B981]' }} flex items-center gap-1 transition-colors select-none">
+           class="top-nav-btn relative z-10 px-2.5 py-1 rounded-lg {{ request('category') === 'Alimentos' ? 'is-active font-bold' : 'text-slate-600 hover:text-[#10B981]' }} flex items-center gap-1 transition-colors select-none">
           <span class="material-symbols-outlined text-[14px] text-[#10B981]">potted_plant</span>
           <span>Viveros & Agro</span>
         </a>
 
-        <!-- 4. Turismo (Colapsa progresivamente < 980px hacia Ver más) -->
+        <!-- 4. Turismo -->
         <a href="{{ route('consumer.catalog', ['category' => 'Turismo']) }}" data-nav-category="turismo" data-tab-index="6"
-           class="top-nav-btn nav-bar-turismo relative z-10 px-2.5 py-1 rounded-lg {{ request('category') === 'Turismo' ? 'is-active font-bold' : 'text-slate-600 hover:text-[#F97316]' }} flex items-center gap-1 transition-colors select-none">
+           class="top-nav-btn relative z-10 px-2.5 py-1 rounded-lg {{ request('category') === 'Turismo' ? 'is-active font-bold' : 'text-slate-600 hover:text-[#F97316]' }} flex items-center gap-1 transition-colors select-none">
           <span class="material-symbols-outlined text-[14px] text-[#F97316]">holiday_village</span>
           <span>Turismo</span>
         </a>
 
-        <!-- 5. Restaurantes (Colapsa progresivamente < 1120px hacia Ver más) -->
+        <!-- 5. Restaurantes -->
         <a href="{{ route('consumer.catalog', ['category' => 'Gastronomía']) }}" data-nav-category="restaurantes" data-tab-index="7"
-           class="top-nav-btn nav-bar-restaurantes relative z-10 px-2.5 py-1 rounded-lg {{ request('category') === 'Gastronomía' ? 'is-active font-bold' : 'text-slate-600 hover:text-rose-600' }} flex items-center gap-1 transition-colors select-none">
+           class="top-nav-btn relative z-10 px-2.5 py-1 rounded-lg {{ request('category') === 'Gastronomía' ? 'is-active font-bold' : 'text-slate-600 hover:text-rose-600' }} flex items-center gap-1 transition-colors select-none">
           <span class="material-symbols-outlined text-[14px] text-rose-600">restaurant</span>
           <span>Restaurantes</span>
         </a>
 
-        <!-- 6. Mayoristas B2B (Colapsa progresivamente < 1280px hacia Ver más) -->
+        <!-- 6. Mayoristas B2B -->
         <a href="{{ route('consumer.catalog', ['category' => 'Mercado Mayorista (B2B)']) }}" data-nav-category="mayoristas" data-tab-index="8"
-           class="top-nav-btn nav-bar-b2b relative z-10 px-2.5 py-1 rounded-lg {{ request('category') === 'Mercado Mayorista (B2B)' ? 'is-active font-bold' : 'text-[#047857] hover:bg-emerald-50' }} flex items-center gap-1 transition-colors text-[10.5px] font-bold select-none">
+           class="top-nav-btn relative z-10 px-2.5 py-1 rounded-lg {{ request('category') === 'Mercado Mayorista (B2B)' ? 'is-active font-bold' : 'text-[#047857] hover:bg-emerald-50' }} flex items-center gap-1 transition-colors text-[10.5px] font-bold select-none">
           <span class="material-symbols-outlined text-[14px]">inventory</span>
           <span>Mayoristas B2B</span>
         </a>
 
         <!-- 7. Menú Desplegable "Ver más" -->
         <div id="categories-more-menu" class="relative inline-block ml-auto sm:ml-0">
-          <button id="categories-more-toggle" type="button" aria-expanded="false" aria-controls="categories-more-dropdown" data-nav-category="more"
+          <button id="categories-more-toggle" type="button" aria-expanded="false" aria-controls="categories-more-dropdown"
                   class="px-2 py-0.5 rounded-lg text-slate-600 hover:text-[#10B981] hover:bg-white flex items-center gap-1 transition-colors cursor-pointer select-none font-bold"
                   title="Ver más categorías de la región">
             <span class="material-symbols-outlined text-[14px] text-[#10B981]">more_horiz</span>
@@ -605,95 +537,18 @@ document.addEventListener('click', function(e) {
             <span id="categories-more-arrow" class="material-symbols-outlined text-[13px] transition-transform duration-200">expand_more</span>
           </button>
 
-          <!-- Dropdown Flotante Scrolleable de Categorías Adicionales -->
+          <!-- Dropdown Flotante Scrolleable de Categorías Adicionales (Sin duplicados) -->
           <div id="categories-more-dropdown" class="hidden absolute right-0 top-full mt-1.5 w-72 md:w-80 bg-white rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.18)] border border-slate-200 z-[9999] text-xs overflow-hidden flex flex-col">
             <!-- Encabezado fijo -->
             <div class="px-3.5 py-2.5 bg-slate-50 border-b border-slate-100 flex items-center justify-between shrink-0">
               <span class="text-[10.5px] font-extrabold uppercase tracking-wider text-slate-600 flex items-center gap-1.5">
                 <span class="material-symbols-outlined text-base text-[#10B981]">category</span> Más Categorías Sumapaz
               </span>
-              <span class="text-[9px] bg-emerald-100 text-[#047857] px-2 py-0.5 rounded-full font-bold">Explorar Rubros</span>
+              <span class="text-[9px] bg-emerald-100 text-[#047857] px-2 py-0.5 rounded-full font-bold">14 Rubros</span>
             </div>
 
             <!-- Lista con scroll vertical independiente -->
-            <div id="categories-more-list" class="p-2 overflow-y-auto max-h-[380px] space-y-1 divide-y divide-slate-50">
-
-              <!-- ============================================================== -->
-              <!-- RUBROS DINÁMICOS ABSORBIDOS POR RESPONSIVIDAD (Priority+)       -->
-              <!-- Se activan en este dropdown a medida que la pantalla se reduce -->
-              <!-- ============================================================== -->
-
-              <!-- Mayoristas B2B (Absorbido < 1280px) -->
-              <a href="{{ route('consumer.catalog', ['category' => 'Mercado Mayorista (B2B)']) }}"
-                 data-nav-category="mayoristas"
-                 class="nav-drop-b2b items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-emerald-50 text-slate-700 hover:text-[#047857] font-semibold transition-colors group {{ request('category') === 'Mercado Mayorista (B2B)' ? 'bg-emerald-50/80 text-[#047857] font-bold' : '' }}">
-                <div class="w-7 h-7 rounded-lg bg-emerald-100/80 text-[#047857] flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
-                  <span class="material-symbols-outlined text-base">inventory</span>
-                </div>
-                <div class="flex-1 min-w-0">
-                  <div class="flex items-center justify-between">
-                    <p class="leading-tight text-slate-800 font-bold">Mayoristas B2B</p>
-                    <span class="text-[8.5px] bg-emerald-100 text-[#047857] px-1.5 py-0.5 rounded font-extrabold">B2B</span>
-                  </div>
-                  <p class="text-[9.5px] text-slate-400 font-normal truncate">Venta al por mayor y distribuidores</p>
-                </div>
-              </a>
-
-              <!-- Restaurantes (Absorbido < 1120px) -->
-              <a href="{{ route('consumer.catalog', ['category' => 'Gastronomía']) }}"
-                 data-nav-category="restaurantes"
-                 class="nav-drop-restaurantes items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-rose-50 text-slate-700 hover:text-rose-700 font-semibold transition-colors group {{ request('category') === 'Gastronomía' ? 'bg-rose-50/80 text-rose-700 font-bold' : '' }}">
-                <div class="w-7 h-7 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
-                  <span class="material-symbols-outlined text-base">restaurant</span>
-                </div>
-                <div class="flex-1 min-w-0">
-                  <p class="leading-tight text-slate-800 font-bold">Restaurantes & Gastronomía</p>
-                  <p class="text-[9.5px] text-slate-400 font-normal truncate">Piqueteaderos, cafés, comida típica y gourmet</p>
-                </div>
-              </a>
-
-              <!-- Turismo (Absorbido < 980px) -->
-              <a href="{{ route('consumer.catalog', ['category' => 'Turismo']) }}"
-                 data-nav-category="turismo"
-                 class="nav-drop-turismo items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-orange-50 text-slate-700 hover:text-[#F97316] font-semibold transition-colors group {{ request('category') === 'Turismo' ? 'bg-orange-50/80 text-[#F97316] font-bold' : '' }}">
-                <div class="w-7 h-7 rounded-lg bg-orange-50 text-[#F97316] flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
-                  <span class="material-symbols-outlined text-base">holiday_village</span>
-                </div>
-                <div class="flex-1 min-w-0">
-                  <p class="leading-tight text-slate-800 font-bold">Turismo, Hoteles & Fincas</p>
-                  <p class="text-[9.5px] text-slate-400 font-normal truncate">Ecoturismo, hospedaje y atracciones</p>
-                </div>
-              </a>
-
-              <!-- Viveros & Agro (Absorbido < 860px) -->
-              <a href="{{ route('consumer.catalog', ['category' => 'Alimentos']) }}"
-                 data-nav-category="viveros"
-                 class="nav-drop-viveros items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-emerald-50 text-slate-700 hover:text-[#10B981] font-semibold transition-colors group {{ request('category') === 'Alimentos' ? 'bg-emerald-50/80 text-[#10B981] font-bold' : '' }}">
-                <div class="w-7 h-7 rounded-lg bg-emerald-50 text-[#10B981] flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
-                  <span class="material-symbols-outlined text-base">potted_plant</span>
-                </div>
-                <div class="flex-1 min-w-0">
-                  <p class="leading-tight text-slate-800 font-bold">Viveros & Agro</p>
-                  <p class="text-[9.5px] text-slate-400 font-normal truncate">Plantas, flores, viveros e insumos agrícolas</p>
-                </div>
-              </a>
-
-              <!-- Moda & Calzado (Absorbido < 768px) -->
-              <a href="{{ route('consumer.catalog', ['category' => 'Ropa']) }}"
-                 data-nav-category="moda"
-                 class="nav-drop-moda items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-purple-50 text-slate-700 hover:text-purple-700 font-semibold transition-colors group {{ request('category') === 'Ropa' ? 'bg-purple-50/80 text-purple-700 font-bold' : '' }}">
-                <div class="w-7 h-7 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
-                  <span class="material-symbols-outlined text-base">checkroom</span>
-                </div>
-                <div class="flex-1 min-w-0">
-                  <p class="leading-tight text-slate-800 font-bold">Moda & Calzado</p>
-                  <p class="text-[9.5px] text-slate-400 font-normal truncate">Ropa, calzado, marroquinería y accesorios</p>
-                </div>
-              </a>
-
-              <!-- ============================================================== -->
-              <!-- RUBROS PERMANENTES EN VER MÁS                                  -->
-              <!-- ============================================================== -->
+            <div id="categories-more-list" class="p-2 overflow-y-auto max-h-[330px] space-y-1 divide-y divide-slate-50">
               <!-- Hogar, Muebles & Decoración -->
               <a href="{{ route('consumer.catalog', ['category' => 'Hogar']) }}" class="flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-slate-50 text-slate-700 hover:text-[#10B981] font-semibold transition-colors group">
                 <div class="w-7 h-7 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
@@ -1151,7 +1006,7 @@ document.addEventListener('click', function(e) {
 <!-- Toast Notification Container (Floating Top-Right) -->
 <div id="toast-container" class="fixed top-5 right-5 z-[9999] flex flex-col gap-2.5 max-w-sm w-full pointer-events-none px-4 md:px-0"></div>
 
-<main id="app-main-content" class="flex-1 pb-20 md:pb-0 min-w-0">
+<main id="app-main-content" class="flex-1">
   @if(session('success'))
     <div class="max-w-7xl mx-auto px-4 md:px-6 pt-4" data-flash-container>
       <div data-flash-message="{{ session('success') }}" data-flash-type="success" class="p-3.5 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-2xl flex items-center justify-between gap-2.5 text-xs font-bold shadow-sm">
@@ -1186,14 +1041,25 @@ document.addEventListener('click', function(e) {
 <!-- 6. FOOTER CORPORATIVO OFICIAL              -->
 <!-- ========================================== -->
 <footer class="bg-slate-950 text-slate-400 mt-20 border-t border-slate-900 pb-20 md:pb-0 text-xs">
-  <div class="w-full max-w-7xl mx-auto px-6 py-14 grid grid-cols-1 md:grid-cols-5 gap-10">
+  <div class="max-w-7xl mx-auto px-6 py-14 grid grid-cols-1 md:grid-cols-5 gap-10">
 
     <!-- Columna 1: Marca & Misión -->
     <div class="md:col-span-2 space-y-4">
       <x-logo size="lg" :with-microcopy="false" />
       <p class="text-slate-400 leading-relaxed text-xs max-w-sm">
-        Una vitrina digital para descubrir comercios y productos de Fusagasugá y la región del Sumapaz.
+        El epicentro de compras, turismo y negocios del Sumapaz. Conectando a más de 140.000 habitantes de Fusagasugá, Arbeláez, Silvania, Pasca y Chinauta con pasarela segura Wompi, logística Envia.com y facturación electrónica Factus DIAN.
       </p>
+      <div class="flex items-center gap-3 pt-2">
+        <span class="px-2.5 py-1 bg-slate-900 rounded-lg text-[10px] font-bold text-slate-300 border border-slate-800 flex items-center gap-1">
+          <span class="material-symbols-outlined text-xs text-[#10B981]">verified</span> Wompi Verified
+        </span>
+        <span class="px-2.5 py-1 bg-slate-900 rounded-lg text-[10px] font-bold text-slate-300 border border-slate-800 flex items-center gap-1">
+          <span class="material-symbols-outlined text-xs text-[#10B981]">local_shipping</span> Envia.com Logística
+        </span>
+        <span class="px-2.5 py-1 bg-slate-900 rounded-lg text-[10px] font-bold text-slate-300 border border-slate-800 flex items-center gap-1">
+          <span class="material-symbols-outlined text-xs text-[#F97316]">receipt_long</span> Factus DIAN
+        </span>
+      </div>
     </div>
 
     <!-- Columna 2: Vitrinas -->
@@ -1225,18 +1091,15 @@ document.addEventListener('click', function(e) {
       <ul class="space-y-2">
         <li><a href="{{ route('privacy') }}" class="hover:text-white transition-colors">Política de Privacidad</a></li>
         <li><a href="{{ route('terms') }}" class="hover:text-white transition-colors">Términos del Servicio</a></li>
-        <li><a href="{{ route('cookies') }}" class="hover:text-white transition-colors">Política de cookies</a></li>
-        <li><a href="{{ route('returns') }}" class="hover:text-white transition-colors">Devoluciones y reembolsos</a></li>
         <li><a href="{{ route('pqrs.create') }}" class="hover:text-white transition-colors">PQRS & Garantías</a></li>
-        <li><a href="tel:+573209106326" class="hover:text-white">320 910 6326</a></li>
-        <li><a href="tel:+573223674364" class="hover:text-white">322 367 4364</a></li>
+        <li><span class="text-slate-500">Fusagasugá, Cundinamarca, CO</span></li>
       </ul>
     </div>
 
   </div>
 
   <div class="border-t border-slate-900 py-6 text-center text-slate-600 text-[11px]">
-    <p>© {{ date('Y') }} FusaShop · Fusagasugá, Cundinamarca, Colombia</p>
+    <p>© {{ date('Y') }} FusaShop Inc. Todos los derechos reservados. Marca Registrada en Fusagasugá, Colombia.</p>
   </div>
 </footer>
 
@@ -1804,11 +1667,11 @@ document.addEventListener('submit', (event) => {
 
           data.products.forEach(prod => {
             const imgHtml = prod.image
-              ? ('<' + 'img loading="lazy" decoding="async" src="' + escapeHtml(prod.image) + '" alt="' + escapeHtml(prod.name) + '" class="w-11 h-11 rounded-xl object-cover shrink-0 bg-slate-100 border border-slate-200">')
+              ? `<img loading="lazy" decoding="async" src="${prod.image}" alt="${escapeHtml(prod.name)}" class="w-11 h-11 rounded-xl object-cover shrink-0 bg-slate-100 border border-slate-200">`
               : `<div class="w-11 h-11 rounded-xl bg-emerald-50 text-[#10B981] flex items-center justify-center shrink-0 border border-emerald-100"><span class="material-symbols-outlined text-lg">inventory_2</span></div>`;
 
             html += `
-              <` + `a href="` + escapeHtml(prod.url) + `" class="p-2.5 hover:bg-emerald-50/50 transition-colors flex items-center gap-3 group">
+              <a href="${prod.url}" class="p-2.5 hover:bg-emerald-50/50 transition-colors flex items-center gap-3 group">
                 ${imgHtml}
                 <div class="flex-1 min-w-0">
                   <p class="text-xs font-bold text-slate-800 group-hover:text-[#10B981] transition-colors truncate">${escapeHtml(prod.name)}</p>
@@ -1959,7 +1822,7 @@ document.addEventListener('submit', (event) => {
 
     let actionHtml = '';
     if (actionText && actionUrl) {
-      actionHtml = '<' + 'a href="' + escapeHtml(actionUrl) + '" class="px-3 py-1.5 bg-[#10B981] hover:bg-emerald-600 text-white rounded-xl text-[11px] font-black transition-all shrink-0 no-underline shadow-sm flex items-center gap-1">' + escapeHtml(actionText) + ' <span class="material-symbols-outlined text-[13px]">arrow_forward</span><' + '/a>';
+      actionHtml = `<a href="${actionUrl}" class="px-3 py-1.5 bg-[#10B981] hover:bg-emerald-600 text-white rounded-xl text-[11px] font-black transition-all shrink-0 no-underline shadow-sm flex items-center gap-1">${actionText} <span class="material-symbols-outlined text-[13px]">arrow_forward</span></a>`;
     }
 
     toast.innerHTML = `
@@ -2098,26 +1961,7 @@ document.addEventListener('submit', (event) => {
       const newScript = document.createElement('script');
       Array.from(oldScript.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value));
       newScript.textContent = oldScript.textContent;
-
-      // Las páginas cargadas por AJAX se insertan después de DOMContentLoaded.
-      // Ejecutar sus inicializadores de página al terminar el intercambio evita secciones vacías.
-      const originalAddEventListener = document.addEventListener;
-      document.addEventListener = function(type, listener, options) {
-        if (type === 'DOMContentLoaded' && document.readyState !== 'loading') {
-          queueMicrotask(() => {
-            const event = new Event('DOMContentLoaded', { bubbles: true });
-            if (typeof listener === 'function') listener.call(document, event);
-            else listener?.handleEvent?.(event);
-          });
-          return;
-        }
-        return originalAddEventListener.call(this, type, listener, options);
-      };
-      try {
-        oldScript.parentNode.replaceChild(newScript, oldScript);
-      } finally {
-        document.addEventListener = originalAddEventListener;
-      }
+      oldScript.parentNode.replaceChild(newScript, oldScript);
     });
   }
 
@@ -2174,19 +2018,9 @@ document.addEventListener('submit', (event) => {
       return false;
     }
 
-    // Las vistas que traen JavaScript propio deben inicializarse con una carga completa.
-    // Reinsertar scripts en el mismo documento conserva const/let globales de páginas previas,
-    // provoca errores de redeclaración y deja módulos (incluido el chat) sin inicializar.
-    const newScriptsStack = doc.getElementById('dynamic-page-scripts');
-    if (newMain.querySelector('script') || newScriptsStack?.querySelector('script')) {
-      window.location.assign(finalUrl);
-      return false;
-    }
-
     // Actualizar título del documento
     if (doc.title) {
-      window.fusaShopPageTitle = doc.title;
-      document.title = document.hidden ? 'Regresa, no te pierdas de las ofertas | FusaShop' : doc.title;
+      document.title = doc.title;
     }
 
     // Actualizar token CSRF si viene en el nuevo documento
@@ -2200,6 +2034,7 @@ document.addEventListener('submit', (event) => {
     currentMain.innerHTML = newMain.innerHTML;
 
     // Actualizar scripts dinamicos de pagina si existen
+    const newScriptsStack = doc.getElementById('dynamic-page-scripts');
     const currentScriptsStack = document.getElementById('dynamic-page-scripts');
     if (newScriptsStack && currentScriptsStack) {
       currentScriptsStack.innerHTML = newScriptsStack.innerHTML;
@@ -2288,12 +2123,6 @@ document.addEventListener('submit', (event) => {
     const container = document.getElementById("top-nav-category-container");
     if (!pill || !container || !targetBtn) return;
 
-    // Si el elemento objetivo está oculto (display: none por responsive collapse), ocultar pill
-    if (targetBtn.offsetParent === null || targetBtn.offsetWidth === 0) {
-      pill.style.opacity = "0";
-      return;
-    }
-
     const left = targetBtn.offsetLeft;
     const top = targetBtn.offsetTop;
     const width = targetBtn.offsetWidth;
@@ -2362,40 +2191,27 @@ document.addEventListener('submit', (event) => {
       }
     });
 
-    const moreToggle = document.getElementById("categories-more-toggle");
-
     if (matchedBtn) {
-      // Si el botón correspondiente fue colapsado hacia "Ver más", enmarcar el toggle "Ver más"
-      if (matchedBtn.offsetParent === null || matchedBtn.offsetWidth === 0) {
-        if (moreToggle && moreToggle.offsetParent !== null) {
-          moveSlidingPillTo(moreToggle);
-          moreToggle.classList.add("text-[#10B981]", "font-extrabold");
-        } else {
-          const pill = document.getElementById("nav-sliding-pill");
-          if (pill) pill.style.opacity = "0";
-        }
-      } else {
-        if (moreToggle) {
-          moreToggle.classList.remove("text-[#10B981]", "font-extrabold");
-        }
-        moveSlidingPillTo(matchedBtn);
-      }
+      moveSlidingPillTo(matchedBtn);
     } else {
-      if (moreToggle) {
-        moreToggle.classList.remove("text-[#10B981]", "font-extrabold");
-      }
       const pill = document.getElementById("nav-sliding-pill");
       if (pill) pill.style.opacity = "0";
     }
   }
 
   function initTopNavSlidingPill() {
-    updateTopNavActiveState(window.location.href);
+    const activeBtn = document.querySelector(".top-nav-btn.is-active");
+    if (activeBtn) {
+      moveSlidingPillTo(activeBtn);
+    } else {
+      updateTopNavActiveState(window.location.href);
+    }
   }
 
   window.addEventListener("load", initTopNavSlidingPill);
   window.addEventListener("resize", () => {
-    updateTopNavActiveState(window.location.href);
+    const activeBtn = document.querySelector(".top-nav-btn.is-active");
+    if (activeBtn) moveSlidingPillTo(activeBtn);
   });
 
 

@@ -9,7 +9,13 @@
     <a href="{{ route('chat.index') }}" class="p-2 hover:bg-surface-container rounded-full transition-colors text-on-surface-variant">
       <span class="material-symbols-outlined">arrow_back</span>
     </a>
-    <x-user-avatar :user="$otherUser" size="w-10 h-10" />
+    @if($otherUser->avatar)
+      <img loading="lazy" decoding="async" src="{{ Storage::url($otherUser->avatar) }}" class="w-10 h-10 rounded-full object-cover">
+    @else
+      <div class="w-10 h-10 bg-greenhouse-gradient rounded-full flex items-center justify-center text-white font-bold shrink-0">
+        {{ strtoupper(substr($otherUser->name, 0, 1)) }}
+      </div>
+    @endif
     <div class="flex-1 min-w-0">
       <h1 class="font-black text-on-surface leading-tight truncate">{{ e($otherUser->name) }}</h1>
       <p class="text-[10px] text-primary font-bold uppercase tracking-wider">{{ ucfirst($otherUser->role) }}</p>
@@ -29,9 +35,6 @@
     @foreach($messages as $msg)
       @php $mine = $msg->sender_id == auth()->id(); @endphp
       <div class="flex {{ $mine ? 'justify-end' : 'justify-start' }}" data-msg-id="{{ $msg->id }}">
-        @if(!$mine)
-          <x-user-avatar :user="$msg->sender" size="w-8 h-8" text-size="text-xs" class="self-end mr-2" />
-        @endif
         <div class="max-w-[78%]">
           @if($msg->product_id && $msg->product)
             <div class="mb-1.5 rounded-2xl bg-surface-container-low border border-surface-container p-2.5 flex gap-2.5 items-center">
@@ -94,7 +97,10 @@
 
 @push('scripts')
 <script>
-window.chatLastId = Math.max(0, ...Array.from(document.querySelectorAll('#chat-box [data-msg-id]'), el => Number(el.dataset.msgId) || 0));
+// Use a unique name to avoid 'already declared' errors
+if (typeof chatLastTs === 'undefined') {
+    var chatLastTs = {{ now()->timestamp }};
+}
 
 const chatBox = document.getElementById('chat-box');
 const inputField = document.getElementById('msg-input');
@@ -108,7 +114,28 @@ const storeUrl = '{{ route('chat.store') }}';
 const productId = {{ request('product_id', 'null') }};
 const csrfToken = '{{ csrf_token() }}';
 const badWords = @json($badWords);
-@include('chat.partials.moderation-script')
+
+function checkProfanity() {
+    const content = inputField.value.toLowerCase();
+    const warning = document.getElementById('profanity-warning');
+    
+    // Check if any bad word is present
+    const hasBadWord = badWords.some(word => {
+        // Simple word boundary check in JS
+        const regex = new RegExp('\\b' + word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b', 'i');
+        return regex.test(content);
+    });
+
+    if (hasBadWord) {
+        sendBtn.disabled = true;
+        sendBtn.classList.add('opacity-50', 'grayscale');
+        warning.classList.remove('hidden');
+    } else {
+        sendBtn.disabled = false;
+        sendBtn.classList.remove('opacity-50', 'grayscale');
+        warning.classList.add('hidden');
+    }
+}
 
 function scrollToBottom() {
     chatBox.scrollTop = chatBox.scrollHeight;
@@ -155,7 +182,6 @@ function appendMsg(msg) {
             </div>
         </div>`;
 
-    window.attachChatSenderAvatar(div, msg);
     const typingEl = document.getElementById('typing-indicator');
     chatBox.insertBefore(div, typingEl);
 }
@@ -196,11 +222,6 @@ async function handleSendMessage() {
                 time: new Date().toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit' })
             });
             scrollToBottom();
-        } else {
-            const payload = await res.json().catch(() => ({}));
-            inputField.value = content;
-            window.chatServerModerationMessage = payload.errors?.content?.[0]
-                || 'No se pudo enviar el mensaje. Revísalo e intenta de nuevo.';
         }
     } catch (e) {
         console.error("Error sending message:", e);
@@ -213,18 +234,43 @@ async function handleSendMessage() {
     }
 }
 
+async function deleteMessage(id, btn) {
+    if(!confirm('¿Estás seguro de que deseas eliminar este mensaje?')) return;
+    
+    // Optimistic UI update
+    const msgDiv = btn.closest('[data-msg-id]');
+    if (msgDiv) msgDiv.style.display = 'none';
+
+    try {
+        const res = await fetch(`/chat/message/${id}`, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRF-TOKEN': csrfToken,
+                'Accept': 'application/json'
+            }
+        });
+        if (!res.ok) {
+            // Revert if failed
+            if (msgDiv) msgDiv.style.display = 'flex';
+            alert('No se pudo eliminar el mensaje');
+        }
+    } catch (e) {
+        if (msgDiv) msgDiv.style.display = 'flex';
+        console.error(e);
+    }
+}
+
 async function poll() {
     try {
-        const res = await fetch(`${pollUrl}?after=${window.chatLastId}`, {
-            cache: 'no-store',
+        const res = await fetch(`${pollUrl}?since=${chatLastTs}`, {
             headers: { 'Accept': 'application/json' }
         });
         const data = await res.json();
         if (data.messages && data.messages.length > 0) {
             data.messages.forEach(appendMsg);
-            window.chatLastId = Math.max(window.chatLastId, ...data.messages.map(msg => Number(msg.id) || 0));
             scrollToBottom();
         }
+        if (data.server_time) chatLastTs = data.server_time;
     } catch (e) {}
 }
 
@@ -238,7 +284,7 @@ inputField.addEventListener('keydown', (e) => {
 
 // Initial scroll and start polling
 scrollToBottom();
-setInterval(poll, 800);
+setInterval(poll, 3000);
 </script>
 @endpush
 @endsection

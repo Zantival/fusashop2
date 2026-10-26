@@ -54,6 +54,7 @@ class OrderPaymentService
             $order = Order::where('reference', $reference)->lockForUpdate()->first();
             if (!$order) {
                 $bannerRequest = \App\Models\BannerRequest::where('payment_proof_path', $reference)
+                    ->orWhere('payment_proof_path', 'like', "%{$reference}%")
                     ->lockForUpdate()
                     ->first();
 
@@ -288,11 +289,6 @@ class OrderPaymentService
         $record->update(['status' => $status, 'processed_at' => now()]);
 
         if ($status === 'APPROVED') {
-            $bannerRequest->update([
-                'payment_status' => 'paid',
-                'payment_transaction_id' => $record->transaction_id,
-                'paid_at' => now(),
-            ]);
             IntegrationLog::success('wompi', 'banner.payment_approved', null, [
                 'banner_request_id' => $bannerRequest->id,
                 'transaction_id'    => $record->transaction_id,
@@ -304,7 +300,8 @@ class OrderPaymentService
 
         if (in_array($status, ['DECLINED', 'ERROR', 'VOIDED'], true)) {
             $bannerRequest->update([
-                'payment_status' => 'failed',
+                'status'           => 'rejected',
+                'rejection_reason' => 'Pago rechazado en pasarela Wompi (' . $status . ').',
             ]);
             return self::DECLINED;
         }

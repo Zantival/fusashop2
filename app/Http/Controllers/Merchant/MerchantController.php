@@ -432,22 +432,12 @@ class MerchantController extends Controller
             'stock'            => 'required|integer|min:0',
             'category'         => 'required|string|max:100',
             'type'             => 'nullable|in:product,service',
-            'sale_unit'        => ['nullable', \Illuminate\Validation\Rule::in(array_keys(Product::SALE_UNITS))],
-            'image'            => 'nullable|image|mimes:jpeg,png,jpg,webp|max:5120',
-            'gallery.*'        => 'nullable|image|mimes:jpeg,png,jpg,webp|max:5120',
-            'options.*.color_values.*.image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:5120',
+            'image'            => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+            'gallery.*'        => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
             'is_active'        => 'boolean',
             'allows_points'    => 'nullable|boolean',
             'options'          => 'nullable|array',
             'specs'            => 'nullable|array',
-            'variants'         => 'nullable|string|max:1000000',
-        ], [
-            'image.max' => 'La imagen principal no puede superar los 5 MB.',
-            'image.uploaded' => 'El servidor rechazó la imagen principal. Comprueba que no supere el límite de carga configurado.',
-            'gallery.*.max' => 'Cada foto de la galería no puede superar los 5 MB.',
-            'gallery.*.uploaded' => 'El servidor rechazó una foto de la galería. Reduce su tamaño o revisa el límite de carga del servidor.',
-            'options.*.color_values.*.image.max' => 'Cada foto de color no puede superar los 5 MB.',
-            'options.*.color_values.*.image.uploaded' => 'El servidor rechazó una foto de color. Reduce su tamaño o revisa el límite de carga del servidor.',
         ]);
 
         $imagePath = null;
@@ -497,9 +487,6 @@ class MerchantController extends Controller
             }
         }
 
-        $variants = $this->buildVariantInventory($request, $availableOptions);
-        $variantImage = $this->firstVariantImage($availableOptions);
-
         $hasDiscount = $request->has('has_discount')
             ? $request->boolean('has_discount')
             : ((int) ($data['discount_percent'] ?? 0) > 0);
@@ -511,17 +498,12 @@ class MerchantController extends Controller
             'description'       => strip_tags($data['description'] ?? ''),
             'price'             => $data['price'],
             'discount_percent'  => $discountPercent,
-            'stock'             => $variants ? array_sum(array_column($variants, 'stock')) : $data['stock'],
+            'stock'             => $data['stock'],
             'category'          => strip_tags($data['category']),
-            'sale_unit'         => $data['sale_unit'] ?? null,
-            'sector_key'        => Product::HEALTH_CATEGORIES[$data['category']] ?? null,
             'type'              => $data['type'] ?? 'product',
-            // La imagen elegida como principal tiene prioridad; la foto de color
-            // solo sirve de portada automática cuando no se cargó una principal.
-            'image'             => $imagePath ?: $variantImage,
+            'image'             => $imagePath,
             'images'            => $galleryPaths,
             'available_options' => $availableOptions,
-            'variants'          => $variants,
             'specifications'    => $request->specs,
             'is_active'         => $request->boolean('is_active', true),
             'allows_points'     => $request->boolean('allows_points', true),
@@ -549,29 +531,18 @@ class MerchantController extends Controller
             'stock'            => 'required|integer|min:0',
             'category'         => 'required|string|max:100',
             'type'             => 'nullable|in:product,service',
-            'sale_unit'        => ['nullable', \Illuminate\Validation\Rule::in(array_keys(Product::SALE_UNITS))],
-            'image'            => 'nullable|image|mimes:jpeg,png,jpg,webp|max:5120',
-            'gallery.*'        => 'nullable|image|mimes:jpeg,png,jpg,webp|max:5120',
-            'options.*.color_values.*.image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:5120',
+            'image'            => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+            'gallery.*'        => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
             'is_active'        => 'boolean',
             'allows_points'    => 'nullable|boolean',
             'options'          => 'nullable|array',
             'specs'            => 'nullable|array',
-            'variants'         => 'nullable|string|max:1000000',
-        ], [
-            'image.max' => 'La imagen principal no puede superar los 5 MB.',
-            'image.uploaded' => 'El servidor rechazó la imagen principal. Comprueba que no supere el límite de carga configurado.',
-            'gallery.*.max' => 'Cada foto de la galería no puede superar los 5 MB.',
-            'gallery.*.uploaded' => 'El servidor rechazó una foto de la galería. Reduce su tamaño o revisa el límite de carga del servidor.',
-            'options.*.color_values.*.image.max' => 'Cada foto de color no puede superar los 5 MB.',
-            'options.*.color_values.*.image.uploaded' => 'El servidor rechazó una foto de color. Reduce su tamaño o revisa el límite de carga del servidor.',
         ]);
 
-        // Guardar primero la nueva ruta y borrar la anterior solo después de
-        // decidir qué imagen queda; así no se pierde la portada si falla algo.
-        $uploadedImagePath = $request->hasFile('image')
-            ? $request->file('image')->store('products', 'public')
-            : null;
+        if ($request->hasFile('image')) {
+            if ($product->image) Storage::disk('public')->delete($product->image);
+            $data['image'] = $request->file('image')->store('products', 'public');
+        }
 
         $galleryPaths = $product->images ?? [];
         if ($request->hasFile('gallery')) {
@@ -625,19 +596,6 @@ class MerchantController extends Controller
             }
         }
 
-        $variants = $this->buildVariantInventory($request, $availableOptions, $product);
-        $variantImage = $this->firstVariantImage($availableOptions);
-        if (!$variants && (int) $data['stock'] < (int) $product->reserved_stock) {
-            throw \Illuminate\Validation\ValidationException::withMessages([
-                'stock' => 'El stock no puede quedar por debajo de unidades ya reservadas en pedidos pendientes.',
-            ]);
-        }
-        $mainImagePath = $uploadedImagePath
-            ?: ($request->boolean('remove_main_image') ? null : ($variantImage ?: $product->image));
-        if ($product->image && $product->image !== $mainImagePath) {
-            Storage::disk('public')->delete($product->image);
-        }
-
         $hasDiscount = $request->has('has_discount')
             ? $request->boolean('has_discount')
             : ((int) ($data['discount_percent'] ?? $product->discount_percent ?? 0) > 0);
@@ -648,139 +606,18 @@ class MerchantController extends Controller
             'description'       => strip_tags($data['description'] ?? ''),
             'price'             => $data['price'],
             'discount_percent'  => $discountPercent,
-            'stock'             => $variants ? array_sum(array_column($variants, 'stock')) : $data['stock'],
+            'stock'             => $data['stock'],
             'category'          => strip_tags($data['category']),
-            'sale_unit'         => $data['sale_unit'] ?? null,
-            'sector_key'        => Product::HEALTH_CATEGORIES[$data['category']] ?? $product->sector_key,
             'type'              => $data['type'] ?? $product->type ?? 'product',
-            'image'             => $mainImagePath,
+            'image'             => $data['image'] ?? $product->image,
             'images'            => array_values($galleryPaths),
             'available_options' => $availableOptions,
-            'variants'          => $variants,
             'specifications'    => $request->specs,
             'is_active'         => $request->boolean('is_active', $product->is_active),
             'allows_points'     => $request->boolean('allows_points', false),
         ]);
 
         return redirect()->route('merchant.products')->with('success', 'Producto actualizado.');
-    }
-
-    private function buildVariantInventory(Request $request, array $options, ?Product $product = null): array
-    {
-        if (!$options) {
-            return [];
-        }
-
-        $rawVariants = json_decode((string) $request->input('variants', ''), true);
-        if (!is_array($rawVariants) || !$rawVariants) {
-            throw \Illuminate\Validation\ValidationException::withMessages([
-                'variants' => 'Genera las combinaciones y define precio y stock para cada una.',
-            ]);
-        }
-
-        $allowed = [];
-        foreach ($options as $option) {
-            $values = array_map(fn ($value) => (string) (is_array($value) ? ($value['name'] ?? '') : $value), $option['values'] ?? []);
-            $values = array_values(array_unique(array_filter($values, fn ($value) => $value !== '')));
-            if (!$values) {
-                throw \Illuminate\Validation\ValidationException::withMessages([
-                    'options' => "Agrega al menos un valor a la opción {$option['name']}.",
-                ]);
-            }
-            $optionName = trim((string) $option['name']);
-            if (isset($allowed[$optionName])) {
-                throw \Illuminate\Validation\ValidationException::withMessages([
-                    'options' => 'Cada opción debe tener un nombre distinto.',
-                ]);
-            }
-            $allowed[$optionName] = $values;
-        }
-
-        $expected = [[]];
-        foreach ($allowed as $name => $values) {
-            $next = [];
-            foreach ($expected as $combination) {
-                foreach ($values as $value) {
-                    $next[] = $combination + [$name => $value];
-                }
-            }
-            $expected = $next;
-            if (count($expected) > 200) {
-                throw \Illuminate\Validation\ValidationException::withMessages([
-                    'options' => 'Reduce las opciones: puedes administrar hasta 200 combinaciones por producto.',
-                ]);
-            }
-        }
-
-        foreach ($expected as &$combination) {
-            ksort($combination);
-        }
-        unset($combination);
-
-        $existingByKey = [];
-        foreach ($product?->variants ?? [] as $variant) {
-            $oldOptions = $variant['options'] ?? [];
-            ksort($oldOptions);
-            $key = json_encode($oldOptions, JSON_UNESCAPED_UNICODE);
-            $existingByKey[$key] = $variant;
-        }
-
-        $clean = [];
-        $seen = [];
-        foreach ($rawVariants as $variant) {
-            $selected = $variant['options'] ?? null;
-            if (!is_array($selected)) {
-                continue;
-            }
-            ksort($selected);
-            $key = json_encode($selected, JSON_UNESCAPED_UNICODE);
-            if (!in_array($selected, $expected, true) || isset($seen[$key])) {
-                continue;
-            }
-            $seen[$key] = true;
-            $price = filter_var($variant['price'] ?? null, FILTER_VALIDATE_FLOAT);
-            $stock = filter_var($variant['stock'] ?? null, FILTER_VALIDATE_INT);
-            if ($price === false || $price < 0 || $stock === false || $stock < 0) {
-                throw \Illuminate\Validation\ValidationException::withMessages([
-                    'variants' => 'Cada combinación debe tener un precio y stock válidos.',
-                ]);
-            }
-            $reserved = (int) ($existingByKey[$key]['reserved_stock'] ?? 0);
-            if ($stock < $reserved) {
-                throw \Illuminate\Validation\ValidationException::withMessages([
-                    'variants' => 'El stock de una combinación no puede quedar por debajo de las unidades ya reservadas.',
-                ]);
-            }
-            $clean[] = ['options' => $selected, 'price' => $price, 'stock' => $stock, 'reserved_stock' => $reserved];
-        }
-
-        if (count($clean) !== count($expected) || count($seen) !== count($expected)) {
-            throw \Illuminate\Validation\ValidationException::withMessages([
-                'variants' => 'Completa el precio y el stock de todas las combinaciones antes de guardar.',
-            ]);
-        }
-
-        foreach ($existingByKey as $key => $oldVariant) {
-            if ((int) ($oldVariant['reserved_stock'] ?? 0) > 0 && !isset($seen[$key])) {
-                throw \Illuminate\Validation\ValidationException::withMessages([
-                    'variants' => 'No puedes quitar ni renombrar una variante con pedidos pendientes de pago.',
-                ]);
-            }
-        }
-
-        return $clean;
-    }
-
-    private function firstVariantImage(array $options): ?string
-    {
-        foreach ($options as $option) {
-            foreach ($option['values'] ?? [] as $value) {
-                if (is_array($value) && !empty($value['image'])) {
-                    return $value['image'];
-                }
-            }
-        }
-        return null;
     }
 
     public function productDelete(Product $product)
@@ -1047,55 +884,44 @@ class MerchantController extends Controller
             ->get();
         $discountedProducts = $products->filter(fn($p) => $p->hasDiscount())->values();
         $bannerFee = \App\Models\Setting::bannerFee();
-        $promoCardFee = \App\Models\Setting::promoCardFee();
         $storeUrl = route('consumer.merchant.profile', $merchant->id);
         $myRequests = \App\Models\BannerRequest::where('user_id', $merchant->id)->latest()->take(6)->get();
 
-        return view('merchant.request-banner', compact('products', 'discountedProducts', 'bannerFee', 'promoCardFee', 'storeUrl', 'merchant', 'myRequests'));
+        return view('merchant.request-banner', compact('products', 'discountedProducts', 'bannerFee', 'storeUrl', 'merchant', 'myRequests'));
     }
 
-    public function bannerRequestStore(Request $request, \App\Services\WompiService $wompi)
+    public function bannerRequestStore(Request $request, \App\Services\WompiService $wompi, \App\Services\OrderPaymentService $payments)
     {
+        $paymentMode = $request->input('payment_mode', 'wompi_card');
         $targetType = $request->input('target_type', 'store');
 
         $rules = [
-            'image'         => 'required|file|mimes:' . ($targetType === 'store' ? 'jpg,jpeg,png,webp' : 'jpg,jpeg,png,webp,mp4,webm,mov') . '|max:10240',
+            'image'         => 'required|file|mimes:jpg,jpeg,png,webp,mp4,webm,mov|max:10240',
             'title'         => 'nullable|string|max:150',
             'description'   => 'required|string|max:1500',
             'target_type'   => 'required|in:store,products,promo_card',
             'product_ids'   => in_array($targetType, ['products', 'promo_card'], true) ? 'required|array|min:1' : 'nullable|array',
             'product_ids.*' => 'integer|exists:products,id',
-            'payment_mode'  => 'required_if:target_type,products,promo_card|in:wompi_checkout',
+            'payment_mode'  => 'nullable|in:wompi_card,wompi_checkout',
         ];
+
+        if ($paymentMode !== 'wompi_checkout') {
+            $rules['card_number'] = 'required|string|min:13|max:24';
+            $rules['card_expiry'] = 'required|string|max:7';
+            $rules['card_cvc']    = 'required|string|min:3|max:4';
+        }
 
         $request->validate($rules, [
             'image.required'       => 'Debes adjuntar la foto o arte publicitario.',
             'description.required' => 'Por favor indica la descripción que se mostrará en el banner.',
             'product_ids.required' => 'Debes seleccionar al menos un producto para vincular a la promoción.',
             'product_ids.min'      => 'Selecciona al menos un producto de tu catálogo.',
+            'card_number.required' => 'Ingresa el número de tarjeta para el pago seguro en línea con Wompi.',
+            'card_expiry.required' => 'Ingresa la fecha de vencimiento (MM/AA).',
+            'card_cvc.required'    => 'Ingresa el código de seguridad (CVC).',
         ]);
 
         $merchant = Auth::user();
-
-        // Los banners visibles solo dentro de la tienda son gratuitos y se publican directamente.
-        if ($targetType === 'store') {
-            $profile = $merchant->companyProfile;
-            if (!$profile) {
-                return back()->withErrors(['target_type' => 'Completa primero el perfil de tu tienda para publicar un banner.'])->withInput();
-            }
-
-            $imagePath = $request->file('image')->store('merchants/banners', 'public');
-            $banners = is_array($profile->banners_path) ? $profile->banners_path : [];
-            $banners[] = [
-                'path' => $imagePath,
-                'title' => strip_tags((string) $request->input('title', '')),
-                'subtitle' => strip_tags((string) $request->input('description')),
-            ];
-            $profile->update(['banners_path' => $banners]);
-
-            return redirect()->route('merchant.banner.request')->with('success', 'Tu banner gratuito ya está publicado en tu tienda.');
-        }
-
         $imagePath = $request->file('image')->store('banners/requests', 'public');
         $paymentRef = 'FS-BANNER-' . strtoupper(substr(md5(uniqid()), 0, 10));
 
@@ -1113,7 +939,7 @@ class MerchantController extends Controller
                     'name'             => $p->name,
                     'category'         => $p->category,
                     'original_price'   => (float) $p->price,
-                    'price'            => (float) $p->startingPrice(),
+                    'price'            => (float) $p->effectivePrice(),
                     'discount_percent' => (int) ($p->discount_percent ?? 0),
                     'url'              => route('consumer.product', $p->id),
                     'image'            => $p->image_url ?? null,
@@ -1128,9 +954,10 @@ class MerchantController extends Controller
             }
         }
 
-        $cost = (float) ($targetType === 'promo_card'
-            ? \App\Models\Setting::promoCardFee()
-            : \App\Models\Setting::bannerFee());
+        $cost = (float) \App\Models\Setting::bannerFee();
+        $cents = (int) round($cost * 100);
+        $signature = $wompi->integritySignature($paymentRef, $cents, 'COP');
+
         $activePayout = \App\Models\Setting::activeBannerPayoutSnapshot();
 
         $bannerRequest = \App\Models\BannerRequest::create([
@@ -1144,7 +971,6 @@ class MerchantController extends Controller
             'notes'                   => strip_tags($request->input('description')),
             'cost'                    => $cost,
             'status'                  => 'pending',
-            'payment_status'          => 'pending',
             'payout_destination_mode' => $activePayout['payout_destination_mode'] ?? 'corporate',
             'payout_method_type'      => $activePayout['payout_method_type'] ?? 'corporate',
             'payout_bank_name'        => $activePayout['payout_bank_name'] ?? null,
@@ -1158,7 +984,23 @@ class MerchantController extends Controller
             $analyst->notify(new \App\Notifications\BannerRequestNotification($bannerRequest));
         }
 
-        return redirect()->away($wompi->bannerCheckoutUrl($bannerRequest, $paymentRef, route('merchant.dashboard')));
+        if ($paymentMode === 'wompi_checkout') {
+            return redirect()->away($wompi->bannerCheckoutUrl($bannerRequest, $paymentRef, route('merchant.dashboard')));
+        }
+
+        // Registrar y conciliar el pago con firma de integridad SHA-256 de Wompi
+        $txId = 'wompi_banner_' . strtolower(substr(md5($paymentRef . microtime(true)), 0, 14));
+        $payments->handleTransaction([
+            'id'              => $txId,
+            'status'          => 'APPROVED',
+            'reference'       => $paymentRef,
+            'amount_in_cents' => $cents,
+            'currency'        => 'COP',
+            'signature'       => $signature,
+        ]);
+
+        $adLabel = $targetType === 'promo_card' ? 'Tarjeta Promocional de Productos' : 'Banner Publicitario';
+        return redirect()->route('merchant.dashboard')->with('success', "¡{$adLabel} solicitada y pagada exitosamente vía Wompi ({$paymentRef})! El analista vinculará y publicará tu promoción en la vitrina principal.");
     }
 
     public function inventory()
@@ -1174,32 +1016,17 @@ class MerchantController extends Controller
     public function updateInventory(Request $request)
     {
         $data = $request->validate([
-            'stocks' => 'nullable|array',
+            'stocks' => 'required|array',
             'stocks.*' => 'required|integer|min:0'
         ]);
 
         $merchantId = Auth::id();
-        $skippedVariants = false;
 
-        foreach ($data['stocks'] ?? [] as $productId => $stock) {
-            $product = Product::where('id', $productId)->where('merchant_id', $merchantId)->first();
-            if (!$product) {
-                continue;
-            }
-            if ($product->variants) {
-                $skippedVariants = true;
-                continue;
-            }
-            if ($stock < (int) $product->reserved_stock) {
-                return back()->withErrors(['stocks' => "El stock de {$product->name} no puede quedar debajo de las unidades reservadas."]);
-            }
-            $product->update(['stock' => $stock]);
+        foreach ($data['stocks'] as $productId => $stock) {
+            Product::where('id', $productId)->where('merchant_id', $merchantId)->update(['stock' => $stock]);
         }
 
-        $redirect = redirect()->route('merchant.inventory')->with('success', 'Inventario actualizado rápidamente.');
-        return $skippedVariants
-            ? $redirect->with('info', 'Los productos con variantes se administran desde “Editar stock y precios por variante”.')
-            : $redirect;
+        return redirect()->route('merchant.inventory')->with('success', 'Inventario actualizado rápidamente.');
     }
     public function finances()
     {
@@ -1269,7 +1096,7 @@ class MerchantController extends Controller
         })->orWhere(function ($q) use ($merchantId, $admin) {
             $q->where('sender_id', $admin->id)->where('receiver_id', $merchantId);
         })
-        ->with(['product', 'sender'])
+        ->with('product')
         ->orderBy('created_at', 'asc')
         ->get();
 
@@ -1338,7 +1165,7 @@ class MerchantController extends Controller
             })->orWhere(function ($q) use ($merchantId, $activeUser) {
                 $q->where('sender_id', $activeUser->id)->where('receiver_id', $merchantId);
             })
-            ->with(['product', 'sender'])
+            ->with('product')
             ->orderBy('created_at', 'asc')
             ->get();
 

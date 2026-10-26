@@ -1,1 +1,0 @@
-@include('errors.page', ['code' => '404', 'title' => 'No encontramos esa página', 'message' => 'Puede que el enlace haya cambiado o que la página ya no esté disponible.', 'hint' => 'Vuelve al inicio y continúa explorando FusaShop.'])

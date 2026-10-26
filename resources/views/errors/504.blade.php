@@ -1,1 +1,0 @@
-@include('errors.page', ['code' => '504', 'title' => 'El servicio tardó demasiado', 'message' => 'No recibimos respuesta a tiempo para completar la solicitud.', 'hint' => 'Espera un momento e inténtalo de nuevo.'])

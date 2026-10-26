@@ -1,1 +1,0 @@
-@include('errors.page', ['code' => '429', 'title' => 'Vamos un poco rápido', 'message' => 'Se realizaron demasiadas solicitudes en poco tiempo.', 'hint' => 'Espera un momento antes de volver a intentarlo.'])

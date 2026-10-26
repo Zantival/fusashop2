@@ -22,13 +22,8 @@
           <tr class="hover:bg-surface-container-low/50 transition-colors">
             <td class="px-6 py-4 text-sm font-mono text-on-surface-variant" data-label="#">#{{ $o->id }}</td>
             <td class="px-6 py-4">
-              <div class="flex items-center gap-2.5">
-                <x-user-avatar :user="$o->user" size="w-9 h-9" text-size="text-xs" />
-                <div class="min-w-0">
-                  <p class="font-semibold text-on-background text-sm">{{ e($o->user->name) }}</p>
-                  <p class="text-on-surface-variant text-xs">{{ e($o->user->email) }}</p>
-                </div>
-              </div>
+              <p class="font-semibold text-on-background text-sm">{{ e($o->user->name) }}</p>
+              <p class="text-on-surface-variant text-xs">{{ e($o->user->email) }}</p>
             </td>
             <td class="px-6 py-4 font-bold text-primary" data-label="Total">${{ number_format($o->total,0,',','.') }}</td>
             <td class="px-6 py-4" data-label="Estado"><span class="px-2.5 py-1 rounded-full text-xs font-semibold {{ $sc[$o->status]??'' }}">{{ ucfirst($o->status) }}</span></td>

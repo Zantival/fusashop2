@@ -1,11 +1,11 @@
 @extends('layouts.app')
 @section('title','Catálogo')
 @section('content')
-<div class="w-full max-w-7xl mx-auto px-3 sm:px-4 md:px-6 pt-3 pb-8 min-w-0">
+<div class="max-w-7xl mx-auto px-4 md:px-6 pt-3 pb-8">
 
   <!-- Breadcrumb hacia Inicio -->
-  <nav class="flex items-center gap-1.5 text-[11px] text-slate-500 mb-3 overflow-x-auto whitespace-nowrap scrollbar-none pb-0.5">
-    <a href="{{ route('consumer.home') }}" class="flex items-center gap-1 font-bold text-slate-700 hover:text-[#10B981] transition-colors shrink-0">
+  <nav class="flex items-center gap-1.5 text-[11px] text-slate-500 mb-3">
+    <a href="{{ route('consumer.home') }}" class="flex items-center gap-1 font-bold text-slate-700 hover:text-[#10B981] transition-colors">
       <span class="material-symbols-outlined text-xs">home</span>
       <span>Inicio</span>
     </a>
@@ -17,22 +17,9 @@
     @endif
   </nav>
 
-  <div class="w-full min-w-0 flex flex-col md:flex-row gap-4 md:gap-6" x-data="{ mobileFiltersOpen: false }">
+  <div class="flex flex-col md:flex-row gap-6">
     <aside class="w-full md:w-56 shrink-0">
-      <!-- Botón para alternar filtros en móvil -->
-      <button type="button" @click="mobileFiltersOpen = !mobileFiltersOpen"
-              class="md:hidden w-full flex items-center justify-between p-3.5 bg-white rounded-2xl shadow-sm border border-slate-200/80 font-bold text-xs text-slate-800 mb-2 cursor-pointer transition-all">
-        <span class="flex items-center gap-2">
-          <span class="material-symbols-outlined text-[#006c47] text-lg">tune</span>
-          <span>Filtros y Búsqueda</span>
-          @if(request()->anyFilled(['search','category','min_price','max_price','on_sale','allows_points']))
-            <span class="w-2 h-2 rounded-full bg-[#10B981]"></span>
-          @endif
-        </span>
-        <span class="material-symbols-outlined text-slate-400 text-lg transition-transform duration-200" :class="mobileFiltersOpen ? 'rotate-180' : ''">expand_more</span>
-      </button>
-
-      <div :class="mobileFiltersOpen ? 'block' : 'hidden md:block'" class="bg-white rounded-2xl p-4 sm:p-5 shadow-sm md:sticky md:top-20">
+      <div class="bg-white rounded-2xl p-5 shadow-sm sticky top-20">
         <h2 class="font-['Manrope'] font-bold text-[#1b1c1c] mb-4 flex items-center gap-2">
           <span class="material-symbols-outlined" style="color:#006c47">tune</span> Filtros
         </h2>
@@ -65,7 +52,7 @@
               <span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm text-amber-500">toll</span> Aplica FusaCoins</span>
             </label>
           </div>
-          <button type="submit" class="w-full py-2 text-white font-semibold rounded-xl hover:opacity-90 text-sm cursor-pointer" style="background:linear-gradient(135deg,#006c47,#00b67a)">Filtrar</button>
+          <button type="submit" class="w-full py-2 text-white font-semibold rounded-xl hover:opacity-90 text-sm" style="background:linear-gradient(135deg,#006c47,#00b67a)">Filtrar</button>
           @if(request()->anyFilled(['search','category','min_price','max_price','on_sale','allows_points']))
             <a href="{{ route('consumer.catalog') }}" class="block text-center text-xs text-[#3c4a41] hover:underline">✕ Limpiar</a>
           @endif
@@ -73,25 +60,25 @@
       </div>
     </aside>
 
-    <div class="w-full min-w-0 flex-1" id="catalog-products-container">
+    <div class="flex-1" id="catalog-products-container">
       @include('consumer.partials.products-grid', ['products' => $products])
     </div>
   </div>
 
   @if(isset($directory) && count($directory) > 0)
-    <div class="mt-8 sm:mt-12 pt-5 sm:pt-6 border-t border-slate-200">
-      <div class="flex items-center gap-2 mb-3 sm:mb-4">
+    <div class="mt-12 pt-6 border-t border-slate-200">
+      <div class="flex items-center gap-2 mb-4">
         <span class="material-symbols-outlined text-[#10B981]">verified</span>
-        <h3 class="text-xs sm:text-sm font-bold text-slate-800">Tiendas y Vendedores Oficiales</h3>
+        <h3 class="text-sm font-bold text-slate-800">Tiendas y Vendedores Oficiales</h3>
       </div>
-      <div class="flex gap-2.5 sm:gap-3 overflow-x-auto pb-2 scrollbar-none">
+      <div class="flex gap-3 overflow-x-auto pb-2 scrollbar-none">
         @foreach($directory as $brand)
-          <a href="{{ route('consumer.merchant.profile', $brand->merchant_id) }}" class="flex items-center gap-2 sm:gap-2.5 p-2 pr-3.5 sm:pr-4 bg-white rounded-xl border border-slate-100 shadow-xs hover:border-emerald-300 hover:shadow-md transition-all group shrink-0">
-            <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-slate-50 border border-slate-200 flex items-center justify-center overflow-hidden shrink-0">
+          <a href="{{ route('consumer.merchant.profile', $brand->merchant_id) }}" class="flex items-center gap-2.5 p-2 pr-4 bg-white rounded-xl border border-slate-100 shadow-xs hover:border-emerald-300 hover:shadow-md transition-all group shrink-0">
+            <div class="w-9 h-9 rounded-full bg-slate-50 border border-slate-200 flex items-center justify-center overflow-hidden shrink-0">
               @if($brand->logo_path)
                 <img loading="lazy" decoding="async" src="{{ Storage::url($brand->logo_path) }}" alt="{{ $brand->company_name }}" class="w-full h-full object-cover">
               @else
-                <span class="material-symbols-outlined text-slate-400 text-base sm:text-lg group-hover:text-[#10B981] transition-colors">store</span>
+                <span class="material-symbols-outlined text-slate-400 text-lg group-hover:text-[#10B981] transition-colors">store</span>
               @endif
             </div>
             <span class="text-xs font-bold text-slate-700 group-hover:text-[#10B981] transition-colors">{{ $brand->company_name }}</span>

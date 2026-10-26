@@ -1,10 +1,10 @@
 @extends('layouts.app')
 @section('title', 'Mis Reservas | FusaShop')
 @section('content')
-<div class="max-w-5xl mx-auto px-3 sm:px-6 py-4 sm:py-8 space-y-4 sm:space-y-6">
+<main class="max-w-5xl mx-auto px-4 md:px-6 py-8 space-y-6">
   <header>
-    <h1 class="text-2xl sm:text-3xl font-black text-slate-900">Mis solicitudes de reserva</h1>
-    <p class="text-xs sm:text-sm text-slate-600 mt-1">Las reservas no generan un cobro en línea. Espera la confirmación del comercio.</p>
+    <h1 class="text-3xl font-black text-slate-900">Mis solicitudes de reserva</h1>
+    <p class="text-sm text-slate-600 mt-1">Las reservas no generan un cobro en línea. Espera la confirmación del comercio.</p>
   </header>
   @if(session('success'))<div class="rounded-xl bg-emerald-50 border border-emerald-200 p-4 text-emerald-900 text-sm font-semibold">{{ session('success') }}</div>@endif
   @if($reservations->isEmpty())
@@ -28,7 +28,6 @@
           </div>
           <div class="mt-4 grid gap-2 sm:grid-cols-3 text-sm text-slate-700">
             <p><strong>Cantidad:</strong> {{ $reservation->quantity }}</p>
-            @if($reservation->quoted_price !== null)<p><strong>Precio estimado por opción:</strong> ${{ number_format($reservation->quoted_price, 0, ',', '.') }} COP <span class="text-xs text-slate-500">(no es un cobro; el comercio confirma el valor final)</span></p>@endif
             @if($reservation->preferred_date)<p><strong>Fecha solicitada:</strong> {{ $reservation->preferred_date->format('d/m/Y') }}</p>@endif
             @if($reservation->preferred_time)<p><strong>Hora:</strong> {{ substr((string) $reservation->preferred_time, 0, 5) }}</p>@endif
             @if($reservation->party_size)<p><strong>Personas:</strong> {{ $reservation->party_size }}</p>@endif
@@ -47,5 +46,5 @@
     </div>
     <div>{{ $reservations->links() }}</div>
   @endif
-</div>
+</main>
 @endsection

@@ -5,10 +5,7 @@
   $openPqrsCount = \App\Models\PQRS::whereIn('status', ['pending', 'in_review'])->count();
   $pendingBannersCount = \App\Models\BannerRequest::where('status', 'pending')->count();
   $unreadDbNotifs = $adminUser ? $adminUser->unreadNotifications()->count() : 0;
-  $unreadChatMessages = $adminUser ? \App\Models\Message::where('receiver_id', $adminUser->id)->where('is_read', false)->count() : 0;
-  // El globo de la campana cuenta solo notificaciones sin leer.
-  // KYC, PQRS e integraciones siguen siendo alertas operativas hasta resolverse.
-  $totalAlertsCount = $unreadDbNotifs;
+  $totalAlertsCount = $pendingKycCount + $failedIntegrationsCount + $openPqrsCount + $pendingBannersCount + $unreadDbNotifs;
 @endphp
 
 <!-- Barra móvil superior para Administrador (solo en móviles < 768px) -->
@@ -20,16 +17,7 @@
     <x-logo size="sm" :href="route('analyst.dashboard')" :with-microcopy="false" />
   </div>
   <div class="flex items-center gap-2">
-    <a href="{{ route('chat.index') }}" data-no-ajax
-       class="relative inline-flex items-center justify-center gap-1.5 px-2.5 py-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-[#006c47] border border-emerald-200 font-extrabold text-xs"
-       aria-label="Abrir mensajes">
-      <span class="material-symbols-outlined text-[18px]">forum</span>
-      <span class="hidden sm:inline">Mensajes</span>
-      @if($unreadChatMessages > 0)
-        <span class="min-w-4 h-4 px-1 rounded-full bg-rose-600 text-white text-[9px] leading-4 text-center">{{ $unreadChatMessages > 99 ? '99+' : $unreadChatMessages }}</span>
-      @endif
-    </a>
-    <span class="hidden sm:inline-flex px-2 py-0.5 text-[10px] font-black bg-emerald-100 text-[#006c47] rounded-full">Admin Console</span>
+    <span class="px-2 py-0.5 text-[10px] font-black bg-emerald-100 text-[#006c47] rounded-full">Admin Console</span>
   </div>
 </div>
 
@@ -184,7 +172,6 @@
         <div class="max-h-56 overflow-y-auto divide-y divide-slate-100">
           @forelse($adminUser->unreadNotifications()->take(6)->get() as $notif)
             <a href="{{ route('notifications.open', $notif->id) }}"
-               data-no-ajax
                class="p-2.5 hover:bg-emerald-50/80 transition-all flex items-start gap-2 bg-emerald-50/30 group cursor-pointer block"
                title="Haz clic para abrir y ver el mensaje">
               <div class="w-6 h-6 rounded-full bg-emerald-100 text-[#006c47] flex items-center justify-center shrink-0 mt-0.5">
@@ -272,16 +259,6 @@
            class="px-3 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2.5 {{ request()->routeIs('analyst.dashboard') ? 'bg-emerald-100 text-[#006c47] font-extrabold shadow-2xs' : 'text-slate-600 hover:text-[#006c47] hover:bg-slate-100' }}">
           <span class="material-symbols-outlined text-[18px]">dashboard</span>
           <span>Dashboard</span>
-        </a>
-        <a href="{{ route('chat.index') }}" data-no-ajax
-           class="px-3 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-between {{ request()->routeIs('chat.*') ? 'bg-emerald-100 text-[#006c47] font-extrabold shadow-2xs' : 'text-slate-600 hover:text-[#006c47] hover:bg-slate-100' }}">
-          <span class="flex items-center gap-2.5">
-            <span class="material-symbols-outlined text-[18px]">forum</span>
-            <span>Mensajes</span>
-          </span>
-          @if($unreadChatMessages > 0)
-            <span id="analyst-unread-chat-count" class="px-1.5 py-0.5 rounded-full text-[10px] font-black bg-rose-100 text-rose-800">{{ $unreadChatMessages }}</span>
-          @endif
         </a>
         <a href="{{ route('analyst.users') }}" 
            class="px-3 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-between {{ request()->routeIs('analyst.users*') ? 'bg-emerald-100 text-[#006c47] font-extrabold shadow-2xs' : 'text-slate-600 hover:text-[#006c47] hover:bg-slate-100' }}">

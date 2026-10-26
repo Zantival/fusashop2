@@ -1,13 +1,13 @@
 @extends('layouts.app')
 @section('title','Mi Carrito')
 @section('content')
-<div class="max-w-5xl mx-auto px-3 sm:px-6 py-4 sm:py-8">
-  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 mb-5 sm:mb-8">
-    <h1 class="text-2xl sm:text-3xl font-['Manrope'] font-bold text-on-background flex items-center gap-2.5 sm:gap-3">
-      <span class="material-symbols-outlined text-primary text-2xl sm:text-3xl">shopping_cart</span> Mi Carrito
+<div class="max-w-5xl mx-auto px-6 py-8">
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+    <h1 class="text-3xl font-['Manrope'] font-bold text-on-background flex items-center gap-3">
+      <span class="material-symbols-outlined text-primary text-3xl">shopping_cart</span> Mi Carrito
     </h1>
     @if($cart && $cart->items->isNotEmpty())
-      <div class="flex items-center gap-2 text-xs sm:text-sm text-on-surface-variant bg-surface-container px-3 sm:px-3.5 py-1.5 rounded-full w-fit">
+      <div class="flex items-center gap-2 text-sm text-on-surface-variant bg-surface-container px-3.5 py-1.5 rounded-full w-fit">
         <span class="material-symbols-outlined text-amber-500 text-base">toll</span>
         <span>Tienes <strong>{{ number_format($userPoints, 0, ',', '.') }}</strong> FusaCoins disponibles</span>
       </div>
@@ -35,102 +35,102 @@
       $sessionSelected = session('checkout_selected_items');
     @endphp
     <form id="cart-checkout-form" method="GET" action="{{ route('consumer.checkout') }}">
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-8">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {{-- Items Column --}}
-        <div class="lg:col-span-2 space-y-3 sm:space-y-4">
+        <div class="lg:col-span-2 space-y-4">
           {{-- Select all bar --}}
-          <div class="bg-surface-container-lowest rounded-2xl p-3.5 sm:p-4 shadow-[0_12px_32px_rgba(27,28,28,.06)] flex items-center justify-between">
-            <label class="flex items-center gap-2.5 sm:gap-3 cursor-pointer select-none">
-              <input type="checkbox" id="select-all-checkbox" checked class="w-4 h-4 sm:w-5 sm:h-5 rounded text-primary border-outline-variant/50 focus:ring-primary">
-              <span class="text-xs sm:text-sm font-bold text-on-background">Seleccionar todos</span>
+          <div class="bg-surface-container-lowest rounded-2xl p-4 shadow-[0_12px_32px_rgba(27,28,28,.06)] flex items-center justify-between">
+            <label class="flex items-center gap-3 cursor-pointer select-none">
+              <input type="checkbox" id="select-all-checkbox" checked class="w-5 h-5 rounded text-primary border-outline-variant/50 focus:ring-primary">
+              <span class="text-sm font-bold text-on-background">Seleccionar todos</span>
             </label>
-            <span class="text-[11px] sm:text-xs text-on-surface-variant" id="selected-summary-count">
+            <span class="text-xs text-on-surface-variant" id="selected-summary-count">
               {{ $cart->items->count() }} de {{ $cart->items->count() }} seleccionados
             </span>
           </div>
 
           {{-- Product cards --}}
           @foreach($cart->items as $item)
-          <div class="bg-surface-container-lowest rounded-2xl p-3 sm:p-5 shadow-[0_12px_32px_rgba(27,28,28,.06)] flex flex-col sm:flex-row gap-3 sm:gap-4 relative transition-all item-card" id="cart-item-card-{{ $item->id }}">
-            <div class="flex items-start gap-2.5 sm:gap-3 flex-1 min-w-0">
-              <div class="pt-1 flex items-center shrink-0">
-                <input type="checkbox"
-                       name="selected_items[]"
-                       value="{{ $item->id }}"
-                       {{ !is_array($sessionSelected) || in_array($item->id, $sessionSelected) ? 'checked' : '' }}
-                       data-item-id="{{ $item->id }}"
-                       data-price="{{ (float) ($item->unit_price ?? $item->product->priceForOptions($item->selected_options ?? [])) }}"
-                       data-qty="{{ (int) $item->quantity }}"
-                       data-name="{{ e($item->product->name) }}"
-                       data-allows-points="{{ $item->product->allows_points ? '1' : '0' }}"
-                       class="cart-item-checkbox w-4 h-4 sm:w-5 sm:h-5 rounded text-primary border-outline-variant/50 focus:ring-primary cursor-pointer">
-              </div>
+          <div class="bg-surface-container-lowest rounded-2xl p-5 shadow-[0_12px_32px_rgba(27,28,28,.06)] flex flex-col sm:flex-row gap-4 relative transition-all item-card" id="cart-item-card-{{ $item->id }}">
+            <div class="flex items-center sm:self-center">
+              <input type="checkbox"
+                     name="selected_items[]"
+                     value="{{ $item->id }}"
+                     {{ !is_array($sessionSelected) || in_array($item->id, $sessionSelected) ? 'checked' : '' }}
+                     data-item-id="{{ $item->id }}"
+                     data-price="{{ (float) $item->product->effectivePrice() }}"
+                     data-qty="{{ (int) $item->quantity }}"
+                     data-name="{{ e($item->product->name) }}"
+                     data-allows-points="{{ $item->product->allows_points ? '1' : '0' }}"
+                     class="cart-item-checkbox w-5 h-5 rounded text-primary border-outline-variant/50 focus:ring-primary cursor-pointer">
+            </div>
 
-              <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden shrink-0 bg-surface-container">
-                <x-product-image :product="$item->product" class="w-full h-full object-cover"/>
-              </div>
+            <div class="w-20 h-20 rounded-xl overflow-hidden shrink-0 self-center sm:self-auto bg-surface-container">
+              <x-product-image :product="$item->product" class="w-full h-full object-cover"/>
+            </div>
 
-              <div class="flex-1 min-w-0">
-                <h3 class="font-['Manrope'] font-bold text-on-background text-xs sm:text-sm line-clamp-2 leading-snug">{{ e($item->product->name) }}</h3>
-                <p class="text-on-surface-variant text-[10px] sm:text-[11px]">{{ $item->product->category }}</p>
-                @if($item->product->isReservationOnly())
-                  <p class="mt-1 text-[10px] sm:text-[11px] font-bold text-emerald-800">Este servicio se reserva desde su ficha.</p>
-                  <a href="{{ route('consumer.product', $item->product_id) }}" class="mt-0.5 inline-block text-[10px] sm:text-[11px] font-bold text-emerald-700 underline">Ir a solicitar reserva</a>
-                @endif
-                
-                @if($item->selected_options)
-                  <div class="flex flex-wrap gap-1 mt-1.5">
-                    @foreach($item->selected_options as $key => $val)
-                      <span class="text-[9px] bg-surface-container px-1.5 py-0.5 rounded border border-outline-variant/30 text-on-surface-variant">
-                        <span class="font-black opacity-50">{{ $key }}:</span> {{ $val }}
-                      </span>
-                    @endforeach
-                  </div>
-                @endif
-
-                <div class="flex flex-wrap items-center gap-1.5 sm:gap-2 mt-1.5">
-                  @if($item->product->hasDiscount())
-                    <span class="text-[10px] sm:text-xs text-slate-400 line-through">${{ number_format($item->product->originalPrice(),0,',','.') }}</span>
-                    <span class="text-primary font-black text-sm sm:text-lg">${{ number_format($item->unit_price ?? $item->product->priceForOptions($item->selected_options ?? []),0,',','.') }}</span>
-                    <span class="px-1.5 py-0.5 rounded-full text-[9px] sm:text-[10px] font-black bg-[#ba1a1a] text-white">-{{ $item->product->discount_percent }}%</span>
-                  @else
-                    <span class="text-primary font-black text-sm sm:text-lg">${{ number_format($item->unit_price ?? $item->product->priceForOptions($item->selected_options ?? []),0,',','.') }}</span>
-                  @endif
-                  
-                  {{-- Badge FusaCoins --}}
-                  @if($item->product->allows_points)
-                    <span class="inline-flex items-center gap-0.5 text-[10px] font-bold text-amber-700 bg-amber-50 border border-amber-200/60 px-1.5 py-0.5 rounded-full" title="Puedes redimir FusaCoins como descuento en este producto">
-                      <span class="material-symbols-outlined text-xs text-amber-500">toll</span> Aplica FusaCoins
-                    </span>
-                  @else
-                    <span class="inline-flex items-center gap-0.5 text-[10px] font-bold text-slate-600 bg-slate-100 border border-slate-200 px-1.5 py-0.5 rounded-full" title="Este producto no admite redención de FusaCoins">
-                      No redime FusaCoins
-                    </span>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-start justify-between gap-2">
+                <div>
+                  <h3 class="font-['Manrope'] font-bold text-on-background line-clamp-1">{{ e($item->product->name) }}</h3>
+                  <p class="text-on-surface-variant text-[11px]">{{ $item->product->category }}</p>
+                  @if($item->product->isReservationOnly())
+                    <p class="mt-1 text-[11px] font-bold text-emerald-800">Este servicio se reserva desde su ficha y no se cobra en el carrito.</p>
+                    <a href="{{ route('consumer.product', $item->product_id) }}" class="mt-1 inline-block text-[11px] font-bold text-emerald-700 underline">Ir a solicitar reserva</a>
                   @endif
                 </div>
               </div>
+              
+              @if($item->selected_options)
+                <div class="flex flex-wrap gap-1.5 mt-2">
+                  @foreach($item->selected_options as $key => $val)
+                    <span class="text-[9px] bg-surface-container px-2 py-0.5 rounded border border-outline-variant/30 text-on-surface-variant">
+                      <span class="font-black opacity-50">{{ $key }}:</span> {{ $val }}
+                    </span>
+                  @endforeach
+                </div>
+              @endif
+
+              <div class="flex flex-wrap items-center gap-2 mt-2">
+                @if($item->product->hasDiscount())
+                  <span class="text-xs text-slate-400 line-through">${{ number_format($item->product->originalPrice(),0,',','.') }}</span>
+                  <span class="text-primary font-black text-lg">${{ number_format($item->product->effectivePrice(),0,',','.') }}</span>
+                  <span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-[#ba1a1a] text-white">-{{ $item->product->discount_percent }}% OFF</span>
+                @else
+                  <span class="text-primary font-black text-lg">${{ number_format($item->product->effectivePrice(),0,',','.') }}</span>
+                @endif
+                
+                {{-- Badge FusaCoins --}}
+                @if($item->product->allows_points)
+                  <span class="inline-flex items-center gap-1 text-[11px] font-bold text-amber-700 bg-amber-50 border border-amber-200/60 px-2 py-0.5 rounded-full" title="Puedes redimir FusaCoins como descuento en este producto">
+                    <span class="material-symbols-outlined text-xs text-amber-500">toll</span> Aplica FusaCoins
+                  </span>
+                @else
+                  <span class="inline-flex items-center gap-1 text-[11px] font-medium text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full" title="El vendedor no acepta redención de puntos en este producto">
+                    <span class="material-symbols-outlined text-xs">remove_circle_outline</span> No redime FusaCoins
+                  </span>
+                @endif
+              </div>
             </div>
 
-            <div class="flex sm:flex-col items-center sm:items-end justify-between shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-outline-variant/20 gap-2">
-              <div class="flex items-center gap-1.5 sm:gap-2">
-                <button type="button" onclick="submitQty({{ $item->id }}, -1)" class="w-6 h-6 sm:w-7 sm:h-7 bg-surface-container-high rounded-lg flex items-center justify-center hover:bg-primary hover:text-white transition-all cursor-pointer">
+            <div class="flex sm:flex-col items-center sm:items-end justify-between shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-outline-variant/20">
+              <button type="button" onclick="submitDelete({{ $item->id }})" class="text-on-surface-variant hover:text-[#ba1a1a] transition-colors p-1" title="Eliminar del carrito">
+                <span class="material-symbols-outlined text-sm">delete</span>
+              </button>
+
+              <div class="flex items-center gap-2 my-1">
+                <button type="button" onclick="submitQty({{ $item->id }}, -1)" class="w-7 h-7 bg-surface-container-high rounded-lg flex items-center justify-center hover:bg-primary hover:text-white transition-all">
                   <span class="material-symbols-outlined text-xs">remove</span>
                 </button>
-                <span class="w-6 sm:w-7 text-center text-xs sm:text-sm font-bold">{{ $item->quantity }}</span>
-                <button type="button" onclick="submitQty({{ $item->id }}, 1)" class="w-6 h-6 sm:w-7 sm:h-7 bg-surface-container-high rounded-lg flex items-center justify-center hover:bg-primary hover:text-white transition-all cursor-pointer">
+                <span class="w-8 text-center text-sm font-bold">{{ $item->quantity }}</span>
+                <button type="button" onclick="submitQty({{ $item->id }}, 1)" class="w-7 h-7 bg-surface-container-high rounded-lg flex items-center justify-center hover:bg-primary hover:text-white transition-all">
                   <span class="material-symbols-outlined text-xs">add</span>
                 </button>
               </div>
 
-              <div class="flex items-center gap-2 sm:gap-3">
-                <p class="font-extrabold text-on-background text-sm sm:text-base">
-                  ${{ number_format($item->quantity * (float) ($item->unit_price ?? $item->product->priceForOptions($item->selected_options ?? [])),0,',','.') }}
-                </p>
-
-                <button type="button" onclick="submitDelete({{ $item->id }})" class="text-on-surface-variant hover:text-[#ba1a1a] transition-colors p-1 cursor-pointer" title="Eliminar del carrito">
-                  <span class="material-symbols-outlined text-sm sm:text-base">delete</span>
-                </button>
-              </div>
+              <p class="font-bold text-on-background text-sm sm:text-base">
+                ${{ number_format($item->quantity * $item->product->effectivePrice(),0,',','.') }}
+              </p>
             </div>
           </div>
           @endforeach
@@ -138,8 +138,8 @@
 
         {{-- Summary Column --}}
         <div class="lg:col-span-1">
-          <div class="bg-surface-container-lowest rounded-2xl p-4 sm:p-6 shadow-[0_12px_32px_rgba(27,28,28,.06)] sticky top-20 space-y-4 sm:space-y-6">
-            <h2 class="font-['Manrope'] font-bold text-on-background text-lg sm:text-xl">Resumen de compra</h2>
+          <div class="bg-surface-container-lowest rounded-2xl p-6 shadow-[0_12px_32px_rgba(27,28,28,.06)] sticky top-20 space-y-6">
+            <h2 class="font-['Manrope'] font-bold text-on-background text-xl">Resumen de compra</h2>
 
             {{-- FusaCoins Panel --}}
             <div class="p-4 bg-gradient-to-br from-amber-500/10 to-amber-500/5 rounded-2xl border border-amber-500/20 space-y-3">

@@ -97,7 +97,7 @@
         </div>
 
         <!-- Lista scrolleable de chats -->
-        <div id="merchant-conversation-list" class="flex-1 overflow-y-auto divide-y divide-slate-100 p-2 space-y-1">
+        <div class="flex-1 overflow-y-auto divide-y divide-slate-100 p-2 space-y-1">
           @foreach($conversations as $cUserId => $msgs)
             @php
               $lastMsg = $msgs->first(); // ordenados latest()
@@ -109,14 +109,20 @@
             @endphp
             <div x-show="(activeFilter === 'all' || (activeFilter === 'unread' && {{ $unreadThisChat > 0 ? 'true' : 'false' }})) && (!searchClient || '{{ strtolower(addslashes($client->name)) }} {{ strtolower(addslashes($lastMsg->content)) }}'.includes(searchClient.toLowerCase()))"
                  x-cloak>
-              <a href="{{ route('merchant.messages', $client->id) }}" data-conversation-id="{{ $client->id }}"
+              <a href="{{ route('merchant.messages', $client->id) }}"
                  class="block p-3 rounded-2xl transition-all duration-200 {{ $isActive ? 'bg-emerald-50/90 border border-emerald-300 shadow-2xs' : 'hover:bg-white hover:shadow-2xs bg-transparent border border-transparent' }}">
                 <div class="flex items-start gap-3">
                   <!-- Avatar -->
-                  <div class="conversation-avatar relative shrink-0">
-                    <x-user-avatar :user="$client" size="w-11 h-11" text-size="text-sm" class="border-2 {{ $isActive ? 'border-emerald-500' : 'border-white' }} shadow-2xs" />
+                  <div class="relative shrink-0">
+                    @if($client->avatar)
+                      <img loading="lazy" decoding="async" src="{{ Storage::url($client->avatar) }}" alt="{{ $client->name }}" class="w-11 h-11 rounded-full object-cover border-2 {{ $isActive ? 'border-emerald-500' : 'border-white' }} shadow-2xs">
+                    @else
+                      <div class="w-11 h-11 rounded-full bg-gradient-to-tr from-emerald-600 to-teal-500 text-white font-black text-sm flex items-center justify-center shadow-2xs">
+                        {{ strtoupper(substr($client->name, 0, 1)) }}
+                      </div>
+                    @endif
                     @if($unreadThisChat > 0)
-                      <span class="conversation-unread absolute -top-1 -right-1 w-5 h-5 bg-rose-600 text-white text-[9px] font-black rounded-full flex items-center justify-center border-2 border-white animate-pulse">
+                      <span class="absolute -top-1 -right-1 w-5 h-5 bg-rose-600 text-white text-[9px] font-black rounded-full flex items-center justify-center border-2 border-white animate-pulse">
                         {{ $unreadThisChat }}
                       </span>
                     @endif
@@ -125,15 +131,15 @@
                   <!-- Información y último mensaje -->
                   <div class="min-w-0 flex-1">
                     <div class="flex items-center justify-between mb-0.5">
-                      <h3 class="conversation-name font-extrabold text-xs text-slate-800 truncate {{ $unreadThisChat > 0 ? 'text-emerald-950 font-black' : '' }}">
+                      <h3 class="font-extrabold text-xs text-slate-800 truncate {{ $unreadThisChat > 0 ? 'text-emerald-950 font-black' : '' }}">
                         {{ $client->name }}
                       </h3>
-                      <span class="conversation-time text-[10px] text-slate-400 font-medium shrink-0 ml-1">
+                      <span class="text-[10px] text-slate-400 font-medium shrink-0 ml-1">
                         {{ $lastMsg->created_at->diffForHumans(null, true) }}
                       </span>
                     </div>
 
-                    <p class="conversation-preview text-[11px] text-slate-500 truncate {{ $unreadThisChat > 0 ? 'font-bold text-slate-800' : '' }}">
+                    <p class="text-[11px] text-slate-500 truncate {{ $unreadThisChat > 0 ? 'font-bold text-slate-800' : '' }}">
                       @if($lastMsg->sender_id == auth()->id())
                         <span class="text-emerald-700 font-bold">Tú:</span>
                       @endif
@@ -161,7 +167,13 @@
           <div class="p-4 border-b border-slate-200/80 flex items-center justify-between bg-white shadow-2xs shrink-0">
             <div class="flex items-center gap-3 min-w-0">
               <div class="relative shrink-0">
-                <x-user-avatar :user="$activeUser" size="w-10 h-10" text-size="text-sm" class="border border-slate-200" />
+                @if($activeUser->avatar)
+                  <img loading="lazy" decoding="async" src="{{ Storage::url($activeUser->avatar) }}" alt="{{ $activeUser->name }}" class="w-10 h-10 rounded-full object-cover border border-slate-200">
+                @else
+                  <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-emerald-600 to-teal-500 text-white font-black text-sm flex items-center justify-center">
+                    {{ strtoupper(substr($activeUser->name, 0, 1)) }}
+                  </div>
+                @endif
                 <span class="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-500 border-2 border-white"></span>
               </div>
 
@@ -227,9 +239,6 @@
             @foreach($activeMessages as $msg)
               @php $mine = $msg->sender_id == auth()->id(); @endphp
               <div class="flex {{ $mine ? 'justify-end' : 'justify-start' }}" data-msg-id="{{ $msg->id }}">
-                @if(!$mine)
-                <x-user-avatar :user="$msg->sender" size="w-8 h-8" text-size="text-xs" class="self-end mr-2" />
-                @endif
                 <div class="max-w-[80%] md:max-w-[70%]">
                   <!-- Producto embebido si vino con el mensaje -->
                   @if($msg->product_id && $msg->product)
@@ -255,9 +264,6 @@
                       <span>{{ $msg->created_at->format('H:i') }}</span>
                       @if($mine)
                         <span class="material-symbols-outlined text-[12px] text-emerald-200">done_all</span>
-                        <button type="button" onclick="deleteMessage({{ $msg->id }}, this)" class="ml-2 text-white/70 hover:text-white" title="Eliminar mi mensaje" aria-label="Eliminar mi mensaje">
-                          <span class="material-symbols-outlined text-[14px]">delete</span>
-                        </button>
                       @endif
                     </div>
                   </div>
@@ -335,8 +341,9 @@
 @if($activeUser)
   @push('scripts')
   <script>
-  window.chatLastId = Math.max(0, ...Array.from(document.querySelectorAll('#chat-box [data-msg-id]'), el => Number(el.dataset.msgId) || 0));
-  window.merchantInboxAfterId = {{ (int) ($conversations->flatten(1)->max('id') ?? 0) }};
+  if (typeof chatLastTs === 'undefined') {
+      var chatLastTs = {{ now()->timestamp }};
+  }
 
   const chatBox = document.getElementById('chat-box');
   const inputField = document.getElementById('msg-input');
@@ -350,9 +357,27 @@
   const productId = {{ $activeProduct ? $activeProduct->id : 'null' }};
   const csrfToken = '{{ csrf_token() }}';
   const badWords = @json($badWords);
-  const inboxPollUrl = @json(route('chat.inbox.poll'));
-  const merchantChatUrlTemplate = @json(route('merchant.messages', ['user' => '__MERCHANT_CHAT_USER__']));
-  @include('chat.partials.moderation-script')
+
+  function checkProfanity() {
+      if (!inputField || !sendBtn) return;
+      const content = inputField.value.toLowerCase();
+      const warning = document.getElementById('profanity-warning');
+      
+      const hasBadWord = badWords.some(word => {
+          const regex = new RegExp('\\b' + word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b', 'i');
+          return regex.test(content);
+      });
+
+      if (hasBadWord) {
+          sendBtn.disabled = true;
+          sendBtn.classList.add('opacity-50', 'grayscale');
+          warning?.classList.remove('hidden');
+      } else {
+          sendBtn.disabled = false;
+          sendBtn.classList.remove('opacity-50', 'grayscale');
+          warning?.classList.add('hidden');
+      }
+  }
 
   function scrollToBottom() {
       if (chatBox) {
@@ -387,12 +412,11 @@
                   <p class="text-xs md:text-sm leading-relaxed whitespace-pre-wrap">${msg.content}</p>
                   <div class="flex items-center justify-end gap-1 mt-1 ${msg.mine ? 'text-white/70' : 'text-slate-400'} text-[9.5px]">
                       <span>${msg.time}</span>
-                      ${msg.mine ? `<span class="material-symbols-outlined text-[12px] text-emerald-200">done_all</span><button type="button" onclick="deleteMessage(${msg.id}, this)" class="ml-2 text-white/70 hover:text-white" title="Eliminar mi mensaje"><span class="material-symbols-outlined text-[14px]">delete</span></button>` : ''}
+                      ${msg.mine ? '<span class="material-symbols-outlined text-[12px] text-emerald-200">done_all</span>' : ''}
                   </div>
               </div>
           </div>`;
 
-      window.attachChatSenderAvatar(div, msg);
       const typingEl = document.getElementById('typing-indicator');
       chatBox.insertBefore(div, typingEl);
   }
@@ -431,11 +455,6 @@
                   time: new Date().toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit' })
               });
               scrollToBottom();
-          } else {
-              const payload = await res.json().catch(() => ({}));
-              inputField.value = content;
-              window.chatServerModerationMessage = payload.errors?.content?.[0]
-                  || 'No se pudo enviar el mensaje. Revísalo e intenta de nuevo.';
           }
       } catch (e) {
           console.error("Error al enviar mensaje:", e);
@@ -450,81 +469,16 @@
 
   async function poll() {
       try {
-          const res = await fetch(`${pollUrl}?after=${window.chatLastId}`, {
-              cache: 'no-store',
+          const res = await fetch(`${pollUrl}?since=${chatLastTs}`, {
               headers: { 'Accept': 'application/json' }
           });
           const data = await res.json();
           if (data.messages && data.messages.length > 0) {
               data.messages.forEach(appendMsg);
-              window.chatLastId = Math.max(window.chatLastId, ...data.messages.map(msg => Number(msg.id) || 0));
               scrollToBottom();
           }
+          if (data.server_time) chatLastTs = data.server_time;
       } catch (e) {}
-  }
-
-  function upsertMerchantConversation(message) {
-      const list = document.getElementById('merchant-conversation-list');
-      if (!list || !message.partner_id) return;
-      let row = list.querySelector(`[data-conversation-id="${message.partner_id}"]`);
-      if (!row) {
-          row = document.createElement('a');
-          row.dataset.conversationId = message.partner_id;
-          row.href = merchantChatUrlTemplate.replace('__MERCHANT_CHAT_USER__', encodeURIComponent(message.partner_id));
-          row.className = 'block p-3 rounded-2xl transition-all duration-200 hover:bg-white hover:shadow-2xs bg-transparent border border-transparent';
-          const avatar = document.createElement('div');
-          avatar.className = 'conversation-avatar relative w-11 h-11 rounded-full shrink-0 overflow-hidden bg-gradient-to-tr from-emerald-600 to-teal-500 text-white font-black text-sm flex items-center justify-center';
-          if (message.partner_avatar) {
-              const img = document.createElement('img');
-              img.src = message.partner_avatar;
-              img.alt = message.partner_name || 'Usuario';
-              img.className = 'w-11 h-11 rounded-full object-cover';
-              img.onerror = function () { avatar.textContent = (message.partner_name || '?').trim().charAt(0).toUpperCase(); };
-              avatar.appendChild(img);
-          } else avatar.textContent = (message.partner_name || '?').trim().charAt(0).toUpperCase();
-          const body = document.createElement('div');
-          body.className = 'min-w-0 flex-1';
-          const name = document.createElement('h3');
-          name.className = 'conversation-name font-extrabold text-xs text-slate-800 truncate';
-          name.textContent = message.partner_name || 'Usuario';
-          const time = document.createElement('span');
-          time.className = 'conversation-time text-[10px] text-slate-400 font-medium';
-          time.textContent = 'ahora';
-          const heading = document.createElement('div');
-          heading.className = 'flex items-center justify-between mb-0.5';
-          heading.append(name, time);
-          const preview = document.createElement('p');
-          preview.className = 'conversation-preview text-[11px] text-slate-500 truncate';
-          body.append(heading, preview);
-          const layout = document.createElement('div');
-          layout.className = 'flex items-start gap-3';
-          layout.append(avatar, body);
-          row.appendChild(layout);
-      }
-      const preview = row.querySelector('.conversation-preview');
-      if (preview) preview.textContent = (message.mine ? 'Tú: ' : '') + message.content;
-      const time = row.querySelector('.conversation-time');
-      if (time) time.textContent = 'ahora';
-      row.querySelector('.conversation-unread')?.remove();
-      if (!message.mine && message.unread > 0) {
-          const badge = document.createElement('span');
-          badge.className = 'conversation-unread absolute -top-1 -right-1 w-5 h-5 bg-rose-600 text-white text-[9px] font-black rounded-full flex items-center justify-center border-2 border-white animate-pulse';
-          badge.textContent = String(message.unread);
-          row.querySelector('.conversation-avatar')?.appendChild(badge);
-      }
-      list.prepend(row);
-  }
-
-  async function pollMerchantInbox() {
-      try {
-          const response = await fetch(`${inboxPollUrl}?after=${window.merchantInboxAfterId}`, { cache: 'no-store', headers: { Accept: 'application/json' } });
-          if (!response.ok) return;
-          const data = await response.json();
-          (data.messages || []).forEach(function (message) {
-              window.merchantInboxAfterId = Math.max(window.merchantInboxAfterId, Number(message.id) || 0);
-              upsertMerchantConversation(message);
-          });
-      } catch (_) {}
   }
 
   if (inputField) {
@@ -537,28 +491,8 @@
   }
 
   scrollToBottom();
-  setInterval(poll, 800);
-  setInterval(pollMerchantInbox, 1000);
+  setInterval(poll, 3000);
   </script>
   @endpush
-@endif
-@if($conversations->isEmpty() && !$activeUser)
-  <script>
-    const emptyMerchantInboxUrl = @json(route('chat.inbox.poll'));
-    const emptyMerchantChatUrl = @json(route('merchant.messages', ['user' => '__MERCHANT_CHAT_USER__']));
-    let emptyMerchantInboxAfter = 0;
-    setInterval(async function () {
-      try {
-        const response = await fetch(`${emptyMerchantInboxUrl}?after=${emptyMerchantInboxAfter}`, { cache: 'no-store', headers: { Accept: 'application/json' } });
-        if (!response.ok) return;
-        const data = await response.json();
-        if (data.messages?.length) {
-          const incoming = data.messages.find(message => !message.mine);
-          if (incoming?.partner_id) window.location.href = emptyMerchantChatUrl.replace('__MERCHANT_CHAT_USER__', encodeURIComponent(incoming.partner_id));
-          else emptyMerchantInboxAfter = Math.max(emptyMerchantInboxAfter, ...data.messages.map(message => Number(message.id) || 0));
-        }
-      } catch (_) {}
-    }, 2500);
-  </script>
 @endif
 @endsection

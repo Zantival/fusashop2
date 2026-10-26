@@ -18,25 +18,20 @@
   @endif
 
   <form method="POST"
-    id="product-form"
     action="{{ $product ? route('merchant.products.update', $product->id) : route('merchant.products.store') }}"
     enctype="multipart/form-data" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
     @csrf
     @if($product) @method('PUT') @endif
-    <div id="form-submit-errors" class="hidden lg:col-span-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800" role="alert" aria-live="assertive">
-      <p class="font-bold">No se pudo guardar el producto:</p>
-      <ul class="mt-1 list-disc pl-5" id="form-submit-error-list"></ul>
-    </div>
 
     <!-- Left Column: Images -->
     <div class="lg:col-span-1 space-y-6">
       <div class="bg-surface-container-lowest rounded-2xl p-6 shadow-sm border border-outline-variant/30">
         <label class="block text-sm font-bold text-on-surface mb-4">Imagen Principal (Catálogo)</label>
         <div class="relative border-2 border-dashed border-outline-variant/50 rounded-2xl p-4 text-center hover:border-primary transition-colors cursor-pointer group" id="drop-zone-main">
-          <input type="file" name="image" id="image-input" accept="image/jpeg,image/png,image/webp" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"/>
+          <input type="file" name="image" id="image-input" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"/>
           <div id="image-preview-container">
             @if($product && $product->image)
-              <img alt="Imagen principal del producto" src="{{ asset('storage/'.$product->image) }}" class="w-full aspect-square object-cover rounded-xl mb-3"/>
+              <img loading="lazy" decoding="async" src="{{ asset('storage/'.$product->image) }}" class="w-full aspect-square object-cover rounded-xl mb-3"/>
               <p class="text-xs text-on-surface-variant">Clic para cambiar</p>
             @else
               <span class="material-symbols-outlined text-on-surface-variant text-4xl mb-2 block group-hover:scale-110 transition-transform">add_a_photo</span>
@@ -44,11 +39,6 @@
             @endif
           </div>
         </div>
-        <input type="hidden" name="remove_main_image" id="remove-main-image" value="0">
-        <button type="button" id="clear-main-image" class="mt-3 inline-flex items-center gap-1 text-xs font-bold text-rose-700 hover:text-rose-900">
-          <span class="material-symbols-outlined text-sm">delete</span> Quitar imagen principal
-        </button>
-        <p class="mt-2 text-[11px] text-on-surface-variant">JPG, PNG o WEBP · máximo 5 MB por imagen.</p>
 
         <label class="block text-sm font-bold text-on-surface mt-6 mb-4">Galería de Fotos General</label>
         <div class="grid grid-cols-2 gap-3 mb-4" id="gallery-preview">
@@ -65,7 +55,7 @@
           @endif
         </div>
         <div class="relative border-2 border-dashed border-outline-variant/50 rounded-xl p-4 text-center hover:border-primary transition-colors cursor-pointer">
-          <input type="file" name="gallery[]" multiple accept="image/jpeg,image/png,image/webp" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" id="gallery-input"/>
+          <input type="file" name="gallery[]" multiple accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" id="gallery-input"/>
           <span class="material-symbols-outlined text-on-surface-variant text-2xl mb-1 block">library_add</span>
           <p class="text-[10px] font-bold text-on-surface-variant">Añadir más fotos</p>
         </div>
@@ -90,14 +80,14 @@
               <option value="product" {{ $initialProductType === 'product' ? 'selected' : '' }}>Producto físico (requiere envío)</option>
               <option value="service" {{ $initialProductType === 'service' ? 'selected' : '' }}>Servicio o reserva (hotel, restaurante, experiencia, etc.)</option>
             </select>
-            <p class="text-xs text-on-surface-variant mt-1">Restaurantes: publica platos o tipos de mesa como opciones informativas; el cliente solo solicitará una reserva de mesa, no comprará comida desde aquí. Para hoteles, cada tipo de habitación puede tener su propio precio y disponibilidad.</p>
+            <p class="text-xs text-on-surface-variant mt-1">Para servicios, el stock representa los cupos o unidades disponibles para reservar.</p>
           </div>
 
           <div>
             <label class="block text-sm font-bold text-on-surface mb-2">Precio Base / Lista (COP) *</label>
             <div class="relative">
               <span class="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant font-bold text-sm">$</span>
-                <input type="number" name="price" id="price-input" value="{{ old('price', $product?->price) }}" min="0" step="1" required
+              <input type="number" name="price" id="price-input" value="{{ old('price', $product?->price) }}" min="0" step="100" required
                 oninput="updateDiscountPreview()"
                 class="w-full pl-8 pr-4 py-3 bg-surface-container-highest rounded-xl border-0 outline-none focus:ring-2 focus:ring-primary shadow-inner"
                 placeholder="45.000"/>
@@ -105,46 +95,21 @@
           </div>
 
           <div>
-            <label class="block text-sm font-bold text-on-surface mb-2" id="stock-label">Stock Total / disponible *</label>
+            <label class="block text-sm font-bold text-on-surface mb-2">Stock Total *</label>
             <input type="number" name="stock" value="{{ old('stock', $product?->stock ?? 0) }}" min="0" required
               class="w-full px-4 py-3 bg-surface-container-highest rounded-xl border-0 outline-none focus:ring-2 focus:ring-primary shadow-inner"
               placeholder="100"/>
-            <p class="text-[11px] text-on-surface-variant mt-1" id="stock-hint">Cantidad de unidades disponibles.</p>
           </div>
 
           <div class="sm:col-span-2">
-            <label class="block text-sm font-bold text-on-surface mb-2">Categoría / Sector *</label>
+            <label class="block text-sm font-bold text-on-surface mb-2">Categoría *</label>
             <select name="category" id="category-select" required
               class="w-full px-4 py-3 bg-surface-container-highest rounded-xl border-0 outline-none focus:ring-2 focus:ring-primary shadow-inner appearance-none">
               <option value="">Seleccionar categoría</option>
-              @php $currentCategory = old('category', $product?->category); @endphp
-              <optgroup label="Comercio general">
-                @foreach(['Ropa','Calzado','Electrónica','Hogar','Deportes','Alimentos','Belleza','Juguetes','Libros','Otros'] as $cat)
-                  <option value="{{ $cat }}" {{ $currentCategory === $cat ? 'selected' : '' }}>{{ $cat }}</option>
-                @endforeach
-              </optgroup>
-              <optgroup label="Salud y bienestar">
-                @foreach(['Medicamentos y Farmacia','Droguería','Tienda Verde y Naturista'] as $cat)
-                  <option value="{{ $cat }}" {{ $currentCategory === $cat ? 'selected' : '' }}>{{ $cat }}</option>
-                @endforeach
-              </optgroup>
-              <optgroup label="Servicios y turismo">
-                @foreach(['Hoteles y Alojamientos','Restaurantes y Gastronomía','Turismo y Experiencias','Servicios profesionales'] as $cat)
-                  <option value="{{ $cat }}" {{ $currentCategory === $cat ? 'selected' : '' }}>{{ $cat }}</option>
-                @endforeach
-              </optgroup>
-            </select>
-          </div>
-
-          <div class="sm:col-span-2" id="sale-unit-wrapper">
-            <label class="block text-sm font-bold text-on-surface mb-2">Unidad de venta</label>
-            <select name="sale_unit" id="sale-unit-select"
-              class="w-full px-4 py-3 bg-surface-container-highest rounded-xl border-0 outline-none focus:ring-2 focus:ring-primary shadow-inner appearance-none">
-              @foreach(\App\Models\Product::SALE_UNITS as $unitValue => $unitLabel)
-                <option value="{{ $unitValue }}" {{ old('sale_unit', $product?->sale_unit ?: 'unidad') === $unitValue ? 'selected' : '' }}>{{ $unitLabel }}</option>
+              @foreach(['Ropa','Electrónica','Hogar','Deportes','Alimentos','Belleza','Juguetes','Libros','Hoteles y Alojamientos','Restaurantes y Gastronomía','Turismo y Experiencias','Servicios profesionales','Otros'] as $cat)
+                <option value="{{ $cat }}" {{ old('category', $product?->category) === $cat ? 'selected' : '' }}>{{ $cat }}</option>
               @endforeach
             </select>
-            <p class="text-[11px] text-on-surface-variant mt-1">El precio y el stock se cuentan en esta unidad. Ej.: tienda verde → “Bolsa de 100 g” con precio por bolsa, o “Gramo (g)” con stock en gramos.</p>
           </div>
 
           <div class="sm:col-span-2">
@@ -213,7 +178,7 @@
                            <input type="hidden" name="options[{{ $index }}][color_values][{{ $vIndex }}][name]" value="{{ $val['name'] }}">
                            <input type="hidden" name="options[{{ $index }}][color_values][{{ $vIndex }}][hex]" value="{{ $val['hex'] }}">
                            <label class="mt-1 cursor-pointer bg-primary/10 px-3 py-1 rounded-full hover:bg-primary/20 transition-colors">
-                             <input type="file" name="options[{{ $index }}][color_values][{{ $vIndex }}][image]" accept="image/jpeg,image/png,image/webp" class="hidden" onchange="previewVariantImg(this, {{ $index }}, {{ $vIndex }})">
+                             <input type="file" name="options[{{ $index }}][color_values][{{ $vIndex }}][image]" class="hidden" onchange="previewVariantImg(this, {{ $index }}, {{ $vIndex }})">
                              <span class="text-[9px] text-primary font-black">SUBIR FOTO</span>
                            </label>
                            <button type="button" onclick="this.parentElement.remove()" class="absolute -top-2 -right-2 bg-error text-white rounded-full p-1 shadow-sm hover:scale-110 transition-transform">
@@ -243,14 +208,6 @@
                 @endif
               @endforeach
             @endif
-          </div>
-          <div class="rounded-2xl border border-emerald-200 bg-emerald-50/50 p-5 space-y-3">
-            <div>
-              <h4 class="text-sm font-bold text-on-surface">Precio y stock por combinación</h4>
-              <p class="text-[11px] text-on-surface-variant">Define el precio y las unidades disponibles de cada talla/color, memoria, habitación, presentación u otra combinación.</p>
-            </div>
-            <input type="hidden" name="variants" id="variants-json" value="{{ json_encode($product?->variants ?? []) }}">
-            <div id="variants-matrix" class="overflow-x-auto"></div>
           </div>
         </div>
 
@@ -413,7 +370,6 @@
 
 @push('scripts')
 <script>
-(() => {
   const colorSwatches = [
     { name: 'Blanco', hex: '#FFFFFF' }, { name: 'Negro', hex: '#000000' }, { name: 'Rojo', hex: '#FF0000' },
     { name: 'Azul', hex: '#0000FF' }, { name: 'Verde', hex: '#008000' }, { name: 'Gris', hex: '#808080' },
@@ -423,262 +379,48 @@
 
   const categoryPresets = {
     'Ropa': [{ name: 'Color', type: 'color' }, { name: 'Talla', values: 'S, M, L, XL, XXL' }],
-    'Calzado': [{ name: 'Color', type: 'color' }, { name: 'Talla', values: '35, 36, 37, 38, 39, 40, 41, 42' }],
-    'Electrónica': [{ name: 'Color', type: 'color' }, { name: 'Memoria RAM', values: '4 GB, 8 GB, 16 GB' }, { name: 'Almacenamiento', values: '64 GB, 128 GB, 256 GB' }],
-    'Hogar': [{ name: 'Color', type: 'color' }, { name: 'Tamaño', values: 'Pequeño, Mediano, Grande' }],
-    'Deportes': [{ name: 'Talla', values: 'XS, S, M, L, XL' }, { name: 'Color', type: 'color' }],
-    'Belleza': [{ name: 'Contenido', values: '30 ml, 50 ml, 100 ml' }],
-    'Alimentos': [{ name: 'Presentación', values: '250 g, 500 g, 1 kg' }],
-    'Juguetes': [{ name: 'Edad recomendada', values: '0-3 años, 4-7 años, 8+ años' }, { name: 'Color', type: 'color' }],
-    'Libros': [{ name: 'Formato', values: 'Pasta blanda, Pasta dura, Digital' }],
-    'Hoteles y Alojamientos': [{ name: 'Habitación', values: 'Sencilla, Doble, Familiar, Suite' }, { name: 'Ocupación', values: '1 persona, 2 personas, 4 personas' }],
-    'Restaurantes y Gastronomía': [{ name: 'Plato o menú (solo referencia)', values: 'Desayuno, Almuerzo, Cena' }, { name: 'Tipo de mesa', values: 'Interior, Terraza, Familiar' }],
-    'Turismo y Experiencias': [{ name: 'Experiencia', values: 'Individual, Pareja, Grupo' }, { name: 'Duración', values: '2 horas, Medio día, Día completo' }],
-    'Medicamentos y Farmacia': [{ name: 'Presentación', values: 'Tabletas, Cápsulas, Jarabe, Gotas, Crema, Inyectable' }, { name: 'Concentración', values: '250 mg, 500 mg, 1 g' }],
-    'Droguería': [{ name: 'Presentación', values: 'Caja, Blíster, Frasco, Sobre' }, { name: 'Contenido', values: '10 unidades, 20 unidades, 30 unidades' }],
-    'Tienda Verde y Naturista': [{ name: 'Presentación', values: '100 g, 250 g, 500 g, 1 kg' }]
+    'Electrónica': [{ name: 'Color', type: 'color' }, { name: 'Capacidad', values: '64GB, 128GB, 256GB' }],
+    'Zapatos': [{ name: 'Color', type: 'color' }, { name: 'Talla', values: '36, 37, 38, 39, 40, 41, 42' }],
+    'Belleza': [{ name: 'Contenido', values: '30ml, 50ml, 100ml' }],
+    'Alimentos': [{ name: 'Peso', values: '500g, 1kg, 2kg' }]
   };
 
   const specSchemas = {
     'Ropa': [{ key: 'material', label: 'Material' }, { key: 'gender', label: 'Género' }, { key: 'fit', label: 'Corte' }],
-    'Electrónica': [{ key: 'brand', label: 'Marca' }, { key: 'model', label: 'Modelo' }, { key: 'screen', label: 'Pantalla' }, { key: 'ram', label: 'RAM' }, { key: 'storage', label: 'Almacenamiento' }, { key: 'sound', label: 'Sonido / respuesta de frecuencia' }, { key: 'connectivity', label: 'Conectividad' }, { key: 'battery', label: 'Batería' }, { key: 'os', label: 'S. Operativo' }],
+    'Electrónica': [{ key: 'brand', label: 'Marca' }, { key: 'model', label: 'Modelo' }, { key: 'screen', label: 'Pantalla' }, { key: 'ram', label: 'RAM' }, { key: 'storage', label: 'Almacenamiento' }, { key: 'os', label: 'S. Operativo' }],
     'Alimentos': [{ key: 'exp', label: 'Vencimiento' }, { key: 'origin', label: 'Origen' }],
-    'Hogar': [{ key: 'dims', label: 'Dimensiones' }, { key: 'material', label: 'Material' }],
-    'Hoteles y Alojamientos': [{ key: 'amenities', label: 'Servicios de la habitación' }, { key: 'checkin', label: 'Hora de ingreso' }, { key: 'checkout', label: 'Hora de salida' }],
-    'Restaurantes y Gastronomía': [{ key: 'menu', label: 'Platos ofrecidos (información)' }, { key: 'reservation_policy', label: 'Política de reserva de mesa' }],
-    'Turismo y Experiencias': [{ key: 'duration', label: 'Duración' }, { key: 'meeting_point', label: 'Punto de encuentro' }],
-    'Medicamentos y Farmacia': [{ key: 'active_ingredient', label: 'Principio activo' }, { key: 'concentration', label: 'Concentración' }, { key: 'laboratory', label: 'Laboratorio' }, { key: 'invima', label: 'Registro INVIMA' }, { key: 'prescription', label: 'Requiere fórmula médica (Sí/No)' }, { key: 'exp', label: 'Fecha de vencimiento' }, { key: 'lot', label: 'Lote' }, { key: 'dosage', label: 'Dosis / modo de uso' }, { key: 'contraindications', label: 'Contraindicaciones' }],
-    'Droguería': [{ key: 'brand', label: 'Marca' }, { key: 'laboratory', label: 'Laboratorio / fabricante' }, { key: 'invima', label: 'Registro sanitario / INVIMA' }, { key: 'prescription', label: 'Requiere fórmula médica (Sí/No)' }, { key: 'exp', label: 'Fecha de vencimiento' }, { key: 'lot', label: 'Lote' }, { key: 'usage', label: 'Modo de uso' }],
-    'Tienda Verde y Naturista': [{ key: 'origin', label: 'Origen / procedencia' }, { key: 'net_content', label: 'Contenido neto (g)' }, { key: 'exp', label: 'Fecha de vencimiento' }, { key: 'properties', label: 'Propiedades / beneficios' }, { key: 'usage', label: 'Modo de preparación o uso' }, { key: 'invima', label: 'Registro sanitario (si aplica)' }]
+    'Hogar': [{ key: 'dims', label: 'Dimensiones' }, { key: 'material', label: 'Material' }]
   };
 
   let optionCount = {{ $product && $product->available_options ? count($product->available_options) : 0 }};
   let currentOptionIndex = null;
   const existingSpecs = {!! json_encode($product?->specifications ?? []) !!};
-  const existingVariants = {!! json_encode($product?->variants ?? []) !!};
-  const isEditingProduct = {{ $product ? 'true' : 'false' }};
-  const variantsHidden = document.getElementById('variants-json');
-  const variantMatrix = document.getElementById('variants-matrix');
 
   // Main Image Preview
   document.getElementById('image-input').addEventListener('change', e => {
     const f = e.target.files[0]; if(!f) return;
-    document.getElementById('remove-main-image').value = '0';
-    const r = new FileReader();
-    r.onload = x => {
-      document.getElementById('image-preview-container').innerHTML = `<img alt="Vista previa de la imagen principal" src="${x.target.result}" class="w-full aspect-square object-cover rounded-xl mb-3"><p class="text-xs text-on-surface-variant">Imagen seleccionada · clic para cambiar</p>`;
-    };
-    r.onerror = () => {
-      document.getElementById('image-preview-container').innerHTML = '<span class="material-symbols-outlined text-error text-4xl mb-2 block">broken_image</span><p class="text-xs font-bold text-error">No se pudo mostrar la imagen. Selecciónala de nuevo.</p>';
-      e.target.value = '';
-    };
+    const r = new FileReader(); r.onload = x => document.getElementById('image-preview-container').innerHTML = `<img loading="lazy" decoding="async" src="${x.target.result}" class="w-full aspect-square object-cover rounded-xl mb-3">`;
     r.readAsDataURL(f);
-  });
-  document.getElementById('clear-main-image').addEventListener('click', () => {
-    document.getElementById('image-input').value = '';
-    document.getElementById('remove-main-image').value = isEditingProduct ? '1' : '0';
-    document.getElementById('image-preview-container').innerHTML = '<span class="material-symbols-outlined text-on-surface-variant text-4xl mb-2 block">add_a_photo</span><p class="text-xs font-bold text-on-surface">Sin imagen principal</p>';
   });
 
   // Category change
   const catSelect = document.getElementById('category-select');
   catSelect.addEventListener('change', function() {
     const cat = this.value;
-    const productTitle = document.querySelector('input[name="name"]')?.value || '';
-    const isAudioProduct = /(aud[ií]fono|auricular|headphone|earbud|parlante|speaker)/i.test(productTitle);
-    const presets = cat === 'Electrónica' && isAudioProduct
-      ? [{name:'Color',type:'color'}, {name:'Conectividad',values:'Bluetooth, Cable'}, {name:'Cancelación de ruido',values:'Sí, No'}]
-      : (categoryPresets[cat] || []);
-    const technicalSpecs = cat === 'Electrónica' && isAudioProduct
-      ? [{key:'brand',label:'Marca'}, {key:'model',label:'Modelo'}, {key:'sound',label:'Sonido / respuesta de frecuencia'}, {key:'connectivity',label:'Conectividad'}, {key:'battery',label:'Batería'}, {key:'microphone',label:'Micrófono'}, {key:'noise_cancellation',label:'Cancelación de ruido'}]
-      : (specSchemas[cat] || []);
-    const reservationType = ['Hoteles y Alojamientos','Restaurantes y Gastronomía','Turismo y Experiencias','Servicios profesionales'].includes(cat);
-    const typeSelect = document.querySelector('select[name="type"]');
-    if (!isEditingProduct && typeSelect && reservationType) typeSelect.value = 'service';
     const presetsCont = document.getElementById('presets-container');
-    if (presets.length) {
+    if (categoryPresets[cat]) {
       presetsCont.classList.remove('hidden');
-      document.getElementById('presets-list').innerHTML = presets.map(p => `<button type="button" onclick="applyPreset('${p.name}', '${p.type || 'text'}', '${p.values || ''}')" class="px-4 py-2 bg-primary/10 border border-primary/20 rounded-full text-[10px] font-black text-primary hover:bg-primary hover:text-white transition-all">+ ${p.name.toUpperCase()}</button>`).join('');
+      document.getElementById('presets-list').innerHTML = categoryPresets[cat].map(p => `<button type="button" onclick="applyPreset('${p.name}', '${p.type||'text'}', '${p.values||''}')" class="px-4 py-2 bg-primary/10 border border-primary/20 rounded-full text-[10px] font-black text-primary hover:bg-primary hover:text-white transition-all">+ ${p.name.toUpperCase()}</button>`).join('');
     } else presetsCont.classList.add('hidden');
 
-    if (!isEditingProduct && presets.length && document.getElementById('options-container').children.length === 0) {
-      presets.forEach(p => applyPreset(p.name, p.type || 'text', p.values || ''));
-    }
-
     const sw = document.getElementById('specs-wrapper');
-    if (technicalSpecs.length || Object.keys(existingSpecs).length > 0) { sw.classList.remove('hidden'); renderSpecs(cat, technicalSpecs); }
+    if (specSchemas[cat] || Object.keys(existingSpecs).length > 0) { sw.classList.remove('hidden'); renderSpecs(cat); }
     else sw.classList.add('hidden');
-    renderVariantMatrix();
-    applyUnitDefaults(cat);
   });
-
-  // Unidad de venta sugerida según el sector (solo si el comerciante aún no la cambió)
-  const unitSelect = document.getElementById('sale-unit-select');
-  let unitTouched = isEditingProduct;
-  unitSelect.addEventListener('change', () => { unitTouched = true; updateStockHint(); });
-  function applyUnitDefaults(cat) {
-    const defaults = { 'Tienda Verde y Naturista': 'g', 'Medicamentos y Farmacia': 'caja', 'Droguería': 'unidad' };
-    if (!unitTouched && defaults[cat]) unitSelect.value = defaults[cat];
-    updateStockHint();
-  }
-  function updateStockHint() {
-    const unit = unitSelect.value;
-    const label = unitSelect.options[unitSelect.selectedIndex]?.text || 'Unidad';
-    document.getElementById('stock-label').textContent = unit === 'unidad' ? 'Stock Total / disponible *' : `Stock disponible (en: ${label}) *`;
-    document.getElementById('stock-hint').textContent = unit === 'unidad' ? 'Cantidad de unidades disponibles.' : `Cada unidad de stock equivale a: ${label}. El precio base es por esa misma unidad.`;
-  }
-  updateStockHint();
   if(catSelect.value) catSelect.dispatchEvent(new Event('change'));
 
-  function escapeHtml(value) {
-    return String(value).replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[char]));
-  }
-
-  function readOptionDefinitions() {
-    return [...document.querySelectorAll('#options-container [data-option-type]')].map(block => {
-      const name = block.querySelector('input[name$="[name]"]')?.value.trim();
-      if (!name) return null;
-      const isColor = block.dataset.optionType === 'color';
-      let values;
-      if (isColor) {
-        values = [...block.querySelectorAll('input[name*="[color_values]"][name$="[name]"]')].map(input => input.value.trim());
-      } else {
-        const raw = block.querySelector('input[name$="[values]"]')?.value || '';
-        values = raw.split(',').map(value => value.trim()).filter(Boolean);
-      }
-      return { name, values: [...new Set(values)] };
-    }).filter(option => option && option.values.length);
-  }
-
-  function makeCombinations(definitions) {
-    return definitions.reduce((rows, option) => rows.flatMap(row => option.values.map(value => ({...row, [option.name]: value}))), [{}]);
-  }
-
-  function variantKey(options) {
-    return JSON.stringify(Object.fromEntries(Object.keys(options).sort().map(key => [key, options[key]])));
-  }
-
-  function syncVariantsJson() {
-    const rows = [...variantMatrix.querySelectorAll('[data-variant-row]')].map(row => ({
-      options: JSON.parse(row.dataset.options),
-      price: parseFloat(row.querySelector('[data-variant-price]').value || '0'),
-      stock: parseInt(row.querySelector('[data-variant-stock]').value || '0', 10)
-    }));
-    variantsHidden.value = JSON.stringify(rows);
-    if (rows.length) {
-      const totalStock = document.querySelector('input[name="stock"]');
-      if (totalStock) totalStock.value = rows.reduce((sum, row) => sum + (Number(row.stock) || 0), 0);
-    }
-  }
-
-  function renderVariantMatrix() {
-    if (!variantMatrix || !variantsHidden) return;
-    const definitions = readOptionDefinitions();
-    if (!definitions.length) {
-      variantMatrix.innerHTML = '<p class="text-xs text-on-surface-variant">Agrega opciones para configurar inventario y precio por variante. Si no hay opciones, se usarán el precio base y el stock total.</p>';
-      variantsHidden.value = '[]';
-      return;
-    }
-    const combinations = makeCombinations(definitions);
-    if (combinations.length > 200) {
-      variantMatrix.innerHTML = '<p class="text-sm font-bold text-rose-700">Hay más de 200 combinaciones. Reduce los valores de las opciones.</p>';
-      variantsHidden.value = '[]';
-      return;
-    }
-    const existing = new Map((existingVariants || []).map(variant => [variantKey(variant.options || {}), variant]));
-    const current = new Map([...variantMatrix.querySelectorAll('[data-variant-row]')].map(row => [
-      variantKey(JSON.parse(row.dataset.options)),
-      { price: row.querySelector('[data-variant-price]').value, stock: row.querySelector('[data-variant-stock]').value }
-    ]));
-    const baseStock = parseInt(document.querySelector('input[name="stock"]')?.value || '0', 10);
-    const rows = combinations.map((options, index) => {
-      const key = variantKey(options);
-      const variant = current.get(key) || existing.get(key);
-      const stock = variant ? variant.stock : (isEditingProduct && existingVariants.length ? 0 : Math.floor(baseStock / combinations.length) + (index < baseStock % combinations.length ? 1 : 0));
-      const description = Object.entries(options).map(([key, value]) => `${key}: ${value}`).join(' · ');
-      return `<tr data-variant-row data-options='${escapeHtml(JSON.stringify(options))}' class="border-t border-outline-variant/20"><td class="px-3 py-2 text-xs font-semibold">${escapeHtml(description)}</td><td class="px-3 py-2"><input data-variant-price type="number" min="0" step="1" value="${escapeHtml(variant?.price ?? document.getElementById('price-input').value)}" class="w-32 rounded-lg border border-outline-variant/30 px-2 py-1.5 text-sm"></td><td class="px-3 py-2"><input data-variant-stock type="number" min="0" step="1" value="${escapeHtml(stock)}" class="w-24 rounded-lg border border-outline-variant/30 px-2 py-1.5 text-sm"></td></tr>`;
-    }).join('');
-    variantMatrix.innerHTML = `<table class="w-full text-left"><thead><tr><th class="px-3 py-2 text-[10px] uppercase">Combinación</th><th class="px-3 py-2 text-[10px] uppercase">Precio COP</th><th class="px-3 py-2 text-[10px] uppercase">Stock</th></tr></thead><tbody>${rows}</tbody></table>`;
-    variantMatrix.querySelectorAll('input').forEach(input => input.addEventListener('input', syncVariantsJson));
-    syncVariantsJson();
-  }
-
-  document.getElementById('options-container').addEventListener('change', renderVariantMatrix);
-  new MutationObserver(renderVariantMatrix).observe(document.getElementById('options-container'), { childList: true, subtree: true });
-  const productForm = document.getElementById('product-form');
-  const submitErrors = document.getElementById('form-submit-errors');
-  const submitErrorList = document.getElementById('form-submit-error-list');
-  productForm.addEventListener('submit', async event => {
-    event.preventDefault();
-    if (productForm.dataset.submitting === 'true') return;
-
-    renderVariantMatrix();
-    syncVariantsJson();
-    submitErrors.classList.add('hidden');
-    submitErrorList.replaceChildren();
-
-    const submitButton = event.submitter || productForm.querySelector('button[type="submit"]');
-    const originalButtonContent = submitButton?.innerHTML;
-    productForm.dataset.submitting = 'true';
-    if (submitButton) {
-      submitButton.disabled = true;
-      submitButton.textContent = 'Guardando…';
-    }
-
-    const showSubmitErrors = messages => {
-      const uniqueMessages = [...new Set(messages.filter(Boolean))];
-      (uniqueMessages.length ? uniqueMessages : ['No se pudo guardar. Revisa los datos e inténtalo de nuevo.']).forEach(message => {
-        const li = document.createElement('li');
-        li.textContent = message;
-        submitErrorList.appendChild(li);
-      });
-      submitErrors.classList.remove('hidden');
-      submitErrors.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    };
-
-    try {
-      const response = await fetch(productForm.action, {
-        method: 'POST',
-        body: new FormData(productForm),
-        headers: {
-          'Accept': 'application/json',
-          'X-Requested-With': 'XMLHttpRequest',
-        },
-        credentials: 'same-origin',
-      });
-
-      if (response.redirected) {
-        window.location.assign(response.url);
-        return;
-      }
-
-      const contentType = response.headers.get('content-type') || '';
-      if (!response.ok) {
-        if (contentType.includes('application/json')) {
-          const payload = await response.json();
-          showSubmitErrors(Object.values(payload.errors || {}).flat());
-        } else if (response.status === 413) {
-          showSubmitErrors(['El servidor rechazó el tamaño total de los archivos. Reduce el tamaño o la cantidad de imágenes.']);
-        } else {
-          showSubmitErrors(['El servidor no aceptó el formulario (HTTP ' + response.status + '). Tus datos siguen en pantalla; inténtalo de nuevo.']);
-        }
-        return;
-      }
-
-      showSubmitErrors(['El servidor respondió, pero no confirmó el guardado. Tus datos siguen en pantalla.']);
-    } catch (error) {
-      showSubmitErrors(['No se pudo conectar con el servidor. Revisa tu conexión e inténtalo de nuevo; los datos siguen en pantalla.']);
-    } finally {
-      productForm.dataset.submitting = 'false';
-      if (submitButton) {
-        submitButton.disabled = false;
-        submitButton.innerHTML = originalButtonContent;
-      }
-    }
-  });
-
-  function renderSpecs(cat, customSchema = null) {
-    const schema = customSchema || specSchemas[cat] || [], cont = document.getElementById('specs-container');
+  function renderSpecs(cat) {
+    const schema = specSchemas[cat] || [], cont = document.getElementById('specs-container');
     let h = '';
     schema.forEach(s => { const v = existingSpecs[s.key] || ''; h += `<div class="bg-surface-container-highest/50 p-4 rounded-2xl border border-outline-variant/10"><label class="text-[10px] font-black uppercase text-on-surface-variant mb-1 block">${s.label}</label><input type="text" name="specs[${s.key}]" value="${v}" class="w-full bg-transparent border-0 text-sm p-0 outline-none focus:ring-0 font-bold text-on-surface"></div>`; });
     Object.keys(existingSpecs).forEach(k => { if(!schema.find(s=>s.key===k)) h += createCustomSpecHtml(k, existingSpecs[k]); });
@@ -688,24 +430,18 @@
   function addCustomSpec() { document.getElementById('specs-container').insertAdjacentHTML('beforeend', createCustomSpecHtml('', '', Date.now())); }
   function createCustomSpecHtml(k, v, id='') { return `<div class="bg-surface-container-highest/50 p-4 rounded-2xl border border-outline-variant/10 relative group" id="cs-${id}"><div class="grid grid-cols-2 gap-4"><div><input type="text" value="${k}" placeholder="Nombre" onchange="const val=this.closest('div').nextElementSibling.querySelector('input');val.name='specs['+this.value+']'" class="w-full bg-transparent border-0 text-[10px] font-black uppercase text-primary p-0 outline-none"></div><div><input type="text" name="specs[${k}]" value="${v}" placeholder="Valor" class="w-full bg-transparent border-0 text-sm p-0 outline-none font-bold text-on-surface"></div></div><button type="button" onclick="this.parentElement.remove()" class="absolute -top-2 -right-2 bg-error text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"><span class="material-symbols-outlined text-[12px]">close</span></button></div>`; }
 
-  function applyPreset(n, t, v) {
-    const exists = [...document.querySelectorAll('#options-container input[name$="[name]"]')].some(input => input.value.trim().toLowerCase() === n.trim().toLowerCase());
-    if (exists) return;
-    if(t==='color') addColorOption(n); else addOption(n, v);
-  }
+  function applyPreset(n, t, v) { if(t==='color') addColorOption(n); else addOption(n, v); }
 
   function addOption(n='', v='') {
     const c = document.getElementById('options-container');
     c.insertAdjacentHTML('beforeend', `<div class="flex gap-3 items-start animate-in fade-in" data-option-type="text"><div class="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-3 p-4 bg-surface-container-low rounded-2xl border border-outline-variant/20"><div><label class="text-[10px] font-black uppercase text-on-surface-variant mb-1 block">Nombre</label><input type="text" name="options[${optionCount}][name]" value="${n}" class="w-full bg-white border-0 rounded-lg text-sm px-3 py-2 outline-none"></div><div><label class="text-[10px] font-black uppercase text-on-surface-variant mb-1 block">Valores</label><input type="text" name="options[${optionCount}][values]" value="${v}" class="w-full bg-white border-0 rounded-lg text-sm px-3 py-2 outline-none"></div></div><button type="button" onclick="this.parentElement.remove()" class="mt-8 p-2"><span class="material-symbols-outlined">delete</span></button></div>`);
     optionCount++;
-    renderVariantMatrix();
   }
 
   function addColorOption(n='Color') {
     const c = document.getElementById('options-container'), i = optionCount;
     c.insertAdjacentHTML('beforeend', `<div class="bg-surface-container-low rounded-2xl border border-outline-variant/20 p-5 animate-in zoom-in-95" data-option-type="color"><div class="flex justify-between items-center mb-4"><div class="flex items-center gap-2"><span class="material-symbols-outlined text-primary">palette</span><input type="text" name="options[${i}][name]" value="${n}" class="bg-transparent border-0 font-bold text-sm w-32"><input type="hidden" name="options[${i}][type]" value="color"></div><button type="button" onclick="this.closest('[data-option-type]').remove()" class="text-on-surface-variant"><span class="material-symbols-outlined">delete</span></button></div><div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" id="color-values-${i}"></div><button type="button" onclick="openColorPicker(${i})" class="mt-4 w-full py-2 border-2 border-dashed border-outline-variant/50 rounded-xl text-[10px] font-black text-on-surface-variant">+ SELECCIONAR COLORES</button></div>`);
     optionCount++;
-    renderVariantMatrix();
   }
 
   function openColorPicker(i) {
@@ -717,8 +453,7 @@
 
   function pickColor(n, h) {
     const c = document.getElementById(`color-values-${currentOptionIndex}`), vi = c.children.length;
-    c.insertAdjacentHTML('beforeend', `<div class="relative bg-white rounded-xl p-3 border border-outline-variant/30 flex flex-col items-center gap-2 animate-in zoom-in-90"><div class="w-8 h-8 rounded-full border border-outline-variant/50 shadow-sm" style="background: ${h}"></div><p class="text-[10px] font-black truncate w-full text-center text-on-surface-variant">${n}</p><div class="w-14 h-14 bg-surface-container rounded-md flex items-center justify-center overflow-hidden border border-outline-variant/20" id="preview-img-${currentOptionIndex}-${vi}"><span class="material-symbols-outlined text-sm opacity-20">image</span></div><input type="hidden" name="options[${currentOptionIndex}][color_values][${vi}][name]" value="${n}"><input type="hidden" name="options[${currentOptionIndex}][color_values][${vi}][hex]" value="${h}"><label class="mt-1 cursor-pointer bg-primary/10 px-3 py-1 rounded-full hover:bg-primary/20 transition-colors"><input type="file" name="options[${currentOptionIndex}][color_values][${vi}][image]" accept="image/jpeg,image/png,image/webp" class="hidden" onchange="previewVariantImg(this, ${currentOptionIndex}, ${vi})"><span class="text-[9px] text-primary font-black uppercase">Subir foto</span></label><button type="button" onclick="this.parentElement.remove()" class="absolute -top-2 -right-2 bg-error text-white rounded-full p-1"><span class="material-symbols-outlined text-[12px]">close</span></button></div>`);
-    renderVariantMatrix();
+    c.insertAdjacentHTML('beforeend', `<div class="relative bg-white rounded-xl p-3 border border-outline-variant/30 flex flex-col items-center gap-2 animate-in zoom-in-90"><div class="w-8 h-8 rounded-full border border-outline-variant/50 shadow-sm" style="background: ${h}"></div><p class="text-[10px] font-black truncate w-full text-center text-on-surface-variant">${n}</p><div class="w-14 h-14 bg-surface-container rounded-md flex items-center justify-center overflow-hidden border border-outline-variant/20" id="preview-img-${currentOptionIndex}-${vi}"><span class="material-symbols-outlined text-sm opacity-20">image</span></div><input type="hidden" name="options[${currentOptionIndex}][color_values][${vi}][name]" value="${n}"><input type="hidden" name="options[${currentOptionIndex}][color_values][${vi}][hex]" value="${h}"><label class="mt-1 cursor-pointer bg-primary/10 px-3 py-1 rounded-full hover:bg-primary/20 transition-colors"><input type="file" name="options[${currentOptionIndex}][color_values][${vi}][image]" class="hidden" onchange="previewVariantImg(this, ${currentOptionIndex}, ${vi})"><span class="text-[9px] text-primary font-black uppercase">Subir foto</span></label><button type="button" onclick="this.parentElement.remove()" class="absolute -top-2 -right-2 bg-error text-white rounded-full p-1"><span class="material-symbols-outlined text-[12px]">close</span></button></div>`);
     closeColorPicker();
   }
 
@@ -794,12 +529,6 @@
   }
 
   updateDiscountPreview();
-  Object.assign(window, {
-    addColorOption, addOption, openColorPicker, closeColorPicker, pickColor,
-    previewVariantImg: window.previewVariantImg, addCustomSpec, applyPreset,
-    toggleDiscountControls, setQuickDiscount, updateDiscountPreview,
-  });
-})();
 </script>
 @endpush
 @endsection

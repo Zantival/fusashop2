@@ -25,8 +25,7 @@ class Message extends Model
             'carechimba', 'huevon', 'huevón', 'guevon', 'güevón', 'guevona',
             'maricon', 'maricón', 'cacorro', 'lambon', 'lambón', 'garbimba', 'gurrupleta',
             'catrehijueputa', 'triplehijueputa', 'careverga', 'caremonda', 'monda', 'mondá', 'chimbada',
-            'hp', 'sapoperro', 'gonorreo', 'bobo', 'carechimba', 'gonorreita', 'malpari', 'pichurria',
-            'maricada', 'hijueputa', 'pirobo', 'culiado', 'culiada', 'sapo hp', 'sapo hijueputa'
+            'hp', 'sapoperro', 'gonorreo', 'bobo', 'carechimba', 'gonorreita', 'malpari'
         ];
     }
 }

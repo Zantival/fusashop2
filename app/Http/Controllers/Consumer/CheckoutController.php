@@ -58,7 +58,7 @@ class CheckoutController extends Controller
         $merchantIds = $cart->items->pluck('product.merchant_id')->unique();
         $availablePoints = LoyaltyPoint::where('user_id', $user->id)->whereIn('merchant_id', $merchantIds)->sum('points');
         $eligibleSubtotal = (float) $cart->items->filter(fn ($i) => (bool) ($i->product->allows_points ?? true))
-            ->sum(fn ($i) => $i->quantity * $i->product->priceForOptions($i->selected_options ?? []));
+            ->sum(fn ($i) => $i->quantity * $i->product->effectivePrice());
 
         $usePoints = $request->has('use_points') ? $request->boolean('use_points') : session('checkout_use_points', false);
         session(['checkout_use_points' => $usePoints]);

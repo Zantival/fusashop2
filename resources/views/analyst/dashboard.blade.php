@@ -23,7 +23,6 @@
       ->sum(\Illuminate\Support\Facades\DB::raw('order_items.quantity * order_items.price')) ?? 0);
   }
   $maxMerchantSales = !empty($rawSalesByMerchant) ? max($rawSalesByMerchant) : 0;
-  $dashboardUnreadChatMessages = \App\Models\Message::where('receiver_id', auth()->id())->where('is_read', false)->count();
 
   $merchantReportsMap = [];
   $rankedMerchants = $merchantsDirectory->map(function($m) use ($diagnosisSvc, $maxMerchantSales, &$merchantReportsMap) {
@@ -84,12 +83,6 @@
     
     <!-- Preserved Header Quick Actions -->
     <div class="flex flex-wrap gap-2">
-      <a href="{{ route('chat.index') }}" data-no-ajax class="relative px-4 py-2 bg-emerald-700 text-white font-extrabold rounded-xl hover:bg-emerald-800 transition-all flex items-center gap-2 text-xs shadow-sm">
-        <span class="material-symbols-outlined text-sm">forum</span> Mensajes
-        @if($dashboardUnreadChatMessages > 0)
-          <span class="min-w-4 h-4 px-1 rounded-full bg-rose-500 text-white text-[9px] leading-4 text-center">{{ $dashboardUnreadChatMessages > 99 ? '99+' : $dashboardUnreadChatMessages }}</span>
-        @endif
-      </a>
       <a href="{{ route('analyst.users') }}" class="px-4 py-2 bg-surface-container border border-surface-container-highest text-on-surface font-bold rounded-xl hover:bg-surface-container-high transition-all flex items-center gap-2 text-xs shadow-sm">
         <span class="material-symbols-outlined text-sm">group</span> Gestionar Usuarios
       </a>
@@ -164,8 +157,6 @@
           <input type="number" step="0.1" name="commission_rate" value="{{ $commissionRate ?? 8.0 }}" class="w-12 bg-white border border-emerald-200 rounded px-1.5 py-0.5 text-xs font-black text-slate-800 text-center">
           <span class="font-extrabold text-[#006c47] ml-1" title="Tarifa de banner patrocinado COP">Banner $:</span>
           <input type="number" step="5000" name="banner_fee" value="{{ \App\Models\Setting::bannerFee() }}" class="w-20 bg-white border border-emerald-200 rounded px-1.5 py-0.5 text-xs font-black text-slate-800 text-center">
-          <span class="font-extrabold text-[#006c47] ml-1" title="Tarifa de tarjeta promocional COP">Tarjeta $:</span>
-          <input type="number" step="5000" name="promo_card_fee" value="{{ \App\Models\Setting::promoCardFee() }}" class="w-20 bg-white border border-emerald-200 rounded px-1.5 py-0.5 text-xs font-black text-slate-800 text-center">
           <button type="submit" class="px-2 py-0.5 bg-[#006c47] hover:bg-[#10B981] text-white font-bold rounded-lg text-[11px] transition-colors">Guardar</button>
         </form>
 

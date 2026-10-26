@@ -1,1 +1,0 @@
-@include('errors.page', ['code' => '500', 'title' => 'Ups, hubo un error', 'message' => 'Algo salió mal de nuestro lado y no pudimos completar tu solicitud.', 'hint' => 'No necesitas repetir un pago si no sabes si se procesó. Revisa tus pedidos o contacta al equipo de soporte.'])

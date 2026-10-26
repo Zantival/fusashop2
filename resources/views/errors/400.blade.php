@@ -1,1 +1,0 @@
-@include('errors.page', ['code' => '400', 'title' => 'Ups, hubo un error', 'message' => 'No pudimos procesar esta solicitud. Revisa la información e inténtalo de nuevo.', 'hint' => 'Si llegaste aquí desde un formulario, vuelve a la página anterior y verifica los datos.'])

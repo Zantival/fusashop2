@@ -1,1 +1,0 @@
-@include('errors.page', ['code' => '503', 'title' => 'Estamos haciendo ajustes', 'message' => 'FusaShop está temporalmente fuera de servicio por mantenimiento.', 'hint' => 'Vuelve a visitarnos en unos minutos.'])

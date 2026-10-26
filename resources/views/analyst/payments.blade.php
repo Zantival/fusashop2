@@ -24,7 +24,7 @@
   {{-- KPI Cards --}}
   <div class="grid grid-cols-2 lg:grid-cols-4 gap-5 mb-10">
     @php
-      $approvedBanners         = $bannerPayments->where('status','approved')->where('payment_status','paid')->count();
+      $approvedBanners         = $bannerPayments->where('status','approved')->count();
       $totalMerchants          = $merchantAccounts->count();
       $totalGeneralRevenue     = $totalBannerRevenue;
     @endphp
@@ -72,7 +72,7 @@
       <table class="w-full text-sm responsive-stack-table">
         <thead class="bg-surface-container-low">
           <tr>
-            @foreach(['#','Comerciante','Correo','Tipo','Monto (COP)','Cuenta de referencia','Estado','Fecha','Detalle'] as $h)
+            @foreach(['#','Comerciante','Correo','Tipo','Monto (COP)','Destino del Recaudo','Estado','Fecha','Detalle'] as $h)
             <th class="px-4 py-3 text-left text-xs font-semibold text-on-surface-variant uppercase whitespace-nowrap">{{ $h }}</th>
             @endforeach
           </tr>
@@ -86,12 +86,6 @@
               'rejected' => ['bg-error-container text-error',   'cancel',          'Rechazado'],
             ];
             [$sCls, $sIcon, $sLabel] = $statusMap[$payment['status']] ?? ['bg-surface-container text-on-surface-variant','info','Desconocido'];
-            $paymentStatusMap = [
-              'pending' => ['bg-amber-50 text-amber-800', 'Pago pendiente'],
-              'paid' => ['bg-emerald-50 text-emerald-800', 'Pago confirmado'],
-              'failed' => ['bg-rose-50 text-rose-800', 'Pago rechazado'],
-            ];
-            [$pCls, $pLabel] = $paymentStatusMap[$payment['payment_status']] ?? $paymentStatusMap['pending'];
           @endphp
           <tr class="border-t border-outline-variant/10 hover:bg-surface-container-low/50 transition-colors">
             <td class="px-4 py-3 text-on-surface-variant font-mono text-xs">#{{ $payment['id'] }}</td>
@@ -105,19 +99,13 @@
                   <span class="material-symbols-outlined text-[13px] text-primary">account_balance</span>
                   {{ $payment['destination_account'] ?? 'Cuenta Corporativa Central' }}
                 </span>
-                <span class="text-[10px] text-on-surface-variant font-medium">Referencia configurada · Wompi abona según la cuenta asociada a la llave pública</span>
+                <span class="text-[10px] text-on-surface-variant font-medium">{{ $payment['destination_badge'] ?? 'FusaShop' }}</span>
               </div>
             </td>
             <td class="px-4 py-3">
-              <div class="flex flex-col items-start gap-1">
-                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold {{ $sCls }}">
-                  <span class="material-symbols-outlined text-[13px]">{{ $sIcon }}</span> {{ $sLabel }}
-                </span>
-                <span class="px-2.5 py-1 rounded-full text-[10px] font-bold {{ $pCls }}">{{ $pLabel }}</span>
-                @if($payment['refund_status'] === 'pending')
-                  <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800">Devolución manual pendiente</span>
-                @endif
-              </div>
+              <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold {{ $sCls }}">
+                <span class="material-symbols-outlined text-[13px]">{{ $sIcon }}</span> {{ $sLabel }}
+              </span>
             </td>
             <td class="px-4 py-3 text-on-surface-variant text-xs whitespace-nowrap">{{ $payment['date']->format('d M Y, h:i A') }}</td>
             <td class="px-4 py-3">

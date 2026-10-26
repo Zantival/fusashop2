@@ -2,6 +2,7 @@
 @section('title', 'Panel Ejecutivo Comercial | ' . (auth()->user()->companyProfile->company_name ?? auth()->user()->name) . ' | FusaShop')
 
 @push('styles')
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
   [x-cloak] { display: none !important; }
   .custom-scrollbar::-webkit-scrollbar { width: 5px; height: 5px; }
@@ -35,7 +36,7 @@
          }
        }
      }" 
-     class="merchant-dashboard w-full max-w-7xl mx-auto px-4 md:px-6 py-6 md:py-8 space-y-6">
+     class="max-w-7xl mx-auto px-4 md:px-6 py-6 md:py-8 space-y-6">
 
   <!-- ========================================================================= -->
   <!-- 1. HEADER EJECUTIVO DEL COMERCIANTE (IDÉNTICO AL PANEL DEL ANALISTA)      -->
@@ -96,7 +97,7 @@
       ->first(fn($n) => ($n->data['type'] ?? '') === 'merchant_sales_report');
   @endphp
   @if($latestSalesReportNotif)
-    <a href="{{ route('notifications.open', $latestSalesReportNotif->id) }}" data-no-ajax class="bg-emerald-50/90 hover:bg-emerald-100/80 text-slate-900 border border-emerald-300 p-4 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm transition-all group block">
+    <a href="{{ route('notifications.open', $latestSalesReportNotif->id) }}" class="bg-emerald-50/90 hover:bg-emerald-100/80 text-slate-900 border border-emerald-300 p-4 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm transition-all group block">
       <div class="flex items-center gap-3">
         <div class="w-9 h-9 rounded-xl bg-[#006c47] text-white flex items-center justify-center shrink-0">
           <span class="material-symbols-outlined text-lg">insights</span>
@@ -138,11 +139,11 @@
   <!-- ========================================================================= -->
   <!-- 2. BARRA DE CONTROL DE PERIODOS Y PESTAÑAS SEGMENTADAS (ESTILO ANALISTA) -->
   <!-- ========================================================================= -->
-  <div class="merchant-dashboard-toolbar bg-white p-4 rounded-2xl shadow-[0_12px_32px_rgba(27,28,28,.06)] border border-outline-variant/20 space-y-3">
+  <div class="bg-white p-4 rounded-2xl shadow-[0_12px_32px_rgba(27,28,28,.06)] border border-outline-variant/20 space-y-3">
     
     <!-- Fila de Filtros y Periodo Global -->
-    <div class="merchant-dashboard-period flex flex-col lg:flex-row lg:items-center justify-between gap-3 pb-3 border-b border-outline-variant/15">
-      <div class="flex flex-wrap items-center gap-2 min-w-0">
+    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3 pb-3 border-b border-outline-variant/15">
+      <div class="flex flex-wrap items-center gap-2">
         <span class="material-symbols-outlined text-[#006c47] text-xl">calendar_month</span>
         <span class="text-xs font-extrabold text-on-background uppercase tracking-wider">Periodo Comercial:</span>
         @foreach(['today' => 'Hoy', '7d' => '7 Días', '30d' => '30 Días', '90d' => 'Trimestre', 'all' => 'Histórico'] as $pKey => $pLbl)
@@ -155,7 +156,7 @@
         @endforeach
       </div>
 
-      <div class="merchant-dashboard-summary flex flex-wrap items-center gap-3 text-xs">
+      <div class="flex flex-wrap items-center gap-3 text-xs">
         <div class="flex items-center gap-1.5 bg-emerald-50/80 border border-emerald-200/80 rounded-xl px-3 py-1 text-slate-700">
           <span class="font-extrabold text-[#006c47]">Comisión FusaShop:</span>
           <span class="font-black text-slate-900">8.0%</span>
@@ -575,13 +576,8 @@
                   </td>
 
                   <td class="py-3.5 px-4" data-label="Cliente / Contacto">
-                    <div class="flex items-center gap-2">
-                      <x-user-avatar :user="$order->user" size="w-8 h-8" text-size="text-[10px]" />
-                      <div class="min-w-0">
-                        <p class="font-bold text-slate-900">{{ $order->user->name ?? 'Cliente' }}</p>
-                        <span class="text-[11px] text-slate-500">{{ $order->user->phone ?? 'Sin teléfono' }}</span>
-                      </div>
-                    </div>
+                    <p class="font-bold text-slate-900">{{ $order->user->name ?? 'Cliente' }}</p>
+                    <span class="text-[11px] text-slate-500">{{ $order->user->phone ?? 'Sin teléfono' }}</span>
                   </td>
 
                   <td class="py-3.5 px-4" data-label="Productos / Cant.">
@@ -733,8 +729,7 @@
         @forelse($recentReviews as $rev)
           <div class="p-4 rounded-xl bg-slate-50 border border-slate-200/80 space-y-1.5">
             <div class="flex items-center justify-between">
-              <div class="flex items-center gap-2 min-w-0">
-                <x-user-avatar :user="$rev->user" size="w-7 h-7" text-size="text-[10px]" />
+              <div class="flex items-center gap-2">
                 <span class="font-bold text-xs text-slate-900">{{ $rev->user->name ?? 'Comprador verificado' }}</span>
                 <span class="text-amber-500 font-bold text-xs">★ {{ $rev->rating }}</span>
               </div>
@@ -992,26 +987,13 @@
 
 <!-- SCRIPT DE INICIALIZACIÓN DE GRÁFICOS CHART.JS -->
 <script>
-function initializeMerchantCharts() {
-  if (!window.Chart) {
-    let loader = document.getElementById('merchant-chartjs-loader');
-    if (!loader) {
-      loader = document.createElement('script');
-      loader.id = 'merchant-chartjs-loader';
-      loader.src = 'https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js';
-      loader.onload = initializeMerchantCharts;
-      document.head.appendChild(loader);
-    }
-    return;
-  }
-
+document.addEventListener('DOMContentLoaded', function() {
   const salesLabels = {!! json_encode(array_column($dailySales, 'label')) !!};
   const salesValues = {!! json_encode(array_column($dailySales, 'sales')) !!};
 
   // 1. Gráfico de Tendencia de Ventas (Línea con Gradiente)
   const salesCanvas = document.getElementById('merchantSalesChart');
   if (salesCanvas) {
-    window.Chart.getChart(salesCanvas)?.destroy();
     const ctx = salesCanvas.getContext('2d');
     const gradient = ctx.createLinearGradient(0, 0, 0, 260);
     gradient.addColorStop(0, 'rgba(0, 108, 71, 0.35)');
@@ -1079,7 +1061,6 @@ function initializeMerchantCharts() {
 
   const catCanvas = document.getElementById('merchantCategoryChart');
   if (catCanvas && catLabels.length > 0) {
-    window.Chart.getChart(catCanvas)?.destroy();
     new Chart(catCanvas, {
       type: 'doughnut',
       data: {
@@ -1111,12 +1092,6 @@ function initializeMerchantCharts() {
       }
     });
   }
-}
-
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initializeMerchantCharts, { once: true });
-} else {
-  initializeMerchantCharts();
-}
+});
 </script>
 @endsection

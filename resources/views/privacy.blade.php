@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Política de Privacidad y Tratamiento de Datos')
+@section('title', 'Política de Privacidad')
 
 @section('content')
 <div class="container mx-auto px-4 py-12 max-w-4xl">

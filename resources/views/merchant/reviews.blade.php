@@ -29,7 +29,9 @@
       @foreach($reviews as $review)
       <div class="bg-surface-container-lowest rounded-2xl p-6 shadow-card">
         <div class="flex gap-4 mb-4">
-            <x-user-avatar :user="$review->user" />
+            <div class="w-10 h-10 bg-primary-gradient rounded-full flex items-center justify-center text-white font-bold text-sm shrink-0">
+              {{ strtoupper(substr($review->user->name,0,1)) }}
+            </div>
             <div class="flex-1 min-w-0">
               <div class="flex items-center justify-between flex-wrap gap-2">
                 <div>

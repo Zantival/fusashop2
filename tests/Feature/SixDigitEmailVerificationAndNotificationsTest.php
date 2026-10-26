@@ -23,15 +23,12 @@ class SixDigitEmailVerificationAndNotificationsTest extends TestCase
         $this->withoutMiddleware(\Illuminate\Routing\Middleware\ThrottleRequests::class);
 
         $response = $this->post(route('register.post'), [
-            'name'                      => 'Alejandro Rojas',
-            'email'                     => 'alejandro@fusagasuga.com',
-            'phone'                     => '3123456789',
-            'password'                  => 'Password123!',
-            'password_confirmation'     => 'Password123!',
-            'role'                      => 'consumer',
-            'accepted_terms'            => 1,
-            'accepted_privacy'          => 1,
-            'age_or_guardian_confirmed' => 1,
+            'name'                  => 'Alejandro Rojas',
+            'email'                 => 'alejandro@fusagasuga.com',
+            'phone'                 => '3123456789',
+            'password'              => 'Password123!',
+            'password_confirmation' => 'Password123!',
+            'role'                  => 'consumer',
         ]);
 
         $response->assertRedirect(route('verification.notice'));
@@ -43,13 +40,9 @@ class SixDigitEmailVerificationAndNotificationsTest extends TestCase
         $this->assertEquals(6, strlen($user->verification_code));
         $this->assertTrue($user->verification_code_expires_at->isFuture());
 
-        // Correo 1: El código OTP de 6 números se envía de primeras
         Mail::assertSent(VerifyEmailCodeMail::class, function ($mail) use ($user) {
             return $mail->hasTo($user->email) && $mail->code === $user->verification_code;
         });
-
-        // El correo de bienvenida con invitación al catálogo NO debe enviarse de primeras
-        Mail::assertNotSent(\App\Mail\WelcomeMail::class);
     }
 
     public function test_verify_email_page_renders_six_digit_form(): void
@@ -94,8 +87,6 @@ class SixDigitEmailVerificationAndNotificationsTest extends TestCase
 
     public function test_submitting_correct_code_verifies_account_and_redirects(): void
     {
-        Mail::fake();
-
         $user = User::create([
             'name'                         => 'Test User',
             'email'                        => 'test3@example.com',
@@ -114,11 +105,6 @@ class SixDigitEmailVerificationAndNotificationsTest extends TestCase
         $response->assertRedirect(route('consumer.home'));
         $this->assertNotNull($user->fresh()->email_verified_at);
         $this->assertNull($user->fresh()->verification_code);
-
-        // Correo 2: Solo después de digitar el código de 6 números se envía el correo de bienvenida al catálogo
-        Mail::assertSent(\App\Mail\WelcomeMail::class, function ($mail) use ($user) {
-            return $mail->hasTo($user->email);
-        });
     }
 
     public function test_resending_code_generates_new_otp_and_sends_email(): void
@@ -161,34 +147,11 @@ class SixDigitEmailVerificationAndNotificationsTest extends TestCase
 
         $rendered = $mailable->render();
 
-        $this->assertStringContainsString('Confirma tu correo', $rendered);
+        $this->assertStringContainsString('Bienvenido a', $rendered);
         $this->assertStringContainsString('color:#10B981;', $rendered);
         $this->assertStringContainsString('color:#2563EB;', $rendered);
         $this->assertStringContainsString('color:#F97316;', $rendered);
         $this->assertStringContainsString('852963', $rendered);
-        $this->assertStringContainsString('¿No fuiste tú', $rendered);
-        $this->assertStringContainsString('Reportar problema', $rendered);
-    }
-
-    public function test_welcome_email_contains_brand_colors_and_catalog_invitation(): void
-    {
-        $user = User::create([
-            'name'     => 'Sofia Rodriguez',
-            'email'    => 'sofia@example.com',
-            'password' => Hash::make('password123'),
-            'role'     => 'consumer',
-            'phone'    => '3001234567',
-        ]);
-        $mailable = new \App\Mail\WelcomeMail($user);
-
-        $rendered = $mailable->render();
-
-        $this->assertStringContainsString('¡Bienvenido a FusaShop!', $rendered);
-        $this->assertStringContainsString('Ahora sí, todo listo para explorar el catálogo', $rendered);
-        $this->assertStringContainsString('color:#10B981;', $rendered);
-        $this->assertStringContainsString('color:#2563EB;', $rendered);
-        $this->assertStringContainsString('color:#F97316;', $rendered);
-        $this->assertStringContainsString('Explorar el Catálogo Ahora', $rendered);
     }
 
     public function test_low_stock_email_contains_fusashop_branding_and_product_details(): void
@@ -250,66 +213,5 @@ class SixDigitEmailVerificationAndNotificationsTest extends TestCase
         $this->assertStringContainsString('SERVIENTREGA', $rendered);
         $this->assertStringContainsString('https://envia.com/rastreo?label=SERVI-9876543210', $rendered);
         $this->assertStringContainsString('color:#10B981;', $rendered);
-    }
-
-    public function test_user_can_report_unrecognized_registration_which_blocks_account_and_notifies_analysts(): void
-    {
-        $this->withoutMiddleware(\Illuminate\Routing\Middleware\ThrottleRequests::class);
-        \Illuminate\Support\Facades\Notification::fake();
-
-        $analyst = User::create([
-            'name'              => 'Admin Analista',
-            'email'             => 'analyst@fusashop.com',
-            'password'          => Hash::make('password123'),
-            'role'              => 'analyst',
-            'phone'             => '3001234567',
-            'email_verified_at' => now(),
-        ]);
-
-        $victim = User::create([
-            'name'                         => 'Victima Spoof',
-            'email'                        => 'victima@example.com',
-            'password'                     => Hash::make('password123'),
-            'role'                         => 'consumer',
-            'phone'                        => '3001234567',
-            'email_verified_at'            => null,
-            'verification_code'            => '998877',
-            'verification_code_expires_at' => now()->addMinutes(30),
-        ]);
-
-        $signedUrl = \Illuminate\Support\Facades\URL::temporarySignedRoute(
-            'security.registration-report.show',
-            now()->addDays(30),
-            ['user' => $victim->id]
-        );
-
-        $response = $this->get($signedUrl);
-        $response->assertOk();
-        $response->assertSee('¿No reconoces este registro en FusaShop?');
-        $response->assertSee('victima@example.com');
-
-        $postUrl = \Illuminate\Support\Facades\URL::temporarySignedRoute(
-            'security.registration-report.store',
-            now()->addDays(30),
-            ['user' => $victim->id]
-        );
-
-        $postResponse = $this->post($postUrl, [
-            'confirm_report' => 1,
-        ]);
-
-        $postResponse->assertOk();
-        $postResponse->assertSee('Reporte Procesado Exitosamente');
-        $postResponse->assertSee('bloqueada preventivamente');
-
-        $victim->refresh();
-        $this->assertTrue((bool) $victim->is_blocked);
-        $this->assertNull($victim->verification_code);
-        $this->assertStringContainsString('no autorizado', $victim->blocked_reason);
-
-        \Illuminate\Support\Facades\Notification::assertSentTo(
-            $analyst,
-            \App\Notifications\UnrecognizedRegistrationNotification::class
-        );
     }
 }

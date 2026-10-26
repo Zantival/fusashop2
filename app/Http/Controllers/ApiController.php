@@ -3,14 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\{User, Product, Cart, CartItem, Order, OrderItem};
-use App\Mail\VerifyEmailCodeMail;
-use App\Mail\WelcomeMail;
-use App\Notifications\WelcomeNotification;
 use App\Support\PasswordPolicy;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Mail;
 
 class ApiController extends Controller
 {
@@ -18,8 +14,7 @@ class ApiController extends Controller
     {
         $request->validate(['email' => 'required|email', 'password' => 'required']);
         $user = User::where('email', $request->email)->first();
-        if (!$user || !Hash::check($request->password, $user->password)
-            || $user->is_blocked || !$user->hasVerifiedEmail()) {
+        if (!$user || !Hash::check($request->password, $user->password)) {
             return response()->json(['message' => 'Credenciales incorrectas.'], 401);
         }
         $token = $user->createToken('api-token')->plainTextToken;
@@ -30,88 +25,19 @@ class ApiController extends Controller
     {
         $data = $request->validate([
             'name'     => 'required|string|max:255',
-            'email'    => 'required|email|unique:users,email',
+            'email'    => 'required|email|unique:users',
             'password' => ['required', 'confirmed', PasswordPolicy::rule()],
             'role'     => 'required|in:consumer,merchant',
-            'accepted_terms' => ['required', 'accepted'],
-            'accepted_privacy' => ['required', 'accepted'],
-            'age_or_guardian_confirmed' => ['required', 'accepted'],
-            'marketing_opt_in' => ['nullable', 'accepted'],
         ], PasswordPolicy::messages());
         $user = User::create([
             'name'     => strip_tags($data['name']),
-            'email'    => strtolower($data['email']),
+            'email'    => $data['email'],
             'password' => Hash::make($data['password']),
             'role'     => $data['role'],
-            'accepted_terms_at' => now(),
-            'accepted_privacy_at' => now(),
-            'accepted_terms_version' => '2026-10-25',
-            'accepted_privacy_version' => '2026-10-25',
-            'age_or_guardian_confirmed_at' => now(),
-            'marketing_consent_at' => !empty($data['marketing_opt_in']) ? now() : null,
         ]);
         if ($user->isConsumer()) Cart::create(['user_id' => $user->id]);
-        $code = $user->generateVerificationCode();
-        try {
-            Mail::to($user->email)->send(new VerifyEmailCodeMail($user, $code));
-        } catch (\Throwable $e) {
-            Log::error('API registration verification email could not be sent.', ['exception' => $e::class]);
-        }
-
-        return response()->json([
-            'message' => 'Cuenta creada. Verifica tu correo con el código de 6 dígitos para iniciar sesión.',
-            'requires_verification' => true,
-            'email' => $user->email,
-        ], 201);
-    }
-
-    public function verifyEmailCode(Request $request)
-    {
-        $data = $request->validate([
-            'email' => ['required', 'email'],
-            'code' => ['required', 'digits:6'],
-        ]);
-        $user = User::where('email', strtolower($data['email']))->first();
-        if (!$user || $user->is_blocked || $user->hasVerifiedEmail() || !$user->verifyCode($data['code'])) {
-            return response()->json(['message' => 'El código no es válido o venció.'], 422);
-        }
-
-        try {
-            Mail::to($user->email)->send(new WelcomeMail($user));
-        } catch (\Throwable $e) {
-            Log::error('API welcome email could not be sent after verification.', [
-                'user_id' => $user->id,
-                'exception' => $e::class,
-            ]);
-        }
-
-        try {
-            $user->notify(new WelcomeNotification());
-        } catch (\Throwable $e) {
-            Log::error('API welcome notification could not be stored after verification.', [
-                'user_id' => $user->id,
-                'exception' => $e::class,
-            ]);
-        }
-
         $token = $user->createToken('api-token')->plainTextToken;
-        return response()->json(['token' => $token, 'user' => $user, 'role' => $user->role]);
-    }
-
-    public function resendVerificationCode(Request $request)
-    {
-        $data = $request->validate(['email' => ['required', 'email']]);
-        $user = User::where('email', strtolower($data['email']))->first();
-        if ($user && !$user->is_blocked && !$user->hasVerifiedEmail()) {
-            $code = $user->generateVerificationCode();
-            try {
-                Mail::to($user->email)->send(new VerifyEmailCodeMail($user, $code));
-            } catch (\Throwable $e) {
-                Log::error('API verification email could not be resent.', ['exception' => $e::class]);
-            }
-        }
-
-        return response()->json(['message' => 'Si la cuenta requiere verificación, enviaremos un nuevo código.'], 202);
+        return response()->json(['token' => $token, 'user' => $user], 201);
     }
 
     public function logout(Request $request)

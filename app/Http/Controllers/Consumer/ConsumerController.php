@@ -9,7 +9,6 @@ use App\Events\ProductOutOfStock;
 use App\Notifications\{NewProductReview, NewOrderNotification};
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
@@ -18,29 +17,11 @@ class ConsumerController extends Controller
     public function home()
     {
         $featured = Product::active()->with('merchant.companyProfile')->latest()->take(8)->get();
-        // El agregado de unidades vendidas consulta pedidos y productos. Cachear
-        // solo los IDs conserva stock/precios actuales al cargar las tarjetas.
-        $flashDealIds = Cache::remember('consumer.home.flash_deal_ids.v1', now()->addSeconds(30), function () {
-            return Product::active()
-                ->withSum(['orderItems as sold_qty' => function ($q) {
-                    $q->whereHas('order', fn ($o) => $o->where('status', '!=', 'cancelled'));
-                }], 'quantity')
-                ->orderByRaw('COALESCE(sold_qty, 0) DESC')
-                ->orderByDesc('discount_percent')
-                ->latest()
-                ->take(4)
-                ->pluck('id')
-                ->all();
-        });
-        $flashDealProducts = Product::active()
-            ->with('merchant.companyProfile')
-            ->whereKey($flashDealIds)
-            ->get()
-            ->keyBy('id');
-        $flashDeals = collect($flashDealIds)
-            ->map(fn ($id) => $flashDealProducts->get($id))
-            ->filter()
-            ->values();
+        $flashDeals = Product::active()->with('merchant.companyProfile')
+            ->orderByDesc('discount_percent')
+            ->latest()
+            ->take(4)
+            ->get();
         $categories = Product::active()->select('category')->distinct()->pluck('category');
         $globalBanners = GlobalBanner::where('is_active', true)->orderBy('sort_order')->take(8)->get();
         $topBanners = $globalBanners->take(4)->values();
@@ -52,10 +33,10 @@ class ConsumerController extends Controller
     {
         $q = Product::active()->with('merchant.companyProfile');
         
-        if ($request->filled('search'))        $q->search(strip_tags((string) $request->search));
-        if ($request->filled('category'))      $q->where('category', strip_tags((string) $request->category));
-        if ($request->filled('min_price') && is_numeric($request->min_price))     $q->where('price', '>=', max(0, (float) $request->min_price));
-        if ($request->filled('max_price') && is_numeric($request->max_price))     $q->where('price', '<=', max(0, (float) $request->max_price));
+        if ($request->filled('search'))        $q->search($request->search);
+        if ($request->filled('category'))      $q->where('category', $request->category);
+        if ($request->filled('min_price'))     $q->where('price', '>=', $request->min_price);
+        if ($request->filled('max_price'))     $q->where('price', '<=', $request->max_price);
         if ($request->boolean('on_sale'))      $q->where('discount_percent', '>', 0);
         if ($request->boolean('allows_points')) $q->where('allows_points', true);
         if ($request->filled('merchant_id'))   $q->where('merchant_id', (int) $request->merchant_id);
@@ -117,16 +98,6 @@ class ConsumerController extends Controller
     {
         $links = [];
         $escalate = false;
-
-        if (preg_match('/\b(estaf\w*|fraud\w*|suplant\w*|phishing|rob\w*|cuenta comprometida|cobro no reconocido|cobro indebido)\b/i', $normalized)) {
-            $answer = "🛡️ **Reporte prioritario de seguridad para comerciantes:**\n\n"
-                . "Conserva capturas, comprobantes, fecha, referencia del pago y número de pedido. No envíes contraseñas, códigos OTP, PIN ni claves de Wompi por el chat. Radica el caso como seguridad para que el equipo de soporte lo identifique con prioridad urgente; también puedes contactar al analista en el chat interno.";
-            $links[] = ['label' => '🛡️ Radicar reporte de seguridad', 'url' => route('pqrs.create', ['category' => 'seguridad']), 'primary' => true];
-            if ($adminId) {
-                $links[] = ['label' => '💬 Contactar al analista', 'url' => route('merchant.support.contact', ['analyst' => $adminId])];
-            }
-            return response()->json(['answer' => $answer, 'links' => $links, 'products' => [], 'escalate' => true]);
-        }
 
         // 1. Error en Facturación Electrónica Factus / DIAN
         if (preg_match('/\b(error.*factur|fallo.*factur|error.*factus|fallo.*factus|error.*dian|cufe|xml.*error|error.*xml)\b/', $normalized)) {
@@ -265,15 +236,9 @@ class ConsumerController extends Controller
             $links[] = ['label' => '📑 Ir a Gestión de PQRS', 'url' => route('pqrs.index')];
         } elseif (preg_match('/\b(log|logs|error|errores|fallo|fallos|auditoria|wompi|envia|factus)\b/', $normalized)) {
             $failedLogsCount = \App\Models\IntegrationLog::where('status', 'failed')->where('created_at', '>=', now()->subDays(7))->count();
-            $service = match (true) {
-                str_contains($normalized, 'envia') => 'Envia.com (cotizaciones y guías)',
-                str_contains($normalized, 'factus') => 'Factus (emisión DIAN)',
-                str_contains($normalized, 'wompi') => 'Wompi (pagos)',
-                default => 'las integraciones externas',
-            };
-            $answer = "🛡️ **Revisión de {$service}:**\n\n"
-                . "Hay **{$failedLogsCount} fallos de integraciones en los últimos 7 días**. Abre el registro de integraciones, filtra por el servicio mencionado y revisa el código HTTP y el detalle devuelto por el proveedor. Si el registro permite reintento, reprocesa solo después de corregir la causa, como una credencial o configuración inválida.";
-            $links[] = ['label' => '🛡️ Abrir registros de integraciones', 'url' => route('analyst.integrations'), 'primary' => true];
+            $answer = "🛡️ **Auditoría e Integraciones:**\n\n"
+                . "Se han registrado **{$failedLogsCount} incidentes** en logs de integración (Wompi / Factus / Envia.com) durante los últimos 7 días. Los pedidos en estado de reintento pueden ser reprocesados desde el módulo de logs.";
+            $links[] = ['label' => '🛡️ Ver Auditoría en Dashboard', 'url' => route('analyst.dashboard')];
         } else {
             $answer = "Hola Administrador " . e($user->name) . " 🛡️\n\n"
                 . "Soy el Asistente Interno FusaBot. Tengo acceso a las métricas del sistema:\n"
@@ -298,11 +263,6 @@ class ConsumerController extends Controller
     {
         $links = [];
         $escalate = false;
-        $hasSpecificProductRequest = (bool) preg_match(
-            '/\b(camisa|camiseta|pantalon|vestido|falda|chaqueta|zapato|calzado|mochila|sombrero|ruana|cafe|audifono|cargador|mouse|teclado|balon|hotel|hostal|glamping|hospedaje|alojamiento|restaurante|producto|articulo)\b/',
-            $normalized
-        );
-        $isOfferRequest = (bool) preg_match('/\b(oferta|ofertas|descuento|descuentos|promocion|promociones|rebaja|rebajas|liquidacion)\b/', $normalized);
 
         // =========================================================================
         // A. ERRORES ESPECÍFICOS Y RESOLUCIÓN TÉCNICA (NUNCA ENVIAR A COMPRAR)
@@ -338,17 +298,12 @@ class ConsumerController extends Controller
         }
 
         // 2. Error de Inicio de Sesión, Registro, Código OTP de 6 Dígitos, Contraseña o Bloqueo
-        $otpFocusIssue = (bool) preg_match('/\b(codigo|verificacion|digito|numero|casilla)\b.*\b(casilla|numero|digito|avanza|avanzar|pasa|siguiente|escribe|escribir|teclado)\b|\b(casilla|numero|digito)\b.*\b(no avanza|no pasa|no cambia|siguiente)\b/', $normalized);
-        if ($otpFocusIssue || preg_match('/\b(error.*iniciar|error.*login|error.*registro|error.*clave|error.*contrasena|error.*codigo|codigo.*incorrecto|no.*llega.*codigo|error.*verific|no.*puedo.*entrar|no.*puedo.*ingresar|cuenta.*bloqueada|error.*google)\b/', $normalized)) {
-            if ($otpFocusIssue) {
-                $answer = "🔢 **El código no avanza a la siguiente casilla:** escribe un solo dígito en cada campo; al detectarlo, el cursor debe pasar automáticamente al siguiente. Si el navegador no cambia el foco, recarga la página y vuelve a intentarlo. También puedes pegar los seis dígitos en una casilla. Si continúa, solicita otro código y repórtalo a soporte.";
-            } else {
-                $answer = "🔐 **Solución a Inconvenientes de Acceso, Registro o Verificación:**\n\n"
-                    . "1. 📩 **Código de Verificación de 6 Dígitos**: Revisa tu carpeta de *Spam / Correo no deseado*. El código expira a los 30 minutos. Puedes pulsar en *'Reenviar código'* desde la pantalla de verificación.\n"
-                    . "2. 🌐 **Inicio de Sesión con Google**: Si es tu primera vez registrándote, el sistema te solicitará seleccionar tu rol (Cliente o Vendedor) e indicar tu número de teléfono.\n"
-                    . "3. 🔑 **Contraseña Olvidada**: En la pantalla de login haz clic en *'¿Olvidaste tu contraseña?'* para solicitar el restablecimiento seguro.\n"
-                    . "4. 🚫 **Cuenta Bloqueada**: Si tu cuenta fue bloqueada por seguridad o intentos fallidos, el Administrador puede reactivarla.";
-            }
+        if (preg_match('/\b(error.*iniciar|error.*login|error.*registro|error.*clave|error.*contrasena|error.*codigo|codigo.*incorrecto|no.*llega.*codigo|error.*verific|no.*puedo.*entrar|no.*puedo.*ingresar|cuenta.*bloqueada|error.*google)\b/', $normalized)) {
+            $answer = "🔐 **Solución a Inconvenientes de Acceso, Registro o Verificación:**\n\n"
+                . "1. 📩 **Código de Verificación de 6 Dígitos**: Revisa tu carpeta de *Spam / Correo no deseado*. El código expira a los 30 minutos. Puedes pulsar en *'Reenviar código'* desde la pantalla de verificación.\n"
+                . "2. 🌐 **Inicio de Sesión con Google**: Si es tu primera vez registrándote, el sistema te solicitará seleccionar tu rol (Cliente o Vendedor) e indicar tu número de teléfono.\n"
+                . "3. 🔑 **Contraseña Olvidada**: En la pantalla de login haz clic en *'¿Olvidaste tu contraseña?'* para solicitar el restablecimiento seguro.\n"
+                . "4. 🚫 **Cuenta Bloqueada**: Si tu cuenta fue bloqueada por seguridad o intentos fallidos, el Administrador puede reactivarla.";
 
             if (Auth::check()) {
                 $links[] = [
@@ -396,14 +351,14 @@ class ConsumerController extends Controller
 
         // 5. Casos Críticos (Estafas, cobro indebido, producto dañado, robo, demanda)
         $isCriticalIssue = (bool) preg_match(
-            '/\b(estaf\w*|fraud\w*|suplant\w*|phishing|rob\w*|cobro.*indebido|no llega|no llego|extraviad|perdid|danad|rot|grave|demanda|abogado)\b/i',
+            '/\b(estafa|robo|cobro.*indebido|no llega|no llego|extraviad|perdid|danad|rot|grave|demanda|abogado)\b/i',
             $normalized
         );
 
         if ($isCriticalIssue) {
             $escalate = true;
-            $answer = "⚠️ **Reporte de seguridad o incidente prioritario:**\n\n"
-                . "Si sospechas de una estafa, suplantación o cobro no reconocido, guarda los comprobantes y reporta el número del pedido y la fecha. No compartas contraseñas, códigos de verificación, PIN ni datos completos de tarjetas. Puedes hablar con el equipo o radicar un caso formal de seguridad:";
+            $answer = "⚠️ **Atención Prioritaria con Soporte Administrativo:**\n\n"
+                . "Lamento sinceramente el inconveniente con tu compra o pedido. Para resolver este caso con la mayor rapidez y seguridad, he habilitado la conexión directa para que te atienda un **Administrador en Vivo** a través de nuestro chat interno, o puedas formalizar tu solicitud mediante radicación de PQRS:";
 
             if (Auth::check()) {
                 $links[] = [
@@ -419,7 +374,7 @@ class ConsumerController extends Controller
                 ];
             }
 
-            $links[] = ['label' => '🛡️ Reportar posible fraude (prioridad urgente)', 'url' => route('pqrs.create', ['category' => 'seguridad'])];
+            $links[] = ['label' => '📝 Radicar PQRS Oficial', 'url' => route('pqrs.create')];
             $links[] = ['label' => 'ℹ️ Centro de Ayuda', 'url' => route('consumer.support.contact')];
 
             return response()->json([
@@ -487,7 +442,7 @@ class ConsumerController extends Controller
         }
 
         // 9. FAQ: Envíos con Envia.com
-        if (!$hasSpecificProductRequest && !$isOfferRequest && preg_match('/\b(envio|envios|entrega|entregas|despacho|flete|tiempo|tiempos|cuanto tarda|cobertura|llegada|transportadora)\b/', $normalized)) {
+        if (preg_match('/\b(envio|envios|entrega|entregas|despacho|flete|tiempo|tiempos|cuanto tarda|cobertura|llegada|transportadora)\b/', $normalized)) {
             $answer = "🚚 **Envíos y Cobertura con Envia.com:**\n\n"
                 . "En FusaShop todos los envíos son gestionados por **Envia.com** con cobertura urbana en Fusagasugá, zonas turísticas (Chinauta, Silvania) y despacho a nivel nacional.\n\n"
                 . "• **Tarifa**: Se calcula de forma transparente según el peso volumétrico y tu dirección en el checkout.\n"
@@ -497,7 +452,7 @@ class ConsumerController extends Controller
         }
 
         // 10. FAQ: Métodos de Pago con Wompi
-        if (!$hasSpecificProductRequest && !$isOfferRequest && preg_match('/\b(pago|pagos|pagar|metodo|metodos|nequi|daviplata|pse|tarjeta|tarjetas|wompi|credito|debito|bancolombia)\b/', $normalized)) {
+        if (preg_match('/\b(pago|pagos|pagar|metodo|metodos|nequi|daviplata|pse|tarjeta|tarjetas|wompi|credito|debito|bancolombia)\b/', $normalized)) {
             $answer = "💳 **Métodos de Pago Seguros con Wompi:**\n\n"
                 . "Tu dinero está 100% protegido. Aceptamos:\n"
                 . "• Transferencias PSE desde cualquier banco del país.\n"
@@ -510,7 +465,7 @@ class ConsumerController extends Controller
         }
 
         // 11. FAQ: Registro como Vendedor
-        if (!$hasSpecificProductRequest && !$isOfferRequest && preg_match('/\b(vender|vendedor|vendedora|registrar|registrarme|mi negocio|publicar)\b/', $normalized)) {
+        if (preg_match('/\b(vender|vendedor|vendedora|registrar|registrarme|mi negocio|publicar)\b/', $normalized)) {
             $answer = "🏪 **¿Quieres vender tus productos en FusaShop?**\n\n"
                 . "Únete a la red comercial del Sumapaz. Regístrate seleccionando el perfil de comerciante, sube tu RUT y Cámara de Comercio, y comienza a publicar tu catálogo para llegar a miles de compradores.";
             $links[] = ['label' => '📝 Registrarme como comerciante', 'url' => route('register')];
@@ -518,7 +473,7 @@ class ConsumerController extends Controller
         }
 
         // 12. FAQ: Perfil y Gestión de Cuenta
-        if (!$hasSpecificProductRequest && !$isOfferRequest && preg_match('/\b(perfil|cuenta|nombre|correo|email|telefono|direccion|avatar|foto)\b/', $normalized)) {
+        if (preg_match('/\b(perfil|cuenta|nombre|correo|email|telefono|direccion|avatar|foto)\b/', $normalized)) {
             $answer = "👤 **Gestión de Mi Perfil:**\n\n"
                 . "Puedes cambiar tu nombre, correo, teléfono, direcciones de envío guardadas y foto desde Mi Perfil. Edita los campos y guarda los cambios al final del formulario.";
             $links[] = [
@@ -529,7 +484,7 @@ class ConsumerController extends Controller
         }
 
         // 13. FAQ: Cómo comprar / Pedidos / Carrito
-        if (!$hasSpecificProductRequest && !$isOfferRequest && preg_match('/\b(comprar|compra|como comprar|como realizo una compra|pedido|pedidos|carrito|checkout)\b/', $normalized)) {
+        if (preg_match('/\b(comprar|compra|como comprar|como realizo una compra|pedido|pedidos|carrito|checkout)\b/', $normalized)) {
             $answer = "🛍️ **Cómo comprar en FusaShop:**\n\n"
                 . "Para comprar, abre el catálogo, elige un producto y agrégalo al carrito. Después confirma tu dirección de entrega y el método de pago para completar el pedido con total seguridad.";
             $links[] = ['label' => 'Ir al catálogo', 'url' => route('consumer.catalog')];
@@ -548,9 +503,7 @@ class ConsumerController extends Controller
             'algun', 'favor', 'venden', 'vender', 'comprar', 'compra',
             'error', 'errores', 'problema', 'problemas', 'fallo', 'fallos', 'falla', 'fallas',
             'bug', 'bugs', 'presento', 'tengo', 'sucede', 'pasa', 'salio', 'sale',
-            'pantalla', 'sistema', 'pagina', 'soporte', 'ayuda', 'dame',
-            'oferta', 'ofertas', 'descuento', 'descuentos', 'promocion', 'promociones',
-            'rebaja', 'rebajas', 'liquidacion'
+            'pantalla', 'sistema', 'pagina', 'soporte', 'ayuda'
         ];
         $terms = array_values(array_unique(array_filter(
             $words,
@@ -598,18 +551,13 @@ class ConsumerController extends Controller
         }
 
         $productKeywords = array_merge(...array_map(fn ($topic) => $topic['keywords'], array_values($topics)));
-        $isProductRequest = $hasSpecificProductRequest || $isOfferRequest
-            || (bool) array_intersect($terms, $productKeywords)
+        $isProductRequest = (bool) array_intersect($terms, $productKeywords)
             || (bool) array_intersect($terms, ['producto', 'productos', 'articulo', 'articulos']);
 
         $products = collect();
-        if (!empty($terms) || $isOfferRequest) {
-            $productQuery = \App\Models\Product::active();
-            if ($isOfferRequest) {
-                $productQuery->where('discount_percent', '>', 0);
-            }
-            if (!empty($terms)) {
-                $productQuery->where(function ($builder) use ($terms, $categoryHints) {
+        if (!empty($terms)) {
+            $products = \App\Models\Product::active()
+                ->where(function ($builder) use ($terms, $categoryHints) {
                     foreach ($terms as $term) {
                         $builder->orWhere('name', 'like', "%{$term}%")
                             ->orWhere('description', 'like', "%{$term}%")
@@ -619,16 +567,15 @@ class ConsumerController extends Controller
                     foreach ($categoryHints as $hint) {
                         $builder->orWhere('category', 'like', "%{$hint}%");
                     }
-                });
-            }
-            $productQuery->orderByDesc($isOfferRequest ? 'discount_percent' : 'stock')->latest();
-            $products = $productQuery->take(5)->get(['id', 'name', 'description', 'category', 'price', 'discount_percent', 'image', 'images']);
+                })
+                ->orderByDesc('stock')
+                ->latest()
+                ->take(5)
+                ->get(['id', 'name', 'description', 'category', 'price', 'discount_percent', 'image', 'images']);
         }
 
         if ($products->isNotEmpty()) {
-            $answer = $isOfferRequest
-                ? "🏷️ Estas son las ofertas activas que encontré en FusaShop:"
-                : "🌸 Encontré estas opciones que coinciden con lo que buscas:";
+            $answer = "🌸 Encontré estas excelentes opciones en los comercios de Fusagasugá para ti:";
             $links[] = ['label' => 'Ver todo el catálogo', 'url' => route('consumer.catalog', ['search' => $rawQuery])];
         } elseif ($isProductRequest) {
             $answer = "No encontré coincidencias con ese término en el catálogo en este momento. Prueba con otro nombre o categoría.";
@@ -685,14 +632,6 @@ class ConsumerController extends Controller
     {
         $user = Auth::user();
         $cart = $user->cart()->with('items.product.merchant.companyProfile')->firstOrCreate(['user_id' => $user->id]);
-        foreach ($cart->items as $item) {
-            if ($item->product) {
-                $currentPrice = $item->product->priceForOptions($item->selected_options ?? []);
-                if ((float) $item->unit_price !== $currentPrice) {
-                    $item->update(['unit_price' => $currentPrice]);
-                }
-            }
-        }
         $userPoints = $user->totalPoints();
         return view('consumer.cart', compact('cart', 'userPoints'));
     }
@@ -717,15 +656,6 @@ class ConsumerController extends Controller
         $cart = Cart::firstOrCreate(['user_id' => Auth::id()]);
         
         $selectedOptions = $request->input('options', []);
-        if (!$product->validOptionSelection($selectedOptions)) {
-            return back()->withErrors(['options' => 'Selecciona una opción válida para cada especificación del producto.'])->withInput();
-        }
-
-        $variant = $product->variantForOptions($selectedOptions);
-        if ($product->variants && !$variant) {
-            return back()->withErrors(['options' => 'La combinación seleccionada ya no está disponible.'])->withInput();
-        }
-        $unitPrice = $product->priceForOptions($selectedOptions);
         
         // Intentamos encontrar un item existente con las mismas opciones
         // Para simplificar, buscamos por JSON exacto si es posible, o simplemente creamos uno nuevo
@@ -736,21 +666,13 @@ class ConsumerController extends Controller
             ->first();
 
         if ($item) {
-            $newQuantity = $item->quantity + (int) $request->input('quantity', 1);
-            if ($variant && $newQuantity > max(0, (int) $variant['stock'] - (int) ($variant['reserved_stock'] ?? 0))) {
-                return back()->withErrors(['quantity' => 'No hay suficientes unidades disponibles de esta combinación.'])->withInput();
-            }
-            $item->update(['quantity' => $newQuantity, 'unit_price' => $unitPrice]);
+            $item->increment('quantity', $request->input('quantity', 1));
         } else {
-            if ($variant && (int) $request->input('quantity', 1) > max(0, (int) $variant['stock'] - (int) ($variant['reserved_stock'] ?? 0))) {
-                return back()->withErrors(['quantity' => 'No hay suficientes unidades disponibles de esta combinación.'])->withInput();
-            }
             $item = CartItem::create([
                 'cart_id'          => $cart->id,
                 'product_id'       => $request->product_id,
                 'quantity'         => $request->input('quantity', 1),
-                'selected_options' => $selectedOptions,
-                'unit_price' => $unitPrice,
+                'selected_options' => $selectedOptions
             ]);
         }
 
@@ -774,10 +696,6 @@ class ConsumerController extends Controller
     {
         $request->validate(['quantity' => 'required|integer|min:1']);
         if ($item->cart->user_id !== Auth::id()) abort(403);
-        $variant = $item->product?->variantForOptions($item->selected_options ?? []);
-        if ($variant && $request->integer('quantity') > max(0, (int) $variant['stock'] - (int) ($variant['reserved_stock'] ?? 0))) {
-            return back()->withErrors(['quantity' => 'La cantidad supera el stock disponible para esta combinación.']);
-        }
         $item->update(['quantity' => $request->quantity]);
         return back()->with('success', 'Carrito actualizado.');
     }
@@ -969,14 +887,9 @@ class ConsumerController extends Controller
         $user = Auth::user();
 
         $data = $request->validate([
-            'name'             => ['required', 'string', 'max:255', function ($attribute, $value, $fail) {
-                if (!preg_match('/^\p{L}+(?:[ \'\x{2019}-]\p{L}+)*$/u', (string) $value)) {
-                    $fail('Escribe un nombre válido, sin espacios al inicio, al final ni repetidos.');
-                }
-            }],
+            'name'             => 'required|string|max:255',
             'email'            => 'required|email|unique:users,email,'.$user->id,
             'phone'            => 'required|string|max:50',
-            'billing_document' => ['required', 'regex:/^[0-9]{6,10}$/'],
             'address'          => 'nullable|string|max:255',
             'avatar'           => 'nullable|image|mimes:jpeg,png,jpg,webp,gif|max:4096',
             'remove_avatar'    => 'nullable|boolean',
@@ -991,8 +904,6 @@ class ConsumerController extends Controller
             'name.required'                     => 'El nombre completo es obligatorio.',
             'email.required'                    => 'El correo electrónico es obligatorio.',
             'email.unique'                      => 'Este correo electrónico ya está registrado por otra cuenta.',
-            'billing_document.required'         => 'La cédula es obligatoria para los datos de facturación.',
-            'billing_document.regex'            => 'Escribe una cédula colombiana válida de 6 a 10 dígitos, sin puntos ni espacios.',
             'phone.required'                    => 'El número de teléfono móvil o WhatsApp es obligatorio.',
             'avatar.image'                      => 'El archivo de imagen no es válido.',
             'avatar.max'                        => 'La imagen de perfil no debe superar los 4 MB.',
@@ -1002,10 +913,9 @@ class ConsumerController extends Controller
         ]);
 
         $updateData = [
-            'name'    => strip_tags(preg_replace('/\s+/u', ' ', trim($data['name']))),
+            'name'    => strip_tags($data['name']),
             'email'   => strip_tags($data['email']),
             'phone'   => strip_tags($data['phone']),
-            'billing_document' => $data['billing_document'],
             'address' => strip_tags($data['address'] ?? ''),
         ];
 
@@ -1084,7 +994,7 @@ class ConsumerController extends Controller
     // --- DIRECTORIO Y PERFIL DE MARCA ---
     public function merchantDirectory(Request $request)
     {
-        $search = trim(strip_tags((string) $request->query('search', '')));
+        $search = $request->query('search');
         $query = CompanyProfile::where('kyc_status', 'approved')
             ->select('id', 'merchant_id', 'company_name', 'logo_path', 'description', 'address', 'phone', 'business_type');
 
@@ -1105,7 +1015,7 @@ class ConsumerController extends Controller
      */
     public function merchantProfile($id)
     {
-        $profile = CompanyProfile::with('user')->where('merchant_id', $id)->firstOrFail();
+        $profile = CompanyProfile::where('merchant_id', $id)->firstOrFail();
 
         $products = Product::active()
             ->where('merchant_id', $profile->merchant_id)
@@ -1132,10 +1042,6 @@ class ConsumerController extends Controller
 
         if (!$hasPurchased) {
             abort(403, 'Debes comprar y recibir este producto para poder calificarlo.');
-        }
-
-        if (Review::where('product_id', $product->id)->where('user_id', Auth::id())->exists()) {
-            return back()->with('error', 'Ya enviaste una valoración para este producto.');
         }
 
         $review = Review::create([

@@ -46,22 +46,14 @@ class CheckoutService
                 'Los servicios solo admiten solicitudes de reserva y no se pueden incluir en una compra.'
             );
 
-            foreach ($items as $item) {
-                $options = $item->selected_options ?? [];
-                abort_unless($item->product->validOptionSelection($options), 422, "Actualiza las opciones de {$item->product->name} antes de comprar.");
-                abort_if($item->product->variants && !$item->product->variantForOptions($options), 422, "La combinación de {$item->product->name} ya no está disponible.");
-                $item->unit_price = $item->product->priceForOptions($options);
-                $item->save();
-            }
-
-            $subtotal = $items->sum(fn ($i) => $i->quantity * (float) $i->unit_price);
+            $subtotal = $items->sum(fn ($i) => $i->quantity * $i->product->effectivePrice());
             $shipping = (float) $rate['price'];
 
             $discount = 0;
             if ($usePoints) {
                 // Solo productos donde el comerciante permite redimir puntos (allows_points = true)
                 $eligibleSubtotal = $items->filter(fn ($i) => (bool) ($i->product->allows_points ?? true))
-                    ->sum(fn ($i) => $i->quantity * (float) $i->unit_price);
+                    ->sum(fn ($i) => $i->quantity * $i->product->effectivePrice());
 
                 $merchantIds = $items->pluck('product.merchant_id')->unique()->all();
                 $discount = $this->consumePoints($user->id, $merchantIds, $eligibleSubtotal);
@@ -106,7 +98,7 @@ class CheckoutService
                     'order_id' => $order->id,
                     'product_id' => $item->product_id,
                     'quantity' => $item->quantity,
-                    'price' => $item->unit_price,
+                    'price' => $item->product->effectivePrice(),
                     'selected_options' => $item->selected_options,
                 ]);
             }

@@ -23,7 +23,7 @@ $sizeClasses = match($size) {
     'sm' => ['icon' => 'w-7 h-7 text-xs', 'text' => 'text-base', 'sub' => 'text-[9px]', 'logo' => 'h-7 max-w-32'],
     'lg' => ['icon' => 'w-11 h-11 text-lg', 'text' => 'text-2xl', 'sub' => 'text-xs', 'logo' => 'h-11 max-w-56'],
     'xl' => ['icon' => 'w-14 h-14 text-2xl', 'text' => 'text-3xl sm:text-4xl', 'sub' => 'text-xs sm:text-sm', 'logo' => 'h-14 max-w-72'],
-    default => ['icon' => 'w-8 h-8 sm:w-9 sm:h-9 text-xs sm:text-sm', 'text' => 'text-lg sm:text-xl', 'sub' => 'text-[9px] sm:text-[10px]', 'logo' => 'h-7 sm:h-9 max-w-36 sm:max-w-44'],
+    default => ['icon' => 'w-9 h-9 text-sm', 'text' => 'text-xl', 'sub' => 'text-[10px]', 'logo' => 'h-9 max-w-44'],
 };
 
 $logoPath = collect(\Illuminate\Support\Facades\Storage::disk('public')->files('system'))
@@ -32,7 +32,7 @@ $logoPath = collect(\Illuminate\Support\Facades\Storage::disk('public')->files('
 
 <a href="{{ $href }}" class="inline-flex items-center gap-2.5 group shrink-0 no-underline" title="FusaShop — El epicentro de compras del Sumapaz">
     @if($logoPath)
-        <img loading="lazy" decoding="async" src="{{ route('files.serve', ['disk' => 'system', 'path' => basename($logoPath)]) }}?v={{ substr(md5((string) \Illuminate\Support\Facades\Storage::disk('public')->lastModified($logoPath)), 0, 8) }}"
+        <img loading="lazy" decoding="async" src="{{ route('files.serve', ['disk' => 'system', 'path' => basename($logoPath)]) }}?v={{ \Illuminate\Support\Facades\Storage::disk('public')->lastModified($logoPath) }}"
              alt="Logo FusaShop"
              class="{{ $sizeClasses['logo'] }} w-auto object-contain">
     @else
