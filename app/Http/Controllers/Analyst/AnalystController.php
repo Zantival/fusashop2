@@ -1276,7 +1276,11 @@ class AnalystController extends Controller
         array_unshift($cards, $card);
         Setting::setValue('promotional_cards', json_encode($cards), 'marketing');
 
-        $consumers = User::where('role', 'consumer')->where('is_blocked', false)->take(100)->get();
+        $consumers = User::where('role', 'consumer')
+            ->where('is_blocked', false)
+            ->whereNotNull('marketing_consent_at')
+            ->take(100)
+            ->get();
         foreach ($consumers as $consumer) {
             $consumer->notify(new \App\Notifications\PromotionDiscountNotification(
                 $card['title'],
@@ -1287,7 +1291,7 @@ class AnalystController extends Controller
         }
 
         AdminAuditLog::record('category_discount.applied', null, "Descuento del {$discountPct}% aplicado a la categoría {$cat} ({$prods->count()} productos)");
-        return redirect()->route('analyst.banners', ['tab' => 'promos'])->with('success', "¡Descuento del {$discountPct}% aplicado a {$prods->count()} productos de {$cat}, tarjeta publicada y clientes notificados!");
+        return redirect()->route('analyst.banners', ['tab' => 'promos'])->with('success', "Descuento del {$discountPct}% aplicado a {$prods->count()} productos de {$cat}. Se notificó por correo a {$consumers->count()} compradores con consentimiento promocional vigente.");
     }
 
     // ─── Reportes de Inteligencia, Reseñas por Tema y ML ───────────────────────

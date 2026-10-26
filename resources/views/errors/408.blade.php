@@ -1,0 +1,1 @@
+@include('errors.page', ['code' => '408', 'title' => 'La solicitud tardó demasiado', 'message' => 'No alcanzamos a completar la operación a tiempo.', 'hint' => 'Comprueba tu conexión e inténtalo de nuevo.'])

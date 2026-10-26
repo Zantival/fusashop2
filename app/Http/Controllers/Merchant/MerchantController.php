@@ -432,6 +432,7 @@ class MerchantController extends Controller
             'stock'            => 'required|integer|min:0',
             'category'         => 'required|string|max:100',
             'type'             => 'nullable|in:product,service',
+            'sale_unit'        => ['nullable', \Illuminate\Validation\Rule::in(array_keys(Product::SALE_UNITS))],
             'image'            => 'nullable|image|mimes:jpeg,png,jpg,webp|max:5120',
             'gallery.*'        => 'nullable|image|mimes:jpeg,png,jpg,webp|max:5120',
             'options.*.color_values.*.image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:5120',
@@ -512,6 +513,8 @@ class MerchantController extends Controller
             'discount_percent'  => $discountPercent,
             'stock'             => $variants ? array_sum(array_column($variants, 'stock')) : $data['stock'],
             'category'          => strip_tags($data['category']),
+            'sale_unit'         => $data['sale_unit'] ?? null,
+            'sector_key'        => Product::HEALTH_CATEGORIES[$data['category']] ?? null,
             'type'              => $data['type'] ?? 'product',
             // La imagen elegida como principal tiene prioridad; la foto de color
             // solo sirve de portada automática cuando no se cargó una principal.
@@ -546,6 +549,7 @@ class MerchantController extends Controller
             'stock'            => 'required|integer|min:0',
             'category'         => 'required|string|max:100',
             'type'             => 'nullable|in:product,service',
+            'sale_unit'        => ['nullable', \Illuminate\Validation\Rule::in(array_keys(Product::SALE_UNITS))],
             'image'            => 'nullable|image|mimes:jpeg,png,jpg,webp|max:5120',
             'gallery.*'        => 'nullable|image|mimes:jpeg,png,jpg,webp|max:5120',
             'options.*.color_values.*.image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:5120',
@@ -646,6 +650,8 @@ class MerchantController extends Controller
             'discount_percent'  => $discountPercent,
             'stock'             => $variants ? array_sum(array_column($variants, 'stock')) : $data['stock'],
             'category'          => strip_tags($data['category']),
+            'sale_unit'         => $data['sale_unit'] ?? null,
+            'sector_key'        => Product::HEALTH_CATEGORIES[$data['category']] ?? $product->sector_key,
             'type'              => $data['type'] ?? $product->type ?? 'product',
             'image'             => $mainImagePath,
             'images'            => array_values($galleryPaths),
@@ -1263,7 +1269,7 @@ class MerchantController extends Controller
         })->orWhere(function ($q) use ($merchantId, $admin) {
             $q->where('sender_id', $admin->id)->where('receiver_id', $merchantId);
         })
-        ->with('product')
+        ->with(['product', 'sender'])
         ->orderBy('created_at', 'asc')
         ->get();
 
@@ -1332,7 +1338,7 @@ class MerchantController extends Controller
             })->orWhere(function ($q) use ($merchantId, $activeUser) {
                 $q->where('sender_id', $activeUser->id)->where('receiver_id', $merchantId);
             })
-            ->with('product')
+            ->with(['product', 'sender'])
             ->orderBy('created_at', 'asc')
             ->get();
 

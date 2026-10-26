@@ -1,0 +1,1 @@
+@include('errors.page', ['code' => '413', 'title' => 'El archivo es demasiado grande', 'message' => 'No pudimos recibir la información porque supera el tamaño permitido.', 'hint' => 'Reduce el tamaño del archivo e inténtalo de nuevo.'])

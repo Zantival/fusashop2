@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <meta name="csrf-token" content="{{ csrf_token() }}">
 <title>@yield('title','FusaShop') | FusaShop — El epicentro de compras, turismo y negocios del Sumapaz</title>
-<link rel="icon" type="image/png" href="{{ asset('logo.png') }}?v={{ filemtime(public_path('logo.png')) }}">
+<link rel="icon" type="image/png" href="{{ asset('logo.png') }}?v={{ substr(md5((string) @filemtime(public_path('logo.png'))), 0, 8) }}">
 <script>
 window.fusaShopPageTitle = document.title;
 document.addEventListener('visibilitychange', function() {
@@ -21,7 +21,7 @@ document.addEventListener('visibilitychange', function() {
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&family=Manrope:wght@500;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
 
-<link rel="stylesheet" href="{{ asset('assets/css/app.css') }}?v={{ filemtime(public_path('assets/css/app.css')) }}">
+<link rel="stylesheet" href="{{ asset('assets/css/app.css') }}?v={{ substr(md5((string) @filemtime(public_path('assets/css/app.css'))), 0, 8) }}">
 <script>
 
 window.toggleMobileMenu = function(forceState) {
@@ -1192,19 +1192,8 @@ document.addEventListener('click', function(e) {
     <div class="md:col-span-2 space-y-4">
       <x-logo size="lg" :with-microcopy="false" />
       <p class="text-slate-400 leading-relaxed text-xs max-w-sm">
-        El epicentro de compras, turismo y negocios del Sumapaz. Conectando a más de 140.000 habitantes de Fusagasugá, Arbeláez, Silvania, Pasca y Chinauta con pasarela segura Wompi, logística Envia.com y facturación electrónica Factus DIAN.
+        Una vitrina digital para descubrir comercios y productos de Fusagasugá y la región del Sumapaz.
       </p>
-      <div class="flex items-center gap-3 pt-2">
-        <span class="px-2.5 py-1 bg-slate-900 rounded-lg text-[10px] font-bold text-slate-300 border border-slate-800 flex items-center gap-1">
-          <span class="material-symbols-outlined text-xs text-[#10B981]">verified</span> Wompi Verified
-        </span>
-        <span class="px-2.5 py-1 bg-slate-900 rounded-lg text-[10px] font-bold text-slate-300 border border-slate-800 flex items-center gap-1">
-          <span class="material-symbols-outlined text-xs text-[#10B981]">local_shipping</span> Envia.com Logística
-        </span>
-        <span class="px-2.5 py-1 bg-slate-900 rounded-lg text-[10px] font-bold text-slate-300 border border-slate-800 flex items-center gap-1">
-          <span class="material-symbols-outlined text-xs text-[#F97316]">receipt_long</span> Factus DIAN
-        </span>
-      </div>
     </div>
 
     <!-- Columna 2: Vitrinas -->
@@ -1236,15 +1225,18 @@ document.addEventListener('click', function(e) {
       <ul class="space-y-2">
         <li><a href="{{ route('privacy') }}" class="hover:text-white transition-colors">Política de Privacidad</a></li>
         <li><a href="{{ route('terms') }}" class="hover:text-white transition-colors">Términos del Servicio</a></li>
+        <li><a href="{{ route('cookies') }}" class="hover:text-white transition-colors">Política de cookies</a></li>
+        <li><a href="{{ route('returns') }}" class="hover:text-white transition-colors">Devoluciones y reembolsos</a></li>
         <li><a href="{{ route('pqrs.create') }}" class="hover:text-white transition-colors">PQRS & Garantías</a></li>
-        <li><span class="text-slate-500">Fusagasugá, Cundinamarca, CO</span></li>
+        <li><a href="tel:+573209106326" class="hover:text-white">320 910 6326</a></li>
+        <li><a href="tel:+573223674364" class="hover:text-white">322 367 4364</a></li>
       </ul>
     </div>
 
   </div>
 
   <div class="border-t border-slate-900 py-6 text-center text-slate-600 text-[11px]">
-    <p>© {{ date('Y') }} FusaShop Inc. Todos los derechos reservados. Marca Registrada en Fusagasugá, Colombia.</p>
+    <p>© {{ date('Y') }} FusaShop · Fusagasugá, Cundinamarca, Colombia</p>
   </div>
 </footer>
 
@@ -1812,11 +1804,11 @@ document.addEventListener('submit', (event) => {
 
           data.products.forEach(prod => {
             const imgHtml = prod.image
-              ? `<img loading="lazy" decoding="async" src="${prod.image}" alt="${escapeHtml(prod.name)}" class="w-11 h-11 rounded-xl object-cover shrink-0 bg-slate-100 border border-slate-200">`
+              ? ('<' + 'img loading="lazy" decoding="async" src="' + escapeHtml(prod.image) + '" alt="' + escapeHtml(prod.name) + '" class="w-11 h-11 rounded-xl object-cover shrink-0 bg-slate-100 border border-slate-200">')
               : `<div class="w-11 h-11 rounded-xl bg-emerald-50 text-[#10B981] flex items-center justify-center shrink-0 border border-emerald-100"><span class="material-symbols-outlined text-lg">inventory_2</span></div>`;
 
             html += `
-              <a href="${prod.url}" class="p-2.5 hover:bg-emerald-50/50 transition-colors flex items-center gap-3 group">
+              <` + `a href="` + escapeHtml(prod.url) + `" class="p-2.5 hover:bg-emerald-50/50 transition-colors flex items-center gap-3 group">
                 ${imgHtml}
                 <div class="flex-1 min-w-0">
                   <p class="text-xs font-bold text-slate-800 group-hover:text-[#10B981] transition-colors truncate">${escapeHtml(prod.name)}</p>
@@ -1967,7 +1959,7 @@ document.addEventListener('submit', (event) => {
 
     let actionHtml = '';
     if (actionText && actionUrl) {
-      actionHtml = `<a href="${actionUrl}" class="px-3 py-1.5 bg-[#10B981] hover:bg-emerald-600 text-white rounded-xl text-[11px] font-black transition-all shrink-0 no-underline shadow-sm flex items-center gap-1">${actionText} <span class="material-symbols-outlined text-[13px]">arrow_forward</span></a>`;
+      actionHtml = '<' + 'a href="' + escapeHtml(actionUrl) + '" class="px-3 py-1.5 bg-[#10B981] hover:bg-emerald-600 text-white rounded-xl text-[11px] font-black transition-all shrink-0 no-underline shadow-sm flex items-center gap-1">' + escapeHtml(actionText) + ' <span class="material-symbols-outlined text-[13px]">arrow_forward</span><' + '/a>';
     }
 
     toast.innerHTML = `
@@ -2182,6 +2174,15 @@ document.addEventListener('submit', (event) => {
       return false;
     }
 
+    // Las vistas que traen JavaScript propio deben inicializarse con una carga completa.
+    // Reinsertar scripts en el mismo documento conserva const/let globales de páginas previas,
+    // provoca errores de redeclaración y deja módulos (incluido el chat) sin inicializar.
+    const newScriptsStack = doc.getElementById('dynamic-page-scripts');
+    if (newMain.querySelector('script') || newScriptsStack?.querySelector('script')) {
+      window.location.assign(finalUrl);
+      return false;
+    }
+
     // Actualizar título del documento
     if (doc.title) {
       window.fusaShopPageTitle = doc.title;
@@ -2199,7 +2200,6 @@ document.addEventListener('submit', (event) => {
     currentMain.innerHTML = newMain.innerHTML;
 
     // Actualizar scripts dinamicos de pagina si existen
-    const newScriptsStack = doc.getElementById('dynamic-page-scripts');
     const currentScriptsStack = document.getElementById('dynamic-page-scripts');
     if (newScriptsStack && currentScriptsStack) {
       currentScriptsStack.innerHTML = newScriptsStack.innerHTML;

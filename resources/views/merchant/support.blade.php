@@ -43,6 +43,17 @@
     </div>
   </div>
 
+  <div class="rounded-2xl border border-rose-200 bg-rose-50 p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+    <div class="flex items-start gap-3">
+      <span class="material-symbols-outlined text-rose-700">shield</span>
+      <div>
+        <p class="font-extrabold text-sm text-rose-950">¿Sospechas de una estafa o pago fraudulento?</p>
+        <p class="text-xs text-rose-800 mt-1">Reporta el caso al equipo con prioridad urgente. Nunca compartas contraseñas, códigos OTP ni claves de pago.</p>
+      </div>
+    </div>
+    <a href="{{ route('pqrs.create', ['category' => 'seguridad']) }}" class="shrink-0 px-4 py-2 bg-rose-700 hover:bg-rose-800 text-white font-bold text-xs rounded-xl">Reportar incidente</a>
+  </div>
+
   <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
     <!-- COLUMNA IZQUIERDA: LISTA DE ANALISTAS Y TEMAS RÁPIDOS (4/12) -->
     <div class="lg:col-span-4 space-y-4">
@@ -58,13 +69,7 @@
             <a href="{{ route('merchant.support.contact', ['analyst' => $analystItem->id]) }}"
                class="flex items-center gap-3 p-3 rounded-xl transition-all border {{ $isSelected ? 'bg-emerald-50/90 border-emerald-300 shadow-2xs' : 'bg-slate-50/60 hover:bg-white border-slate-200/70' }}">
               <div class="relative shrink-0">
-                @if($analystItem->avatar)
-                  <img loading="lazy" decoding="async" src="{{ Storage::url($analystItem->avatar) }}" alt="{{ $analystItem->name }}" class="w-10 h-10 rounded-full object-cover border-2 border-emerald-500">
-                @else
-                  <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-[#006c47] to-[#10B981] text-white font-black text-sm flex items-center justify-center">
-                    {{ strtoupper(substr($analystItem->name, 0, 1)) }}
-                  </div>
-                @endif
+                <x-user-avatar :user="$analystItem" size="w-10 h-10" text-size="text-sm" class="border-2 border-emerald-500" />
                 <span class="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-500 border-2 border-white"></span>
               </div>
               <div class="min-w-0 flex-1">
@@ -124,9 +129,7 @@
       <!-- ENCABEZADO DEL ANALISTA -->
       <div class="p-4 border-b border-slate-200/80 bg-gradient-to-r from-slate-900 to-emerald-950 text-white flex items-center justify-between">
         <div class="flex items-center gap-3 min-w-0">
-          <div class="w-10 h-10 rounded-full bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 font-black text-sm flex items-center justify-center shrink-0">
-            {{ strtoupper(substr($admin->name, 0, 1)) }}
-          </div>
+          <x-user-avatar :user="$admin" size="w-10 h-10" text-size="text-sm" class="border border-emerald-400/40" />
           <div class="min-w-0">
             <div class="flex items-center gap-2">
               <h2 class="font-extrabold text-sm truncate">{{ $admin->name }}</h2>
@@ -164,6 +167,9 @@
         @foreach($messages as $msg)
           @php $mine = $msg->sender_id == auth()->id(); @endphp
           <div class="flex {{ $mine ? 'justify-end' : 'justify-start' }}" data-msg-id="{{ $msg->id }}">
+            @if(!$mine)
+              <x-user-avatar :user="$msg->sender" size="w-8 h-8" text-size="text-xs" class="self-end mr-2" />
+            @endif
             <div class="max-w-[80%] md:max-w-[70%]">
               <div class="p-3.5 rounded-2xl shadow-2xs relative {{ $mine ? 'bg-gradient-to-r from-[#006c47] to-[#10B981] text-white rounded-tr-xs' : 'bg-white border border-slate-200 text-slate-800 rounded-tl-xs' }}">
                 <p class="text-xs md:text-sm leading-relaxed whitespace-pre-wrap">{{ e($msg->content) }}</p>
@@ -171,6 +177,9 @@
                   <span>{{ $msg->created_at->format('H:i') }}</span>
                   @if($mine)
                     <span class="material-symbols-outlined text-[12px] text-emerald-200">done_all</span>
+                    <button type="button" onclick="deleteMessage({{ $msg->id }}, this)" class="ml-2 text-white/70 hover:text-white" title="Eliminar mi mensaje" aria-label="Eliminar mi mensaje">
+                      <span class="material-symbols-outlined text-[14px]">delete</span>
+                    </button>
                   @endif
                 </div>
               </div>
@@ -214,9 +223,7 @@
 
 @push('scripts')
 <script>
-if (typeof chatLastTs === 'undefined') {
-    var chatLastTs = {{ now()->timestamp }};
-}
+window.chatLastId = Math.max(0, ...Array.from(document.querySelectorAll('#chat-box [data-msg-id]'), el => Number(el.dataset.msgId) || 0));
 
 const chatBox = document.getElementById('chat-box');
 const inputField = document.getElementById('msg-input');
@@ -229,25 +236,7 @@ const pollUrl = '{{ route('chat.poll', $admin->id) }}';
 const storeUrl = '{{ route('chat.store') }}';
 const csrfToken = '{{ csrf_token() }}';
 const badWords = @json($badWords);
-
-function checkProfanity() {
-    if (!inputField || !sendBtn) return;
-    const content = inputField.value.toLowerCase();
-    const warning = document.getElementById('profanity-warning');
-    const hasBadWord = badWords.some(word => {
-        const regex = new RegExp('\\b' + word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b', 'i');
-        return regex.test(content);
-    });
-    if (hasBadWord) {
-        sendBtn.disabled = true;
-        sendBtn.classList.add('opacity-50', 'grayscale');
-        warning?.classList.remove('hidden');
-    } else {
-        sendBtn.disabled = false;
-        sendBtn.classList.remove('opacity-50', 'grayscale');
-        warning?.classList.add('hidden');
-    }
-}
+@include('chat.partials.moderation-script')
 
 function scrollToBottom() {
     if (chatBox) chatBox.scrollTop = chatBox.scrollHeight;
@@ -269,11 +258,12 @@ function appendMsg(msg) {
                 <p class="text-xs md:text-sm leading-relaxed whitespace-pre-wrap">${msg.content}</p>
                 <div class="flex items-center justify-end gap-1 mt-1 ${msg.mine ? 'text-white/70' : 'text-slate-400'} text-[9.5px]">
                     <span>${msg.time}</span>
-                    ${msg.mine ? '<span class="material-symbols-outlined text-[12px] text-emerald-200">done_all</span>' : ''}
+                    ${msg.mine ? `<span class="material-symbols-outlined text-[12px] text-emerald-200">done_all</span><button type="button" onclick="deleteMessage(${msg.id}, this)" class="ml-2 text-white/70 hover:text-white" title="Eliminar mi mensaje"><span class="material-symbols-outlined text-[14px]">delete</span></button>` : ''}
                 </div>
             </div>
         </div>`;
 
+    window.attachChatSenderAvatar(div, msg);
     const typingEl = document.getElementById('typing-indicator');
     chatBox.insertBefore(div, typingEl);
 }
@@ -311,6 +301,11 @@ async function handleSendMessage() {
                 time: new Date().toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit' })
             });
             scrollToBottom();
+        } else {
+            const payload = await res.json().catch(() => ({}));
+            inputField.value = content;
+            window.chatServerModerationMessage = payload.errors?.content?.[0]
+                || 'No se pudo enviar el mensaje. Revísalo e intenta de nuevo.';
         }
     } catch (e) {
         inputField.value = content;
@@ -324,15 +319,16 @@ async function handleSendMessage() {
 
 async function poll() {
     try {
-        const res = await fetch(`${pollUrl}?since=${chatLastTs}`, {
+        const res = await fetch(`${pollUrl}?after=${window.chatLastId}`, {
+            cache: 'no-store',
             headers: { 'Accept': 'application/json' }
         });
         const data = await res.json();
         if (data.messages && data.messages.length > 0) {
             data.messages.forEach(appendMsg);
+            window.chatLastId = Math.max(window.chatLastId, ...data.messages.map(msg => Number(msg.id) || 0));
             scrollToBottom();
         }
-        if (data.server_time) chatLastTs = data.server_time;
     } catch (e) {}
 }
 
@@ -346,7 +342,7 @@ if (inputField) {
 }
 
 scrollToBottom();
-setInterval(poll, 3000);
+setInterval(poll, 800);
 </script>
 @endpush
 @endsection

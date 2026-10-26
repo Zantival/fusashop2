@@ -80,7 +80,6 @@
   $activePromoCards = $rawPromoCards ? collect(json_decode($rawPromoCards, true))->where('is_active', true)->values() : collect();
 @endphp
 
-@if($activePromoCards->isNotEmpty())
 @guest
 <!-- ============================================================== -->
 <!-- TARJETA DESTACADA: ¿NO SABES CÓMO EMPEZAR? + MODAL INTERACTIVO  -->
@@ -216,7 +215,7 @@
               {{ $howToStart['buyer_title'] ?? '¿Cómo Comprar en FusaShop?' }}
             </h5>
             <p class="text-xs sm:text-sm text-slate-300 mt-1 leading-relaxed">
-              {{ $howToStart['buyer_description'] ?? 'Guía rápida para explorar comercios de Fusagasugá, pagar de forma 100% segura con Wompi, ganar FusaCoins y recibir en tu puerta.' }}
+              {{ $howToStart['buyer_description'] ?? 'Explora comercios de Fusagasugá, revisa las condiciones de compra y consulta el estado de tu pedido desde tu cuenta.' }}
             </p>
           </div>
 
@@ -330,7 +329,7 @@
               <span>¿Por qué es necesario verificar tu negocio y en qué te ayuda?</span>
             </div>
             <p class="text-xs sm:text-sm text-slate-200 leading-relaxed">
-              {{ $howToStart['seller_why_verify'] ?? 'Obtener la certificación con RUT y Cámara de Comercio activa la insignia oficial de Comerciante Verificado ✅. Esto genera máxima confianza en los compradores, incrementa tus ventas hasta un 300%, te da acceso a banners publicitarios destacados en FusaShop y agiliza las dispersiones bancarias de tus ingresos directamente a tu cuenta bancaria sin retenciones cautelares.' }}
+              {{ $howToStart['seller_why_verify'] ?? 'La revisión de documentos ayuda a validar la información de tu tienda y puede habilitar funciones que requieren verificación. El resultado y los requisitos se informan en tu panel; la revisión no garantiza ventas ni elimina obligaciones legales o tributarias.' }}
             </p>
           </div>
 
@@ -386,6 +385,7 @@
 <!-- ============================================================== -->
 <!-- 2. TARJETAS PROMOCIONALES ÚNICAS Y POR CATEGORÍA               -->
 <!-- ============================================================== -->
+@if($activePromoCards->isNotEmpty())
 <section id="promo-cards-section" class="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 pt-3 sm:pt-4 pb-2">
   <div class="flex items-center justify-between mb-3">
     <div class="flex items-center gap-2">
@@ -474,12 +474,12 @@
       <div>
         <div class="flex items-center gap-2">
           <span class="px-3 py-1 bg-[#ba1a1a] text-white text-xs font-black rounded-full uppercase tracking-wider flex items-center gap-1">
-            <span class="material-symbols-outlined text-sm">bolt</span> Relámpago FusaShop
+            <span class="material-symbols-outlined text-sm">bolt</span> Más vendidos FusaShop
           </span>
-          <span class="text-xs font-bold text-slate-500">Stock Limitado</span>
+          <span class="text-xs font-bold text-slate-500">Lo más vendido y mejor ofertado</span>
         </div>
         <h3 class="text-xl sm:text-2xl font-black text-slate-900 font-heading mt-2">
-          Ofertas con Tiempo Límite
+          Productos Destacados y en Oferta
         </h3>
       </div>
       

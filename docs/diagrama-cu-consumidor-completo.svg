@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 1154" width="1120" height="1154">
+  <!-- Fondo blanco -->
+  <rect width="1120" height="1154" fill="#FFFFFF" />
+
+  <!-- Caja del Sistema (Límite) -->
+  <rect x="250" y="40" width="460" height="1064" fill="#FFFFFF" stroke="#000000" stroke-width="3.5" />
+
+  <!-- Nombre del Sistema arriba a la izquierda -->
+  <text x="266" y="70" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="bold" fill="#000000">FusaShop — Consumidor (Completo)</text>
+
+  <!-- Líneas de Conexión -->
+  <line x1="147" y1="552" x2="325" y2="110" stroke="#000000" stroke-width="2.2" stroke-linecap="round" />
+<line x1="147" y1="556.5833333333334" x2="325" y2="188" stroke="#000000" stroke-width="2.2" stroke-linecap="round" />
+<line x1="147" y1="561.1666666666666" x2="325" y2="266" stroke="#000000" stroke-width="2.2" stroke-linecap="round" />
+<line x1="147" y1="565.75" x2="325" y2="344" stroke="#000000" stroke-width="2.2" stroke-linecap="round" />
+<line x1="147" y1="570.3333333333334" x2="325" y2="422" stroke="#000000" stroke-width="2.2" stroke-linecap="round" />
+<line x1="147" y1="574.9166666666666" x2="325" y2="500" stroke="#000000" stroke-width="2.2" stroke-linecap="round" />
+<line x1="147" y1="579.5" x2="325" y2="578" stroke="#000000" stroke-width="2.2" stroke-linecap="round" />
+<line x1="147" y1="584.0833333333334" x2="325" y2="656" stroke="#000000" stroke-width="2.2" stroke-linecap="round" />
+<line x1="147" y1="588.6666666666666" x2="325" y2="734" stroke="#000000" stroke-width="2.2" stroke-linecap="round" />
+<line x1="147" y1="593.25" x2="325" y2="812" stroke="#000000" stroke-width="2.2" stroke-linecap="round" />
+<line x1="147" y1="597.8333333333334" x2="325" y2="890" stroke="#000000" stroke-width="2.2" stroke-linecap="round" />
+<line x1="147" y1="602.4166666666666" x2="325" y2="968" stroke="#000000" stroke-width="2.2" stroke-linecap="round" />
+<line x1="147" y1="607" x2="325" y2="1046" stroke="#000000" stroke-width="2.2" stroke-linecap="round" />
+<line x1="938" y1="575" x2="635" y2="578" stroke="#000000" stroke-width="2.2" stroke-linecap="round" />
+<line x1="938" y1="735" x2="635" y2="500" stroke="#000000" stroke-width="2.2" stroke-linecap="round" />
+<line x1="938" y1="735" x2="635" y2="734" stroke="#000000" stroke-width="2.2" stroke-linecap="round" />
+
+
+  <!-- Óvalos con Todas las Funciones -->
+  
+    <g class="use-case">
+      <ellipse cx="480" cy="110" rx="155" ry="28" fill="#FFFFFF" stroke="#000000" stroke-width="2.6" />
+      <text x="480" y="115" font-family="Arial, Helvetica, sans-serif" font-size="14.5" font-weight="normal" fill="#000000" text-anchor="middle">Registrarse e iniciar sesión</text>
+    </g>
+  
+    <g class="use-case">
+      <ellipse cx="480" cy="188" rx="155" ry="28" fill="#FFFFFF" stroke="#000000" stroke-width="2.6" />
+      <text x="480" y="193" font-family="Arial, Helvetica, sans-serif" font-size="14.5" font-weight="normal" fill="#000000" text-anchor="middle">Gestionar perfil y direcciones</text>
+    </g>
+  
+    <g class="use-case">
+      <ellipse cx="480" cy="266" rx="155" ry="28" fill="#FFFFFF" stroke="#000000" stroke-width="2.6" />
+      <text x="480" y="271" font-family="Arial, Helvetica, sans-serif" font-size="14.5" font-weight="normal" fill="#000000" text-anchor="middle">Buscar y filtrar productos</text>
+    </g>
+  
+    <g class="use-case">
+      <ellipse cx="480" cy="344" rx="155" ry="28" fill="#FFFFFF" stroke="#000000" stroke-width="2.6" />
+      <text x="480" y="349" font-family="Arial, Helvetica, sans-serif" font-size="14.5" font-weight="normal" fill="#000000" text-anchor="middle">Administrar carrito de compras</text>
+    </g>
+  
+    <g class="use-case">
+      <ellipse cx="480" cy="422" rx="155" ry="28" fill="#FFFFFF" stroke="#000000" stroke-width="2.6" />
+      <text x="480" y="427" font-family="Arial, Helvetica, sans-serif" font-size="14.5" font-weight="normal" fill="#000000" text-anchor="middle">Realizar compra (Checkout)</text>
+    </g>
+  
+    <g class="use-case">
+      <ellipse cx="480" cy="500" rx="155" ry="28" fill="#FFFFFF" stroke="#000000" stroke-width="2.6" />
+      <text x="480" y="505" font-family="Arial, Helvetica, sans-serif" font-size="14.5" font-weight="normal" fill="#000000" text-anchor="middle">Cotizar tarifa de envío</text>
+    </g>
+  
+    <g class="use-case">
+      <ellipse cx="480" cy="578" rx="155" ry="28" fill="#FFFFFF" stroke="#000000" stroke-width="2.6" />
+      <text x="480" y="583" font-family="Arial, Helvetica, sans-serif" font-size="14.5" font-weight="normal" fill="#000000" text-anchor="middle">Pagar la compra en línea</text>
+    </g>
+  
+    <g class="use-case">
+      <ellipse cx="480" cy="656" rx="155" ry="28" fill="#FFFFFF" stroke="#000000" stroke-width="2.6" />
+      <text x="480" y="661" font-family="Arial, Helvetica, sans-serif" font-size="14.5" font-weight="normal" fill="#000000" text-anchor="middle">Consultar pedidos y facturas</text>
+    </g>
+  
+    <g class="use-case">
+      <ellipse cx="480" cy="734" rx="155" ry="28" fill="#FFFFFF" stroke="#000000" stroke-width="2.6" />
+      <text x="480" y="739" font-family="Arial, Helvetica, sans-serif" font-size="14.5" font-weight="normal" fill="#000000" text-anchor="middle">Rastrear despacho del pedido</text>
+    </g>
+  
+    <g class="use-case">
+      <ellipse cx="480" cy="812" rx="155" ry="28" fill="#FFFFFF" stroke="#000000" stroke-width="2.6" />
+      <text x="480" y="817" font-family="Arial, Helvetica, sans-serif" font-size="14.5" font-weight="normal" fill="#000000" text-anchor="middle">Solicitar reserva de servicios</text>
+    </g>
+  
+    <g class="use-case">
+      <ellipse cx="480" cy="890" rx="155" ry="28" fill="#FFFFFF" stroke="#000000" stroke-width="2.6" />
+      <text x="480" y="895" font-family="Arial, Helvetica, sans-serif" font-size="14.5" font-weight="normal" fill="#000000" text-anchor="middle">Calificar y reseñar productos</text>
+    </g>
+  
+    <g class="use-case">
+      <ellipse cx="480" cy="968" rx="155" ry="28" fill="#FFFFFF" stroke="#000000" stroke-width="2.6" />
+      <text x="480" y="973" font-family="Arial, Helvetica, sans-serif" font-size="14.5" font-weight="normal" fill="#000000" text-anchor="middle">Chatear con el comerciante</text>
+    </g>
+  
+    <g class="use-case">
+      <ellipse cx="480" cy="1046" rx="155" ry="28" fill="#FFFFFF" stroke="#000000" stroke-width="2.6" />
+      <text x="480" y="1051" font-family="Arial, Helvetica, sans-serif" font-size="14.5" font-weight="normal" fill="#000000" text-anchor="middle">Radicar y consultar PQRS</text>
+    </g>
+  
+
+  <!-- Actor Principal -->
+  
+    <g class="actor">
+      <!-- Cabeza -->
+      <circle cx="115" cy="527" r="22" fill="#FFFFFF" stroke="#000000" stroke-width="3" />
+      <!-- Torso -->
+      <line x1="115" y1="549" x2="115" y2="614" stroke="#000000" stroke-width="3" stroke-linecap="round" />
+      <!-- Brazos -->
+      <line x1="83" y1="572" x2="147" y2="572" stroke="#000000" stroke-width="3" stroke-linecap="round" />
+      <!-- Pierna izquierda -->
+      <line x1="115" y1="614" x2="89" y2="670" stroke="#000000" stroke-width="3" stroke-linecap="round" />
+      <!-- Pierna derecha -->
+      <line x1="115" y1="614" x2="141" y2="670" stroke="#000000" stroke-width="3" stroke-linecap="round" />
+      <!-- Nombre del Actor -->
+      <text x="115" y="696" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="bold" fill="#000000" text-anchor="middle">Consumidor</text>
+      <text x="115" y="716" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#333333" text-anchor="middle">(Comprador)</text>
+    </g>
+  
+
+  <!-- Actores Secundarios -->
+  
+    <g class="actor">
+      <!-- Cabeza -->
+      <circle cx="970" cy="530" r="22" fill="#FFFFFF" stroke="#000000" stroke-width="3" />
+      <!-- Torso -->
+      <line x1="970" y1="552" x2="970" y2="617" stroke="#000000" stroke-width="3" stroke-linecap="round" />
+      <!-- Brazos -->
+      <line x1="938" y1="575" x2="1002" y2="575" stroke="#000000" stroke-width="3" stroke-linecap="round" />
+      <!-- Pierna izquierda -->
+      <line x1="970" y1="617" x2="944" y2="673" stroke="#000000" stroke-width="3" stroke-linecap="round" />
+      <!-- Pierna derecha -->
+      <line x1="970" y1="617" x2="996" y2="673" stroke="#000000" stroke-width="3" stroke-linecap="round" />
+      <!-- Nombre del Actor -->
+      <text x="970" y="699" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="bold" fill="#000000" text-anchor="middle">Pasarela Wompi</text>
+      <text x="970" y="719" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#333333" text-anchor="middle">(Pagos)</text>
+    </g>
+  
+    <g class="actor">
+      <!-- Cabeza -->
+      <circle cx="970" cy="690" r="22" fill="#FFFFFF" stroke="#000000" stroke-width="3" />
+      <!-- Torso -->
+      <line x1="970" y1="712" x2="970" y2="777" stroke="#000000" stroke-width="3" stroke-linecap="round" />
+      <!-- Brazos -->
+      <line x1="938" y1="735" x2="1002" y2="735" stroke="#000000" stroke-width="3" stroke-linecap="round" />
+      <!-- Pierna izquierda -->
+      <line x1="970" y1="777" x2="944" y2="833" stroke="#000000" stroke-width="3" stroke-linecap="round" />
+      <!-- Pierna derecha -->
+      <line x1="970" y1="777" x2="996" y2="833" stroke="#000000" stroke-width="3" stroke-linecap="round" />
+      <!-- Nombre del Actor -->
+      <text x="970" y="859" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="bold" fill="#000000" text-anchor="middle">Envia.com</text>
+      <text x="970" y="879" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#333333" text-anchor="middle">(Logística)</text>
+    </g>
+  
+</svg>

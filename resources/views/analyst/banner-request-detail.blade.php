@@ -17,7 +17,9 @@
   <div class="bg-white rounded-2xl shadow-[0_12px_32px_rgba(27,28,28,.06)] border border-slate-200/80 overflow-hidden">
     <!-- Encabezado con datos del comerciante y estado -->
     <div class="p-6 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-50/50">
-      <div>
+      <div class="flex items-center gap-3 min-w-0">
+        <x-user-avatar :user="$requestInfo->user" size="w-10 h-10" />
+        <div class="min-w-0">
         <div class="flex items-center gap-2">
           <h2 class="text-lg md:text-xl font-bold text-slate-800">
             Comercio: {{ $requestInfo->user->companyProfile->company_name ?? $requestInfo->user->name ?? 'Comerciante' }}
@@ -29,6 +31,7 @@
         <p class="text-xs text-slate-500 mt-0.5">
           Solicitud #{{ $requestInfo->id }} &bull; Radicada el {{ $requestInfo->created_at->format('d/m/Y, h:i A') }} &bull; Inversión: ${{ number_format($requestInfo->cost ?: 150000, 0, ',', '.') }} COP
         </p>
+        </div>
       </div>
 
       <div class="flex items-center gap-2">

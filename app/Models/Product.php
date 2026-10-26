@@ -11,6 +11,7 @@ class Product extends Model
         'category', 'type', 'sector_key', 'subsector_key', 'views_count',
         'image', 'available_options', 'variants', 'images', 'is_active', 'allows_points', 'specifications',
         'reserved_stock', 'low_stock_threshold', 'weight_grams', 'length_cm', 'width_cm', 'height_cm', 'is_taxed',
+        'sale_unit',
     ];
 
     protected function casts(): array
@@ -184,5 +185,75 @@ class Product extends Model
     public function isLowStock(): bool
     {
         return $this->availableStock() <= (int) $this->low_stock_threshold;
+    }
+
+    /** Categorías del sector salud / bienestar y su sector_key. */
+    public const HEALTH_CATEGORIES = [
+        'Medicamentos y Farmacia' => 'salud',
+        'Droguería' => 'salud',
+        'Tienda Verde y Naturista' => 'tienda_verde',
+    ];
+
+    /** Unidades de venta permitidas (valor => etiqueta). */
+    public const SALE_UNITS = [
+        'unidad' => 'Unidad',
+        'g' => 'Gramo (g)',
+        '100 g' => 'Bolsa de 100 g',
+        '250 g' => 'Bolsa de 250 g',
+        '500 g' => 'Bolsa de 500 g',
+        'kg' => 'Kilogramo (kg)',
+        'ml' => 'Mililitro (ml)',
+        'l' => 'Litro (l)',
+        'tableta' => 'Tableta / cápsula',
+        'blíster' => 'Blíster',
+        'caja' => 'Caja',
+        'frasco' => 'Frasco',
+        'sobre' => 'Sobre',
+    ];
+
+    public function isHealthSector(): bool
+    {
+        return isset(self::HEALTH_CATEGORIES[$this->category ?? '']);
+    }
+
+    public function isMedicine(): bool
+    {
+        return in_array($this->category, ['Medicamentos y Farmacia', 'Droguería'], true);
+    }
+
+    private const SPEC_LABELS = [
+        'material' => 'Material', 'gender' => 'Género', 'fit' => 'Corte', 'brand' => 'Marca', 'model' => 'Modelo',
+        'screen' => 'Pantalla', 'ram' => 'RAM', 'storage' => 'Almacenamiento', 'sound' => 'Sonido', 'connectivity' => 'Conectividad',
+        'battery' => 'Batería', 'os' => 'Sistema operativo', 'exp' => 'Vencimiento', 'origin' => 'Origen', 'dims' => 'Dimensiones',
+        'amenities' => 'Servicios', 'checkin' => 'Hora de ingreso', 'checkout' => 'Hora de salida', 'menu' => 'Platos ofrecidos',
+        'reservation_policy' => 'Política de reserva', 'duration' => 'Duración', 'meeting_point' => 'Punto de encuentro',
+        'active_ingredient' => 'Principio activo', 'concentration' => 'Concentración', 'laboratory' => 'Laboratorio',
+        'invima' => 'Registro sanitario', 'prescription' => 'Requiere fórmula médica', 'lot' => 'Lote', 'dosage' => 'Dosis / modo de uso',
+        'contraindications' => 'Contraindicaciones', 'usage' => 'Modo de uso', 'net_content' => 'Contenido neto',
+        'properties' => 'Propiedades', 'microphone' => 'Micrófono', 'noise_cancellation' => 'Cancelación de ruido',
+    ];
+
+    /** Detalles secundarios (especificaciones) con etiqueta legible, sin valores vacíos. */
+    public function specificationRows(): array
+    {
+        $rows = [];
+        foreach ((array) ($this->specifications ?? []) as $key => $value) {
+            if (is_array($value)) {
+                $value = implode(', ', array_filter($value));
+            }
+            $value = trim((string) $value);
+            if ($value === '') {
+                continue;
+            }
+            $rows[self::SPEC_LABELS[$key] ?? \Illuminate\Support\Str::headline((string) $key)] = $value;
+        }
+        return $rows;
+    }
+
+    /** Unidad de venta lista para mostrar (null cuando se vende por unidad simple). */
+    public function saleUnitLabel(): ?string
+    {
+        $unit = trim((string) ($this->sale_unit ?? ''));
+        return ($unit === '' || $unit === 'unidad') ? null : $unit;
     }
 }

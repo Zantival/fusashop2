@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 1076" width="1120" height="1076">
+  <!-- Fondo blanco -->
+  <rect width="1120" height="1076" fill="#FFFFFF" />
+
+  <!-- Caja del Sistema (Límite) -->
+  <rect x="250" y="40" width="460" height="986" fill="#FFFFFF" stroke="#000000" stroke-width="3.5" />
+
+  <!-- Nombre del Sistema arriba a la izquierda -->
+  <text x="266" y="70" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="bold" fill="#000000">FusaShop — Administrador (Completo)</text>
+
+  <!-- Líneas de Conexión -->
+  <line x1="147" y1="513" x2="325" y2="110" stroke="#000000" stroke-width="2.2" stroke-linecap="round" />
+<line x1="147" y1="518" x2="325" y2="188" stroke="#000000" stroke-width="2.2" stroke-linecap="round" />
+<line x1="147" y1="523" x2="325" y2="266" stroke="#000000" stroke-width="2.2" stroke-linecap="round" />
+<line x1="147" y1="528" x2="325" y2="344" stroke="#000000" stroke-width="2.2" stroke-linecap="round" />
+<line x1="147" y1="533" x2="325" y2="422" stroke="#000000" stroke-width="2.2" stroke-linecap="round" />
+<line x1="147" y1="538" x2="325" y2="500" stroke="#000000" stroke-width="2.2" stroke-linecap="round" />
+<line x1="147" y1="543" x2="325" y2="578" stroke="#000000" stroke-width="2.2" stroke-linecap="round" />
+<line x1="147" y1="548" x2="325" y2="656" stroke="#000000" stroke-width="2.2" stroke-linecap="round" />
+<line x1="147" y1="553" x2="325" y2="734" stroke="#000000" stroke-width="2.2" stroke-linecap="round" />
+<line x1="147" y1="558" x2="325" y2="812" stroke="#000000" stroke-width="2.2" stroke-linecap="round" />
+<line x1="147" y1="563" x2="325" y2="890" stroke="#000000" stroke-width="2.2" stroke-linecap="round" />
+<line x1="147" y1="568" x2="325" y2="968" stroke="#000000" stroke-width="2.2" stroke-linecap="round" />
+<line x1="938" y1="290" x2="635" y2="266" stroke="#000000" stroke-width="2.2" stroke-linecap="round" />
+<line x1="938" y1="290" x2="635" y2="344" stroke="#000000" stroke-width="2.2" stroke-linecap="round" />
+<line x1="938" y1="520" x2="635" y2="500" stroke="#000000" stroke-width="2.2" stroke-linecap="round" />
+<line x1="938" y1="520" x2="635" y2="578" stroke="#000000" stroke-width="2.2" stroke-linecap="round" />
+
+
+  <!-- Óvalos con Todas las Funciones -->
+  
+    <g class="use-case">
+      <ellipse cx="480" cy="110" rx="155" ry="28" fill="#FFFFFF" stroke="#000000" stroke-width="2.6" />
+      <text x="480" y="115" font-family="Arial, Helvetica, sans-serif" font-size="14.5" font-weight="normal" fill="#000000" text-anchor="middle">Gestionar cuentas y roles de usuarios</text>
+    </g>
+  
+    <g class="use-case">
+      <ellipse cx="480" cy="188" rx="155" ry="28" fill="#FFFFFF" stroke="#000000" stroke-width="2.6" />
+      <text x="480" y="193" font-family="Arial, Helvetica, sans-serif" font-size="14.5" font-weight="normal" fill="#000000" text-anchor="middle">Bloquear o reactivar cuentas</text>
+    </g>
+  
+    <g class="use-case">
+      <ellipse cx="480" cy="266" rx="155" ry="28" fill="#FFFFFF" stroke="#000000" stroke-width="2.6" />
+      <text x="480" y="271" font-family="Arial, Helvetica, sans-serif" font-size="14.5" font-weight="normal" fill="#000000" text-anchor="middle">Verificar y validar documentos KYC</text>
+    </g>
+  
+    <g class="use-case">
+      <ellipse cx="480" cy="344" rx="155" ry="28" fill="#FFFFFF" stroke="#000000" stroke-width="2.6" />
+      <text x="480" y="349" font-family="Arial, Helvetica, sans-serif" font-size="14.5" font-weight="normal" fill="#000000" text-anchor="middle">Aprobar o rechazar tiendas (RUT)</text>
+    </g>
+  
+    <g class="use-case">
+      <ellipse cx="480" cy="422" rx="155" ry="28" fill="#FFFFFF" stroke="#000000" stroke-width="2.6" />
+      <text x="480" y="427" font-family="Arial, Helvetica, sans-serif" font-size="14.5" font-weight="normal" fill="#000000" text-anchor="middle">Administrar categorías y sectores</text>
+    </g>
+  
+    <g class="use-case">
+      <ellipse cx="480" cy="500" rx="155" ry="28" fill="#FFFFFF" stroke="#000000" stroke-width="2.6" />
+      <text x="480" y="505" font-family="Arial, Helvetica, sans-serif" font-size="14.5" font-weight="normal" fill="#000000" text-anchor="middle">Supervisar ventas y transacciones</text>
+    </g>
+  
+    <g class="use-case">
+      <ellipse cx="480" cy="578" rx="155" ry="28" fill="#FFFFFF" stroke="#000000" stroke-width="2.6" />
+      <text x="480" y="583" font-family="Arial, Helvetica, sans-serif" font-size="14.5" font-weight="normal" fill="#000000" text-anchor="middle">Liquidar comisiones a comercios</text>
+    </g>
+  
+    <g class="use-case">
+      <ellipse cx="480" cy="656" rx="155" ry="28" fill="#FFFFFF" stroke="#000000" stroke-width="2.6" />
+      <text x="480" y="661" font-family="Arial, Helvetica, sans-serif" font-size="14.5" font-weight="normal" fill="#000000" text-anchor="middle">Monitorear estado de integraciones</text>
+    </g>
+  
+    <g class="use-case">
+      <ellipse cx="480" cy="734" rx="155" ry="28" fill="#FFFFFF" stroke="#000000" stroke-width="2.6" />
+      <text x="480" y="739" font-family="Arial, Helvetica, sans-serif" font-size="14.5" font-weight="normal" fill="#000000" text-anchor="middle">Tramitar y resolver casos de PQRS</text>
+    </g>
+  
+    <g class="use-case">
+      <ellipse cx="480" cy="812" rx="155" ry="28" fill="#FFFFFF" stroke="#000000" stroke-width="2.6" />
+      <text x="480" y="817" font-family="Arial, Helvetica, sans-serif" font-size="14.5" font-weight="normal" fill="#000000" text-anchor="middle">Aprobar y publicar campañas / banners</text>
+    </g>
+  
+    <g class="use-case">
+      <ellipse cx="480" cy="890" rx="155" ry="28" fill="#FFFFFF" stroke="#000000" stroke-width="2.6" />
+      <text x="480" y="895" font-family="Arial, Helvetica, sans-serif" font-size="14.5" font-weight="normal" fill="#000000" text-anchor="middle">Consultar analítica y reportes de ventas</text>
+    </g>
+  
+    <g class="use-case">
+      <ellipse cx="480" cy="968" rx="155" ry="28" fill="#FFFFFF" stroke="#000000" stroke-width="2.6" />
+      <text x="480" y="973" font-family="Arial, Helvetica, sans-serif" font-size="14.5" font-weight="normal" fill="#000000" text-anchor="middle">Auditar trazabilidad y bitácora del sistema</text>
+    </g>
+  
+
+  <!-- Actor Principal -->
+  
+    <g class="actor">
+      <!-- Cabeza -->
+      <circle cx="115" cy="488" r="22" fill="#FFFFFF" stroke="#000000" stroke-width="3" />
+      <!-- Torso -->
+      <line x1="115" y1="510" x2="115" y2="575" stroke="#000000" stroke-width="3" stroke-linecap="round" />
+      <!-- Brazos -->
+      <line x1="83" y1="533" x2="147" y2="533" stroke="#000000" stroke-width="3" stroke-linecap="round" />
+      <!-- Pierna izquierda -->
+      <line x1="115" y1="575" x2="89" y2="631" stroke="#000000" stroke-width="3" stroke-linecap="round" />
+      <!-- Pierna derecha -->
+      <line x1="115" y1="575" x2="141" y2="631" stroke="#000000" stroke-width="3" stroke-linecap="round" />
+      <!-- Nombre del Actor -->
+      <text x="115" y="657" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="bold" fill="#000000" text-anchor="middle">Administrador</text>
+      <text x="115" y="677" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#333333" text-anchor="middle">(Analista / Gobierno)</text>
+    </g>
+  
+
+  <!-- Actores Secundarios -->
+  
+    <g class="actor">
+      <!-- Cabeza -->
+      <circle cx="970" cy="245" r="22" fill="#FFFFFF" stroke="#000000" stroke-width="3" />
+      <!-- Torso -->
+      <line x1="970" y1="267" x2="970" y2="332" stroke="#000000" stroke-width="3" stroke-linecap="round" />
+      <!-- Brazos -->
+      <line x1="938" y1="290" x2="1002" y2="290" stroke="#000000" stroke-width="3" stroke-linecap="round" />
+      <!-- Pierna izquierda -->
+      <line x1="970" y1="332" x2="944" y2="388" stroke="#000000" stroke-width="3" stroke-linecap="round" />
+      <!-- Pierna derecha -->
+      <line x1="970" y1="332" x2="996" y2="388" stroke="#000000" stroke-width="3" stroke-linecap="round" />
+      <!-- Nombre del Actor -->
+      <text x="970" y="414" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="bold" fill="#000000" text-anchor="middle">DIAN (RUT)</text>
+      <text x="970" y="434" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#333333" text-anchor="middle">(Verificación)</text>
+    </g>
+  
+    <g class="actor">
+      <!-- Cabeza -->
+      <circle cx="970" cy="475" r="22" fill="#FFFFFF" stroke="#000000" stroke-width="3" />
+      <!-- Torso -->
+      <line x1="970" y1="497" x2="970" y2="562" stroke="#000000" stroke-width="3" stroke-linecap="round" />
+      <!-- Brazos -->
+      <line x1="938" y1="520" x2="1002" y2="520" stroke="#000000" stroke-width="3" stroke-linecap="round" />
+      <!-- Pierna izquierda -->
+      <line x1="970" y1="562" x2="944" y2="618" stroke="#000000" stroke-width="3" stroke-linecap="round" />
+      <!-- Pierna derecha -->
+      <line x1="970" y1="562" x2="996" y2="618" stroke="#000000" stroke-width="3" stroke-linecap="round" />
+      <!-- Nombre del Actor -->
+      <text x="970" y="644" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="bold" fill="#000000" text-anchor="middle">Pasarela Wompi</text>
+      <text x="970" y="664" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#333333" text-anchor="middle">(Dispersión)</text>
+    </g>
+  
+</svg>

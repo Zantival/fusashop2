@@ -29,7 +29,7 @@ class NewUserNotification extends Notification
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject('Nuevo Usuario Registrado en FusaShop')
+            ->subject('[ADMINISTRACIÓN] Nuevo usuario registrado: ' . $this->user->name)
             ->greeting('Hola Analista,')
             ->line('Se ha registrado un nuevo usuario: ' . $this->user->name)
             ->line('Correo: ' . $this->user->email)

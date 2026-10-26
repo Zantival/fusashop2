@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1050 1040" width="1050" height="1040">
+  
+  <defs>
+    <marker id="arrow-open" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 1.5 L 8 5 L 0 8.5" fill="none" stroke="#000000" stroke-width="1.6" />
+    </marker>
+  </defs>
+  <style>
+    .title-main { font-family: 'Segoe UI', Arial, sans-serif; font-size: 18px; font-weight: 800; fill: #000000; letter-spacing: 0.8px; text-anchor: middle; }
+    .title-sub { font-family: 'Segoe UI', Arial, sans-serif; font-size: 11.5px; font-weight: 600; fill: #333333; text-anchor: middle; }
+    .boundary-title { font-family: 'Segoe UI', Arial, sans-serif; font-size: 12.5px; font-weight: 800; fill: #000000; letter-spacing: 0.5px; }
+    .assoc-line { fill: none; stroke: #000000; stroke-width: 1.6; }
+    .dep-line { fill: none; stroke: #000000; stroke-width: 1.4; stroke-dasharray: 5,4; }
+    .legend-title { font-family: 'Segoe UI', Arial, sans-serif; font-size: 11px; font-weight: 800; fill: #000000; }
+    .legend-text { font-family: 'Segoe UI', Arial, sans-serif; font-size: 10px; fill: #000000; }
+  </style>
+
+  <rect width="1050" height="1040" fill="#FFFFFF" />
+
+  <!-- Encabezado -->
+  <text x="525" y="38" class="title-main">DIAGRAMA DE CASOS DE USO — ROL ADMINISTRADOR</text>
+  <text x="525" y="60" class="title-sub">Plataforma FusaShop · Especificación UML 2.5 en Blanco y Negro (Con Muñequito)</text>
+
+  <!-- Límite del Sistema -->
+  <rect x="230" y="80" width="780" height="870" fill="#FFFFFF" stroke="#000000" stroke-width="1.8" />
+  <text x="245" y="104" class="boundary-title">Sistema FusaShop — Consola de Gobierno y Supervisión</text>
+
+  <!-- Muñequito: Administrador / Analista -->
+  
+    <g class="actor-group" transform="translate(115, 460)">
+      <!-- Cabeza -->
+      <circle cx="0" cy="-44" r="19" fill="#FFFFFF" stroke="#000000" stroke-width="2.4" />
+      <!-- Tronco -->
+      <line x1="0" y1="-25" x2="0" y2="24" stroke="#000000" stroke-width="2.4" />
+      <!-- Brazos -->
+      <line x1="-30" y1="-6" x2="30" y2="-6" stroke="#000000" stroke-width="2.4" />
+      <!-- Piernas -->
+      <line x1="0" y1="24" x2="-24" y2="65" stroke="#000000" stroke-width="2.4" />
+      <line x1="0" y1="24" x2="24" y2="65" stroke="#000000" stroke-width="2.4" />
+      <!-- Etiqueta del Actor -->
+      <text x="0" y="90" font-family="'Segoe UI', Arial, sans-serif" font-size="13.5" font-weight="800" fill="#000000" text-anchor="middle">Administrador</text>
+      <text x="0" y="108" font-family="'Segoe UI', Arial, sans-serif" font-size="11" font-weight="600" fill="#333333" text-anchor="middle">(Analista / Gobierno)</text>
+    </g>
+  
+
+  <!-- Casos de Uso Principales (Columna Izquierda) -->
+  
+    <g class="usecase-node">
+      <ellipse cx="420" cy="140" rx="120" ry="26" fill="#FFFFFF" stroke="#000000" stroke-width="1.8" />
+      <text x="420" y="133" font-family="'Segoe UI', Arial, sans-serif" font-size="11.5" font-weight="700" fill="#000000" text-anchor="middle" dominant-baseline="middle">CU-A01: Administrar Cuentas</text>
+      <text x="420" y="149" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="500" fill="#222222" text-anchor="middle" dominant-baseline="middle">Bloqueo, Activación y Roles</text>
+    </g>
+  
+  
+    <g class="usecase-node">
+      <ellipse cx="420" cy="225" rx="120" ry="26" fill="#FFFFFF" stroke="#000000" stroke-width="1.8" />
+      <text x="420" y="218" font-family="'Segoe UI', Arial, sans-serif" font-size="11.5" font-weight="700" fill="#000000" text-anchor="middle" dominant-baseline="middle">CU-A02: Verificar KYC Tiendas</text>
+      <text x="420" y="234" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="500" fill="#222222" text-anchor="middle" dominant-baseline="middle">Aprobación de RUT y Legalidad</text>
+    </g>
+  
+  
+    <g class="usecase-node">
+      <ellipse cx="420" cy="310" rx="120" ry="26" fill="#FFFFFF" stroke="#000000" stroke-width="1.8" />
+      <text x="420" y="303" font-family="'Segoe UI', Arial, sans-serif" font-size="11.5" font-weight="700" fill="#000000" text-anchor="middle" dominant-baseline="middle">CU-A03: Clasificar Sectores</text>
+      <text x="420" y="319" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="500" fill="#222222" text-anchor="middle" dominant-baseline="middle">Categorías y Agrupación</text>
+    </g>
+  
+  
+    <g class="usecase-node">
+      <ellipse cx="420" cy="395" rx="120" ry="26" fill="#FFFFFF" stroke="#000000" stroke-width="1.8" />
+      <text x="420" y="388" font-family="'Segoe UI', Arial, sans-serif" font-size="11.5" font-weight="700" fill="#000000" text-anchor="middle" dominant-baseline="middle">CU-A04: Supervisar Pedidos</text>
+      <text x="420" y="404" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="500" fill="#222222" text-anchor="middle" dominant-baseline="middle">Auditoría Global Multitienda</text>
+    </g>
+  
+  
+    <g class="usecase-node">
+      <ellipse cx="420" cy="485" rx="120" ry="26" fill="#FFFFFF" stroke="#000000" stroke-width="1.8" />
+      <text x="420" y="478" font-family="'Segoe UI', Arial, sans-serif" font-size="11.5" font-weight="700" fill="#000000" text-anchor="middle" dominant-baseline="middle">CU-A05: Liquidar Comisiones</text>
+      <text x="420" y="494" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="500" fill="#222222" text-anchor="middle" dominant-baseline="middle">Cortes y Dispersión de Saldo</text>
+    </g>
+  
+  
+    <g class="usecase-node">
+      <ellipse cx="420" cy="575" rx="120" ry="26" fill="#FFFFFF" stroke="#000000" stroke-width="1.8" />
+      <text x="420" y="568" font-family="'Segoe UI', Arial, sans-serif" font-size="11.5" font-weight="700" fill="#000000" text-anchor="middle" dominant-baseline="middle">CU-A06: Monitorear Servicios</text>
+      <text x="420" y="584" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="500" fill="#222222" text-anchor="middle" dominant-baseline="middle">Salud Webhooks Wompi/Envia</text>
+    </g>
+  
+  
+    <g class="usecase-node">
+      <ellipse cx="420" cy="665" rx="120" ry="26" fill="#FFFFFF" stroke="#000000" stroke-width="1.8" />
+      <text x="420" y="658" font-family="'Segoe UI', Arial, sans-serif" font-size="11.5" font-weight="700" fill="#000000" text-anchor="middle" dominant-baseline="middle">CU-A07: Gestionar Campañas</text>
+      <text x="420" y="674" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="500" fill="#222222" text-anchor="middle" dominant-baseline="middle">Aprobación Banners y Vitrina</text>
+    </g>
+  
+  
+    <g class="usecase-node">
+      <ellipse cx="420" cy="750" rx="120" ry="26" fill="#FFFFFF" stroke="#000000" stroke-width="1.8" />
+      <text x="420" y="743" font-family="'Segoe UI', Arial, sans-serif" font-size="11.5" font-weight="700" fill="#000000" text-anchor="middle" dominant-baseline="middle">CU-A08: Tramitar PQRS Legal</text>
+      <text x="420" y="759" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="500" fill="#222222" text-anchor="middle" dominant-baseline="middle">Cumplimiento SLA Consumidor</text>
+    </g>
+  
+  
+    <g class="usecase-node">
+      <ellipse cx="420" cy="825" rx="120" ry="26" fill="#FFFFFF" stroke="#000000" stroke-width="1.8" />
+      <text x="420" y="818" font-family="'Segoe UI', Arial, sans-serif" font-size="11.5" font-weight="700" fill="#000000" text-anchor="middle" dominant-baseline="middle">CU-A09: Consultar Analítica</text>
+      <text x="420" y="834" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="500" fill="#222222" text-anchor="middle" dominant-baseline="middle">Diagnóstico Causal y ML</text>
+    </g>
+  
+  
+    <g class="usecase-node">
+      <ellipse cx="420" cy="900" rx="120" ry="26" fill="#FFFFFF" stroke="#000000" stroke-width="1.8" />
+      <text x="420" y="893" font-family="'Segoe UI', Arial, sans-serif" font-size="11.5" font-weight="700" fill="#000000" text-anchor="middle" dominant-baseline="middle">CU-A10: Auditar Trazabilidad</text>
+      <text x="420" y="909" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="500" fill="#222222" text-anchor="middle" dominant-baseline="middle">Logs Inmutables de Sistema</text>
+    </g>
+  
+
+  <!-- Casos de Uso Subordinados (Columna Derecha) -->
+  
+    <g class="usecase-node">
+      <ellipse cx="780" cy="140" rx="120" ry="25" fill="#FFFFFF" stroke="#000000" stroke-width="1.8" />
+      <text x="780" y="133" font-family="'Segoe UI', Arial, sans-serif" font-size="11.5" font-weight="700" fill="#000000" text-anchor="middle" dominant-baseline="middle">CU-A01.1: Bloquear Usuario</text>
+      <text x="780" y="149" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="500" fill="#222222" text-anchor="middle" dominant-baseline="middle">Inhabilitación de Acceso</text>
+    </g>
+  
+  
+    <g class="usecase-node">
+      <ellipse cx="780" cy="225" rx="120" ry="25" fill="#FFFFFF" stroke="#000000" stroke-width="1.8" />
+      <text x="780" y="218" font-family="'Segoe UI', Arial, sans-serif" font-size="11.5" font-weight="700" fill="#000000" text-anchor="middle" dominant-baseline="middle">CU-A02.1: Validar RUT Dian</text>
+      <text x="780" y="234" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="500" fill="#222222" text-anchor="middle" dominant-baseline="middle">Cotejo de Razón Social</text>
+    </g>
+  
+  
+    <g class="usecase-node">
+      <ellipse cx="780" cy="395" rx="120" ry="25" fill="#FFFFFF" stroke="#000000" stroke-width="1.8" />
+      <text x="780" y="388" font-family="'Segoe UI', Arial, sans-serif" font-size="11.5" font-weight="700" fill="#000000" text-anchor="middle" dominant-baseline="middle">CU-A04.1: Conciliar Pagos</text>
+      <text x="780" y="404" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="500" fill="#222222" text-anchor="middle" dominant-baseline="middle">Firma Wompi e Idempotencia</text>
+    </g>
+  
+  
+    <g class="usecase-node">
+      <ellipse cx="780" cy="485" rx="120" ry="25" fill="#FFFFFF" stroke="#000000" stroke-width="1.8" />
+      <text x="780" y="478" font-family="'Segoe UI', Arial, sans-serif" font-size="11.5" font-weight="700" fill="#000000" text-anchor="middle" dominant-baseline="middle">CU-A05.1: Exportar Balance</text>
+      <text x="780" y="494" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="500" fill="#222222" text-anchor="middle" dominant-baseline="middle">Reporte Contable en CSV</text>
+    </g>
+  
+  
+    <g class="usecase-node">
+      <ellipse cx="780" cy="575" rx="120" ry="25" fill="#FFFFFF" stroke="#000000" stroke-width="1.8" />
+      <text x="780" y="568" font-family="'Segoe UI', Arial, sans-serif" font-size="11.5" font-weight="700" fill="#000000" text-anchor="middle" dominant-baseline="middle">CU-A06.1: Reintentar Jobs</text>
+      <text x="780" y="584" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="500" fill="#222222" text-anchor="middle" dominant-baseline="middle">Cola de Procesos Fallidos</text>
+    </g>
+  
+
+  <!-- Asociaciones Directas Actor -> Casos de Uso -->
+  <line x1="145" y1="410" x2="300" y2="140" class="assoc-line" />
+  <line x1="145" y1="425" x2="300" y2="225" class="assoc-line" />
+  <line x1="145" y1="440" x2="300" y2="310" class="assoc-line" />
+  <line x1="145" y1="455" x2="300" y2="395" class="assoc-line" />
+  <line x1="145" y1="470" x2="300" y2="485" class="assoc-line" />
+  <line x1="145" y1="485" x2="300" y2="575" class="assoc-line" />
+  <line x1="145" y1="500" x2="300" y2="665" class="assoc-line" />
+  <line x1="145" y1="515" x2="300" y2="750" class="assoc-line" />
+  <line x1="145" y1="530" x2="300" y2="825" class="assoc-line" />
+  <line x1="145" y1="545" x2="300" y2="900" class="assoc-line" />
+
+  <!-- Dependencias <<include>> y <<extend>> -->
+  <!-- CU-A01.1 -> CU-A01 (extend) -->
+  <line x1="660" y1="140" x2="540" y2="140" class="dep-line" marker-end="url(#arrow-open)" />
+  
+    <g transform="translate(600, 135)">
+      <rect x="-33" y="-8" width="66" height="16" fill="#FFFFFF" stroke="none" />
+      <text x="0" y="4" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="700" fill="#000000" text-anchor="middle">«extend»</text>
+    </g>
+  
+
+  <!-- CU-A02 -> CU-A02.1 (include) -->
+  <line x1="540" y1="225" x2="660" y2="225" class="dep-line" marker-end="url(#arrow-open)" />
+  
+    <g transform="translate(600, 220)">
+      <rect x="-36.5" y="-8" width="73" height="16" fill="#FFFFFF" stroke="none" />
+      <text x="0" y="4" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="700" fill="#000000" text-anchor="middle">«include»</text>
+    </g>
+  
+
+  <!-- CU-A04 -> CU-A04.1 (include) -->
+  <line x1="540" y1="395" x2="660" y2="395" class="dep-line" marker-end="url(#arrow-open)" />
+  
+    <g transform="translate(600, 390)">
+      <rect x="-36.5" y="-8" width="73" height="16" fill="#FFFFFF" stroke="none" />
+      <text x="0" y="4" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="700" fill="#000000" text-anchor="middle">«include»</text>
+    </g>
+  
+
+  <!-- CU-A05.1 -> CU-A05 (extend) -->
+  <line x1="660" y1="485" x2="540" y2="485" class="dep-line" marker-end="url(#arrow-open)" />
+  
+    <g transform="translate(600, 480)">
+      <rect x="-33" y="-8" width="66" height="16" fill="#FFFFFF" stroke="none" />
+      <text x="0" y="4" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="700" fill="#000000" text-anchor="middle">«extend»</text>
+    </g>
+  
+
+  <!-- CU-A06.1 -> CU-A06 (extend) -->
+  <line x1="660" y1="575" x2="540" y2="575" class="dep-line" marker-end="url(#arrow-open)" />
+  
+    <g transform="translate(600, 570)">
+      <rect x="-33" y="-8" width="66" height="16" fill="#FFFFFF" stroke="none" />
+      <text x="0" y="4" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="700" fill="#000000" text-anchor="middle">«extend»</text>
+    </g>
+  
+
+  <!-- Cuadro de Convenciones Inferior -->
+  <rect x="230" y="965" width="780" height="55" fill="#FFFFFF" stroke="#000000" stroke-width="1.2" />
+  <text x="245" y="985" class="legend-title">CONVENCIONES UML 2.5 (ADMINISTRACIÓN Y GOBERNANZA):</text>
+  <text x="245" y="1002" class="legend-text">• Muñequito: Actor Administrador / Analista. • Rectángulo: Módulo de supervisión y gobernanza general.</text>
+  <text x="245" y="1014" class="legend-text">• «include»: Subproceso mandatario de validación/conciliación. • «extend»: Acción especializada o soporte condicional.</text>
+</svg>

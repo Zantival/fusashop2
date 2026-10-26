@@ -1,0 +1,248 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="use-case-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1380 1000" width="1380" height="1000">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 1.5 L 8 5 L 0 8.5" fill="none" stroke="#000000" stroke-width="1.6" />
+    </marker>
+  </defs>
+
+  <style>
+    .title { font-family: 'Segoe UI', Arial, sans-serif; font-size: 18px; font-weight: 800; fill: #000000; letter-spacing: 1.5px; text-anchor: middle; }
+    .subtitle { font-family: 'Segoe UI', Arial, sans-serif; font-size: 11px; font-weight: 500; fill: #555555; text-anchor: middle; }
+    .boundary-label { font-family: 'Segoe UI', Arial, sans-serif; font-size: 12px; font-weight: 800; fill: #333333; letter-spacing: 1px; }
+    .actor-label { font-family: 'Segoe UI', Arial, sans-serif; font-size: 13.5px; font-weight: 700; fill: #000000; text-anchor: middle; }
+    .actor-sub { font-family: 'Segoe UI', Arial, sans-serif; font-size: 11px; font-weight: 500; fill: #555555; text-anchor: middle; }
+    .uc-text { font-family: 'Segoe UI', Arial, sans-serif; font-size: 12px; font-weight: 600; fill: #000000; text-anchor: middle; dominant-baseline: central; }
+    .line { fill: none; stroke: #000000; stroke-width: 1.6; }
+    .dash { fill: none; stroke: #000000; stroke-width: 1.4; stroke-dasharray: 6,4; }
+    .tag { font-family: 'Segoe UI', Arial, sans-serif; font-size: 10px; font-weight: 700; fill: #000000; text-anchor: middle; dominant-baseline: central; }
+    .tag-bg { fill: #FFFFFF; }
+  </style>
+
+  <!-- Fondo Blanco -->
+  <rect width="1380" height="1000" fill="#FFFFFF" />
+
+  <!-- TÍTULO DEL DIAGRAMA -->
+  <text x="690" y="40" class="title">DIAGRAMA GENERAL DE CASOS DE USO (FUSASHOP)</text>
+  <text x="690" y="58" class="subtitle">E-commerce Multi-Rol: Clientes y Gestión Administrativa de Plataforma</text>
+
+  <!-- LÍMITE DEL SISTEMA (SYSTEM BOUNDARY) -->
+  <rect x="230" y="75" width="870" height="900" rx="8" ry="8" fill="none" stroke="#666666" stroke-width="1.2" stroke-dasharray="8,6" />
+  <text x="250" y="96" class="boundary-label">SISTEMA FUSASHOP</text>
+
+  <!-- ==================== ACTORES (MUÑEQUITOS) ==================== -->
+
+  <!-- ACTOR 1: CLIENTE REGISTRADO (IZQUIERDA) -->
+  <g transform="translate(115, 230)">
+    <circle cx="0" cy="-36" r="16" fill="#FFFFFF" stroke="#000000" stroke-width="2" />
+    <line x1="0" y1="-20" x2="0" y2="18" stroke="#000000" stroke-width="2" />
+    <line x1="-25" y1="-7" x2="25" y2="-7" stroke="#000000" stroke-width="2" />
+    <line x1="0" y1="18" x2="-18" y2="50" stroke="#000000" stroke-width="2" />
+    <line x1="0" y1="18" x2="18" y2="50" stroke="#000000" stroke-width="2" />
+    <text x="0" y="74" class="actor-label">Cliente registrado</text>
+    <text x="0" y="89" class="actor-sub">(Comprador autenticado)</text>
+  </g>
+
+  <!-- ACTOR 2: CLIENTE VISITANTE (DERECHA ARRIBA) -->
+  <g transform="translate(1230, 200)">
+    <circle cx="0" cy="-36" r="16" fill="#FFFFFF" stroke="#000000" stroke-width="2" />
+    <line x1="0" y1="-20" x2="0" y2="18" stroke="#000000" stroke-width="2" />
+    <line x1="-25" y1="-7" x2="25" y2="-7" stroke="#000000" stroke-width="2" />
+    <line x1="0" y1="18" x2="-18" y2="50" stroke="#000000" stroke-width="2" />
+    <line x1="0" y1="18" x2="18" y2="50" stroke="#000000" stroke-width="2" />
+    <text x="0" y="74" class="actor-label">Cliente</text>
+    <text x="0" y="89" class="actor-sub">(Visitante / Público)</text>
+  </g>
+
+  <!-- ACTOR 3: ADMINISTRADOR (DERECHA ABAJO) -->
+  <g transform="translate(1230, 750)">
+    <circle cx="0" cy="-36" r="16" fill="#FFFFFF" stroke="#000000" stroke-width="2" />
+    <line x1="0" y1="-20" x2="0" y2="18" stroke="#000000" stroke-width="2" />
+    <line x1="-25" y1="-7" x2="25" y2="-7" stroke="#000000" stroke-width="2" />
+    <line x1="0" y1="18" x2="-18" y2="50" stroke="#000000" stroke-width="2" />
+    <line x1="0" y1="18" x2="18" y2="50" stroke="#000000" stroke-width="2" />
+    <text x="0" y="74" class="actor-label">Administrador</text>
+    <text x="0" y="89" class="actor-sub">(Gestor de plataforma)</text>
+  </g>
+
+  <!-- ==================== CASOS DE USO ==================== -->
+
+  <!-- 1. Navegar por la tienda -->
+  <g>
+    <ellipse cx="660" cy="120" rx="125" ry="25" fill="#FFFFFF" stroke="#000000" stroke-width="1.8" />
+    <text x="660" y="120" class="uc-text">Navegar por la tienda</text>
+  </g>
+
+  <!-- 2. Ver detalles del producto -->
+  <g>
+    <ellipse cx="660" cy="190" rx="125" ry="25" fill="#FFFFFF" stroke="#000000" stroke-width="1.8" />
+    <text x="660" y="190" class="uc-text">Ver detalles del producto</text>
+  </g>
+
+  <!-- 3. Gestionar carrito -->
+  <g>
+    <ellipse cx="660" cy="260" rx="115" ry="25" fill="#FFFFFF" stroke="#000000" stroke-width="1.8" />
+    <text x="660" y="260" class="uc-text">Gestionar carrito</text>
+  </g>
+
+  <!-- 4. Registrarse -->
+  <g>
+    <ellipse cx="660" cy="340" rx="110" ry="25" fill="#FFFFFF" stroke="#000000" stroke-width="1.8" />
+    <text x="660" y="340" class="uc-text">Registrarse</text>
+  </g>
+
+  <!-- 5. Iniciar sesión -->
+  <g>
+    <ellipse cx="660" cy="430" rx="110" ry="25" fill="#FFFFFF" stroke="#000000" stroke-width="1.8" />
+    <text x="660" y="430" class="uc-text">Iniciar sesión</text>
+  </g>
+
+  <!-- 6. Realizar compra -->
+  <g>
+    <ellipse cx="910" cy="495" rx="110" ry="25" fill="#FFFFFF" stroke="#000000" stroke-width="1.8" />
+    <text x="910" y="495" class="uc-text">Realizar compra</text>
+  </g>
+
+  <!-- 7. Ver pedido -->
+  <g>
+    <ellipse cx="660" cy="545" rx="110" ry="25" fill="#FFFFFF" stroke="#000000" stroke-width="1.8" />
+    <text x="660" y="545" class="uc-text">Ver pedido</text>
+  </g>
+
+  <!-- 8. Calificar producto -->
+  <g>
+    <ellipse cx="910" cy="590" rx="110" ry="25" fill="#FFFFFF" stroke="#000000" stroke-width="1.8" />
+    <text x="910" y="590" class="uc-text">Calificar producto</text>
+  </g>
+
+  <!-- 9. Contactar soporte / PQRS (Cliente) -->
+  <g>
+    <ellipse cx="660" cy="650" rx="120" ry="25" fill="#FFFFFF" stroke="#000000" stroke-width="1.8" />
+    <text x="660" y="650" class="uc-text">Contactar soporte / PQRS</text>
+  </g>
+
+  <!-- 10. Visualizar datos (Perfil) -->
+  <g>
+    <ellipse cx="400" cy="510" rx="105" ry="25" fill="#FFFFFF" stroke="#000000" stroke-width="1.8" />
+    <text x="400" y="510" class="uc-text">Visualizar datos</text>
+  </g>
+
+  <!-- 11. Actualizar datos -->
+  <g>
+    <ellipse cx="320" cy="625" rx="95" ry="25" fill="#FFFFFF" stroke="#000000" stroke-width="1.8" />
+    <text x="320" y="625" class="uc-text">Actualizar datos</text>
+  </g>
+
+  <!-- 12. Cambiar contraseña -->
+  <g>
+    <ellipse cx="480" cy="625" rx="100" ry="25" fill="#FFFFFF" stroke="#000000" stroke-width="1.8" />
+    <text x="480" y="625" class="uc-text">Cambiar contraseña</text>
+  </g>
+
+  <!-- ==================== CASOS DE USO ADMINISTRATIVOS ==================== -->
+
+  <!-- 13. Atender y gestionar PQRS -->
+  <g>
+    <ellipse cx="930" cy="690" rx="120" ry="25" fill="#FFFFFF" stroke="#000000" stroke-width="1.8" />
+    <text x="930" y="690" class="uc-text">Atender y gestionar PQRS</text>
+  </g>
+
+  <!-- 14. Gestionar usuarios y roles -->
+  <g>
+    <ellipse cx="930" cy="760" rx="125" ry="25" fill="#FFFFFF" stroke="#000000" stroke-width="1.8" />
+    <text x="930" y="760" class="uc-text">Gestionar usuarios y roles</text>
+  </g>
+
+  <!-- 15. Verificar comercios (KYC) -->
+  <g>
+    <ellipse cx="930" cy="830" rx="125" ry="25" fill="#FFFFFF" stroke="#000000" stroke-width="1.8" />
+    <text x="930" y="830" class="uc-text">Verificar comercios (KYC)</text>
+  </g>
+
+  <!-- 16. Gestionar banners y publicidad -->
+  <g>
+    <ellipse cx="930" cy="900" rx="130" ry="25" fill="#FFFFFF" stroke="#000000" stroke-width="1.8" />
+    <text x="930" y="900" class="uc-text">Gestionar solicitudes de banners</text>
+  </g>
+
+  <!-- 17. Auditar plataforma y reportes -->
+  <g>
+    <ellipse cx="640" cy="850" rx="135" ry="25" fill="#FFFFFF" stroke="#000000" stroke-width="1.8" />
+    <text x="640" y="850" class="uc-text">Auditar plataforma y reportes</text>
+  </g>
+
+
+  <!-- ==================== ASOCIACIONES SÓLIDAS ==================== -->
+
+  <!-- CLIENTE REGISTRADO (IZQUIERDA) -->
+  <line x1="150" y1="200" x2="535" y2="120" class="line" />
+  <line x1="150" y1="215" x2="535" y2="190" class="line" />
+  <line x1="150" y1="230" x2="545" y2="260" class="line" />
+  <line x1="150" y1="265" x2="555" y2="425" class="line" />
+
+  <!-- CLIENTE VISITANTE (DERECHA ARRIBA) -->
+  <line x1="1190" y1="170" x2="785" y2="120" class="line" />
+  <line x1="1190" y1="185" x2="785" y2="190" class="line" />
+  <line x1="1190" y1="200" x2="775" y2="260" class="line" />
+  <line x1="1190" y1="225" x2="765" y2="335" class="line" />
+
+  <!-- ADMINISTRADOR (DERECHA ABAJO) -->
+  <!-- Conexión a Iniciar Sesión (El Admin debe autenticarse) -->
+  <path d="M 1195 720 L 1110 720 L 1110 430 L 770 430" class="line" />
+
+  <!-- Conexiones a casos administrativos -->
+  <line x1="1195" y1="735" x2="1050" y2="690" class="line" />
+  <line x1="1195" y1="750" x2="1055" y2="760" class="line" />
+  <line x1="1195" y1="765" x2="1055" y2="830" class="line" />
+  <line x1="1195" y1="780" x2="1060" y2="900" class="line" />
+  <!-- A Auditoría / Reportes -->
+  <path d="M 1195 795 L 1120 795 L 1120 945 L 640 945 L 640 875" class="line" />
+
+  <!-- ==================== RELACIONES <<include>> Y <<extend>> ==================== -->
+
+  <!-- Registrarse -> Iniciar sesión (include) -->
+  <line x1="660" y1="365" x2="660" y2="405" class="dash" marker-end="url(#arrow)" />
+  <rect x="668" y="377" width="62" height="15" class="tag-bg" />
+  <text x="699" y="385" class="tag">&lt;&lt;include&gt;&gt;</text>
+
+  <!-- Iniciar sesión -> Realizar compra (include) -->
+  <path d="M 755 450 L 825 478" class="dash" marker-end="url(#arrow)" />
+  <rect x="765" y="452" width="62" height="15" class="tag-bg" />
+  <text x="796" y="460" class="tag">&lt;&lt;include&gt;&gt;</text>
+
+  <!-- Iniciar sesión -> Ver pedido (extend) -->
+  <line x1="660" y1="455" x2="660" y2="520" class="dash" marker-end="url(#arrow)" />
+  <rect x="608" y="480" width="60" height="15" class="tag-bg" />
+  <text x="638" y="488" class="tag">&lt;&lt;extend&gt;&gt;</text>
+
+  <!-- Ver pedido -> Calificar producto (extend) -->
+  <path d="M 760 558 L 825 578" class="dash" marker-end="url(#arrow)" />
+  <rect x="765" y="555" width="60" height="15" class="tag-bg" />
+  <text x="795" y="563" class="tag">&lt;&lt;extend&gt;&gt;</text>
+
+  <!-- Ver pedido -> Contactar soporte / PQRS (extend) -->
+  <line x1="660" y1="570" x2="660" y2="625" class="dash" marker-end="url(#arrow)" />
+  <rect x="608" y="590" width="60" height="15" class="tag-bg" />
+  <text x="638" y="598" class="tag">&lt;&lt;extend&gt;&gt;</text>
+
+  <!-- Contactar soporte / PQRS -> Atender y gestionar PQRS (extend / gestión vinculada) -->
+  <path d="M 770 662 L 830 678" class="dash" marker-end="url(#arrow)" />
+  <rect x="775" y="660" width="62" height="15" class="tag-bg" />
+  <text x="806" y="668" class="tag">&lt;&lt;include&gt;&gt;</text>
+
+  <!-- Iniciar sesión -> Visualizar datos (extend) -->
+  <path d="M 565 448 L 475 490" class="dash" marker-end="url(#arrow)" />
+  <rect x="480" y="455" width="60" height="15" class="tag-bg" />
+  <text x="510" y="463" class="tag">&lt;&lt;extend&gt;&gt;</text>
+
+  <!-- Visualizar datos -> Actualizar datos (extend) -->
+  <path d="M 370 532 L 340 600" class="dash" marker-end="url(#arrow)" />
+  <rect x="310" y="558" width="60" height="15" class="tag-bg" />
+  <text x="340" y="566" class="tag">&lt;&lt;extend&gt;&gt;</text>
+
+  <!-- Visualizar datos -> Cambiar contraseña (extend) -->
+  <path d="M 430 532 L 460 600" class="dash" marker-end="url(#arrow)" />
+  <rect x="450" y="558" width="60" height="15" class="tag-bg" />
+  <text x="480" y="566" class="tag">&lt;&lt;extend&gt;&gt;</text>
+
+</svg>

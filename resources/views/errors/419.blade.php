@@ -1,0 +1,1 @@
+@include('errors.page', ['code' => '419', 'title' => 'Tu sesión venció', 'message' => 'Por seguridad, la sesión expiró antes de completar la acción.', 'hint' => 'Inicia sesión nuevamente y repite el proceso.'])

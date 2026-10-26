@@ -105,21 +105,46 @@
           </div>
 
           <div>
-            <label class="block text-sm font-bold text-on-surface mb-2">Stock Total / disponible *</label>
+            <label class="block text-sm font-bold text-on-surface mb-2" id="stock-label">Stock Total / disponible *</label>
             <input type="number" name="stock" value="{{ old('stock', $product?->stock ?? 0) }}" min="0" required
               class="w-full px-4 py-3 bg-surface-container-highest rounded-xl border-0 outline-none focus:ring-2 focus:ring-primary shadow-inner"
               placeholder="100"/>
+            <p class="text-[11px] text-on-surface-variant mt-1" id="stock-hint">Cantidad de unidades disponibles.</p>
           </div>
 
           <div class="sm:col-span-2">
-            <label class="block text-sm font-bold text-on-surface mb-2">Categoría *</label>
+            <label class="block text-sm font-bold text-on-surface mb-2">Categoría / Sector *</label>
             <select name="category" id="category-select" required
               class="w-full px-4 py-3 bg-surface-container-highest rounded-xl border-0 outline-none focus:ring-2 focus:ring-primary shadow-inner appearance-none">
               <option value="">Seleccionar categoría</option>
-              @foreach(['Ropa','Calzado','Electrónica','Hogar','Deportes','Alimentos','Belleza','Juguetes','Libros','Hoteles y Alojamientos','Restaurantes y Gastronomía','Turismo y Experiencias','Servicios profesionales','Otros'] as $cat)
-                <option value="{{ $cat }}" {{ old('category', $product?->category) === $cat ? 'selected' : '' }}>{{ $cat }}</option>
+              @php $currentCategory = old('category', $product?->category); @endphp
+              <optgroup label="Comercio general">
+                @foreach(['Ropa','Calzado','Electrónica','Hogar','Deportes','Alimentos','Belleza','Juguetes','Libros','Otros'] as $cat)
+                  <option value="{{ $cat }}" {{ $currentCategory === $cat ? 'selected' : '' }}>{{ $cat }}</option>
+                @endforeach
+              </optgroup>
+              <optgroup label="Salud y bienestar">
+                @foreach(['Medicamentos y Farmacia','Droguería','Tienda Verde y Naturista'] as $cat)
+                  <option value="{{ $cat }}" {{ $currentCategory === $cat ? 'selected' : '' }}>{{ $cat }}</option>
+                @endforeach
+              </optgroup>
+              <optgroup label="Servicios y turismo">
+                @foreach(['Hoteles y Alojamientos','Restaurantes y Gastronomía','Turismo y Experiencias','Servicios profesionales'] as $cat)
+                  <option value="{{ $cat }}" {{ $currentCategory === $cat ? 'selected' : '' }}>{{ $cat }}</option>
+                @endforeach
+              </optgroup>
+            </select>
+          </div>
+
+          <div class="sm:col-span-2" id="sale-unit-wrapper">
+            <label class="block text-sm font-bold text-on-surface mb-2">Unidad de venta</label>
+            <select name="sale_unit" id="sale-unit-select"
+              class="w-full px-4 py-3 bg-surface-container-highest rounded-xl border-0 outline-none focus:ring-2 focus:ring-primary shadow-inner appearance-none">
+              @foreach(\App\Models\Product::SALE_UNITS as $unitValue => $unitLabel)
+                <option value="{{ $unitValue }}" {{ old('sale_unit', $product?->sale_unit ?: 'unidad') === $unitValue ? 'selected' : '' }}>{{ $unitLabel }}</option>
               @endforeach
             </select>
+            <p class="text-[11px] text-on-surface-variant mt-1">El precio y el stock se cuentan en esta unidad. Ej.: tienda verde → “Bolsa de 100 g” con precio por bolsa, o “Gramo (g)” con stock en gramos.</p>
           </div>
 
           <div class="sm:col-span-2">
@@ -408,7 +433,10 @@
     'Libros': [{ name: 'Formato', values: 'Pasta blanda, Pasta dura, Digital' }],
     'Hoteles y Alojamientos': [{ name: 'Habitación', values: 'Sencilla, Doble, Familiar, Suite' }, { name: 'Ocupación', values: '1 persona, 2 personas, 4 personas' }],
     'Restaurantes y Gastronomía': [{ name: 'Plato o menú (solo referencia)', values: 'Desayuno, Almuerzo, Cena' }, { name: 'Tipo de mesa', values: 'Interior, Terraza, Familiar' }],
-    'Turismo y Experiencias': [{ name: 'Experiencia', values: 'Individual, Pareja, Grupo' }, { name: 'Duración', values: '2 horas, Medio día, Día completo' }]
+    'Turismo y Experiencias': [{ name: 'Experiencia', values: 'Individual, Pareja, Grupo' }, { name: 'Duración', values: '2 horas, Medio día, Día completo' }],
+    'Medicamentos y Farmacia': [{ name: 'Presentación', values: 'Tabletas, Cápsulas, Jarabe, Gotas, Crema, Inyectable' }, { name: 'Concentración', values: '250 mg, 500 mg, 1 g' }],
+    'Droguería': [{ name: 'Presentación', values: 'Caja, Blíster, Frasco, Sobre' }, { name: 'Contenido', values: '10 unidades, 20 unidades, 30 unidades' }],
+    'Tienda Verde y Naturista': [{ name: 'Presentación', values: '100 g, 250 g, 500 g, 1 kg' }]
   };
 
   const specSchemas = {
@@ -418,7 +446,10 @@
     'Hogar': [{ key: 'dims', label: 'Dimensiones' }, { key: 'material', label: 'Material' }],
     'Hoteles y Alojamientos': [{ key: 'amenities', label: 'Servicios de la habitación' }, { key: 'checkin', label: 'Hora de ingreso' }, { key: 'checkout', label: 'Hora de salida' }],
     'Restaurantes y Gastronomía': [{ key: 'menu', label: 'Platos ofrecidos (información)' }, { key: 'reservation_policy', label: 'Política de reserva de mesa' }],
-    'Turismo y Experiencias': [{ key: 'duration', label: 'Duración' }, { key: 'meeting_point', label: 'Punto de encuentro' }]
+    'Turismo y Experiencias': [{ key: 'duration', label: 'Duración' }, { key: 'meeting_point', label: 'Punto de encuentro' }],
+    'Medicamentos y Farmacia': [{ key: 'active_ingredient', label: 'Principio activo' }, { key: 'concentration', label: 'Concentración' }, { key: 'laboratory', label: 'Laboratorio' }, { key: 'invima', label: 'Registro INVIMA' }, { key: 'prescription', label: 'Requiere fórmula médica (Sí/No)' }, { key: 'exp', label: 'Fecha de vencimiento' }, { key: 'lot', label: 'Lote' }, { key: 'dosage', label: 'Dosis / modo de uso' }, { key: 'contraindications', label: 'Contraindicaciones' }],
+    'Droguería': [{ key: 'brand', label: 'Marca' }, { key: 'laboratory', label: 'Laboratorio / fabricante' }, { key: 'invima', label: 'Registro sanitario / INVIMA' }, { key: 'prescription', label: 'Requiere fórmula médica (Sí/No)' }, { key: 'exp', label: 'Fecha de vencimiento' }, { key: 'lot', label: 'Lote' }, { key: 'usage', label: 'Modo de uso' }],
+    'Tienda Verde y Naturista': [{ key: 'origin', label: 'Origen / procedencia' }, { key: 'net_content', label: 'Contenido neto (g)' }, { key: 'exp', label: 'Fecha de vencimiento' }, { key: 'properties', label: 'Propiedades / beneficios' }, { key: 'usage', label: 'Modo de preparación o uso' }, { key: 'invima', label: 'Registro sanitario (si aplica)' }]
   };
 
   let optionCount = {{ $product && $product->available_options ? count($product->available_options) : 0 }};
@@ -478,7 +509,25 @@
     if (technicalSpecs.length || Object.keys(existingSpecs).length > 0) { sw.classList.remove('hidden'); renderSpecs(cat, technicalSpecs); }
     else sw.classList.add('hidden');
     renderVariantMatrix();
+    applyUnitDefaults(cat);
   });
+
+  // Unidad de venta sugerida según el sector (solo si el comerciante aún no la cambió)
+  const unitSelect = document.getElementById('sale-unit-select');
+  let unitTouched = isEditingProduct;
+  unitSelect.addEventListener('change', () => { unitTouched = true; updateStockHint(); });
+  function applyUnitDefaults(cat) {
+    const defaults = { 'Tienda Verde y Naturista': 'g', 'Medicamentos y Farmacia': 'caja', 'Droguería': 'unidad' };
+    if (!unitTouched && defaults[cat]) unitSelect.value = defaults[cat];
+    updateStockHint();
+  }
+  function updateStockHint() {
+    const unit = unitSelect.value;
+    const label = unitSelect.options[unitSelect.selectedIndex]?.text || 'Unidad';
+    document.getElementById('stock-label').textContent = unit === 'unidad' ? 'Stock Total / disponible *' : `Stock disponible (en: ${label}) *`;
+    document.getElementById('stock-hint').textContent = unit === 'unidad' ? 'Cantidad de unidades disponibles.' : `Cada unidad de stock equivale a: ${label}. El precio base es por esa misma unidad.`;
+  }
+  updateStockHint();
   if(catSelect.value) catSelect.dispatchEvent(new Event('change'));
 
   function escapeHtml(value) {

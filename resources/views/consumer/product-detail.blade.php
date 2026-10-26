@@ -96,11 +96,11 @@ $specLabels = [
         @if(count($galleryImages) > 0)
           <div class="flex gap-2 mt-4 justify-center pd-fi" style="--d:.4s">
             @if($mainImageUrl)
-              <button onclick="changeMainImg('{{ $mainImageUrl }}')" class="w-14 h-14 rounded-lg border-2 border-white/20 overflow-hidden hover:border-white transition-all bg-white/5"><img loading="lazy" decoding="async" src="{{ $mainImageUrl }}" class="w-full h-full object-cover"></button>
+              <button type="button" aria-label="Ver imagen principal de {{ e($product->name) }}" onclick="changeMainImg('{{ $mainImageUrl }}')" class="w-14 h-14 rounded-lg border-2 border-white/20 overflow-hidden hover:border-white transition-all bg-white/5"><img loading="lazy" decoding="async" src="{{ $mainImageUrl }}" alt="" class="w-full h-full object-cover"></button>
             @endif
             @foreach($galleryImages as $img)
               @php $galleryUrl = url('storage/' . $img); @endphp
-              <button onclick="changeMainImg('{{ $galleryUrl }}')" class="w-14 h-14 rounded-lg border-2 border-white/10 overflow-hidden hover:border-white transition-all bg-white/5"><img loading="lazy" decoding="async" src="{{ $galleryUrl }}" class="w-full h-full object-cover"></button>
+              <button type="button" aria-label="Ver otra imagen de {{ e($product->name) }}" onclick="changeMainImg('{{ $galleryUrl }}')" class="w-14 h-14 rounded-lg border-2 border-white/10 overflow-hidden hover:border-white transition-all bg-white/5"><img loading="lazy" decoding="async" src="{{ $galleryUrl }}" alt="" class="w-full h-full object-cover"></button>
             @endforeach
           </div>
         @endif
@@ -173,7 +173,9 @@ $specLabels = [
         <div class="flex items-center gap-2 pd-fi" style="--d:.21s">
           <a href="{{ route('consumer.merchant.profile', $product->merchant_id) }}" class="pd-merchant flex-1">
             @if($product->merchant->companyProfile?->logo_path)
-              <img loading="lazy" decoding="async" src="{{ Storage::url($product->merchant->companyProfile->logo_path) }}" class="w-10 h-10 rounded-full object-cover">
+              <img loading="lazy" decoding="async" src="{{ Storage::url($product->merchant->companyProfile->logo_path) }}" alt="Logo de {{ $product->merchant->companyProfile->company_name }}" class="w-10 h-10 rounded-full object-cover">
+            @elseif($product->merchant->avatarUrl())
+              <img loading="lazy" decoding="async" src="{{ $product->merchant->avatarUrl() }}" alt="Foto de perfil de {{ $product->merchant->name }}" class="w-10 h-10 rounded-full object-cover">
             @else
               <div class="w-10 h-10 rounded-full flex items-center justify-center text-white font-black" style="background:{{ $from }}">{{ strtoupper(substr($product->merchant->name,0,1)) }}</div>
             @endif
@@ -426,14 +428,7 @@ $specLabels = [
 
           {{-- Información de Autor --}}
           <div class="flex items-center gap-3.5 pt-4 border-t border-surface-container/40">
-            @if($rev->user->avatar)
-              <img loading="lazy" decoding="async" src="{{ Storage::url($rev->user->avatar) }}" class="w-11 h-11 rounded-full object-cover shadow-inner">
-            @else
-              <div class="w-11 h-11 rounded-full flex items-center justify-center font-black text-sm shrink-0 shadow-inner"
-                   style="background: {{ $avatarBg }}; color: {{ $avatarText }}">
-                {{ strtoupper(substr($rev->user->name ?? 'A', 0, 1)) }}
-              </div>
-            @endif
+            <x-user-avatar :user="$rev->user" size="w-11 h-11" text-size="text-sm" class="shadow-inner" />
             
             <div>
               <p class="font-black text-sm text-on-surface leading-tight">

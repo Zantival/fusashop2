@@ -1,0 +1,1 @@
+@include('errors.page', ['code' => '422', 'title' => 'No pudimos validar la información', 'message' => 'Algunos datos no cumplen con lo requerido para completar esta acción.', 'hint' => 'Revisa los campos del formulario y vuelve a intentarlo.'])

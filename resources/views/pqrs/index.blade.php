@@ -10,6 +10,9 @@
         <a href="{{ route('pqrs.create') }}" class="px-6 py-3 bg-primary text-white font-bold rounded-2xl shadow-lg hover:opacity-95 transition-all flex items-center gap-2">
             <span class="material-symbols-outlined">add_circle</span> Nueva Solicitud
         </a>
+        <a href="{{ route('pqrs.create', ['category' => 'seguridad']) }}" class="px-6 py-3 bg-rose-700 text-white font-bold rounded-2xl shadow-lg hover:bg-rose-800 transition-all flex items-center gap-2">
+            <span class="material-symbols-outlined">shield</span> Reportar fraude
+        </a>
     </div>
 
     @if($pqrs->isEmpty())
@@ -45,6 +48,9 @@
                                 {{ $item->status }}
                             </span>
                             <span class="text-xs text-on-surface-variant">{{ $item->created_at->format('d M, Y') }}</span>
+                            @if($item->category === 'seguridad')
+                                <span class="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-rose-100 text-rose-800">Seguridad · Urgente</span>
+                            @endif
                         </div>
                         <h3 class="font-bold text-on-surface truncate">{{ $item->subject }}</h3>
                         <p class="text-sm text-on-surface-variant truncate">{{ $item->content }}</p>

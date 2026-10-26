@@ -1,0 +1,1 @@
+@include('errors.page', ['code' => '405', 'title' => 'No se puede realizar esta acción', 'message' => 'La página recibió una acción que no está permitida.', 'hint' => 'Vuelve a la pantalla anterior e inténtalo desde el botón correspondiente.'])

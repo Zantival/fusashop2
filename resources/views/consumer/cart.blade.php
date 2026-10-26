@@ -100,7 +100,11 @@
                   {{-- Badge FusaCoins --}}
                   @if($item->product->allows_points)
                     <span class="inline-flex items-center gap-0.5 text-[10px] font-bold text-amber-700 bg-amber-50 border border-amber-200/60 px-1.5 py-0.5 rounded-full" title="Puedes redimir FusaCoins como descuento en este producto">
-                      <span class="material-symbols-outlined text-xs text-amber-500">toll</span> FusaCoins
+                      <span class="material-symbols-outlined text-xs text-amber-500">toll</span> Aplica FusaCoins
+                    </span>
+                  @else
+                    <span class="inline-flex items-center gap-0.5 text-[10px] font-bold text-slate-600 bg-slate-100 border border-slate-200 px-1.5 py-0.5 rounded-full" title="Este producto no admite redención de FusaCoins">
+                      No redime FusaCoins
                     </span>
                   @endif
                 </div>

@@ -125,17 +125,16 @@ class BannersAndPromotionalCardsFlowTest extends TestCase
             'title'        => 'Gran Feria Café Real Sumapaz',
             'description'  => 'Por favor enlazar este banner directamente a nuestra tienda oficial.',
             'target_type'  => 'store',
-            'payment_mode' => 'wompi_card',
-            'card_holder'  => 'Café Real',
-            'card_number'  => '4242424242424242',
-            'card_expiry'  => '12/28',
-            'card_cvc'     => '123',
-        ])->assertRedirect(route('merchant.dashboard'));
+            'payment_mode' => 'wompi_checkout',
+        ])->assertRedirectContains(route('wompi.sandbox.checkout', [], false));
 
         $bannerReq = BannerRequest::first();
         $this->assertNotNull($bannerReq);
         $expectedStoreUrl = route('consumer.merchant.profile', $merchant->id);
         $this->assertSame($expectedStoreUrl, $bannerReq->target_url);
+
+        // Simula la confirmación de pago que llega desde el webhook de Wompi.
+        $bannerReq->update(['payment_status' => 'paid']);
 
         // Analyst sees the request message, photo, and store link in analyst.banners
         $analystPage = $this->actingAs($analyst)->get(route('analyst.banners'));
@@ -205,12 +204,8 @@ class BannersAndPromotionalCardsFlowTest extends TestCase
             'description'  => 'Vincular nuestro sombrero (-25%) y mochila (-20%) a esta tarjeta promocional única.',
             'target_type'  => 'promo_card',
             'product_ids'  => [$prod1->id, $prod2->id],
-            'payment_mode' => 'wompi_card',
-            'card_holder'  => 'Artesanías Chinauta',
-            'card_number'  => '4242424242424242',
-            'card_expiry'  => '12/28',
-            'card_cvc'     => '123',
-        ])->assertRedirect(route('merchant.dashboard'));
+            'payment_mode' => 'wompi_checkout',
+        ])->assertRedirectContains(route('wompi.sandbox.checkout', [], false));
 
         $promoReq = BannerRequest::latest()->first();
         $this->assertNotNull($promoReq);
@@ -219,6 +214,9 @@ class BannersAndPromotionalCardsFlowTest extends TestCase
 
         $expectedProductsCatalogUrl = route('consumer.catalog', ['products' => "{$prod1->id},{$prod2->id}"]);
         $this->assertSame($expectedProductsCatalogUrl, $promoReq->target_url);
+
+        // Simula la confirmación de pago que llega desde el webhook de Wompi.
+        $promoReq->update(['payment_status' => 'paid']);
 
         // Analyst sees the request and discounted products in analyst.banners (Promos tab) and detail view
         $detailPage = $this->actingAs($analyst)->get(route('analyst.banner-requests.show', $promoReq->id));
