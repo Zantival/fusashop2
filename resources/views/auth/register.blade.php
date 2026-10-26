@@ -107,7 +107,7 @@
         <div class="mb-6 p-4 bg-emerald-50 border border-emerald-200 rounded-2xl flex items-center justify-between form-enter shadow-xs">
           <div class="flex items-center gap-3">
             <div class="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-xs border border-emerald-100 shrink-0">
-              <img loading="lazy" decoding="async" src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-5 h-5" alt="Google">
+              <x-google-icon class="w-5 h-5" />
             </div>
             <div>
               <p class="text-xs font-bold text-emerald-950">Conectado con Google</p>
@@ -392,7 +392,7 @@
             </div>
 
             <a href="{{ route('social.redirect', 'google') }}" class="w-full flex items-center justify-center gap-3 py-3.5 bg-white border-2 border-surface-container-highest rounded-2xl font-bold text-on-surface hover:bg-surface-container-low hover:border-primary/30 transition-all shadow-sm">
-               <img loading="lazy" decoding="async" src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-5 h-5" alt="Google Logo">
+               <x-google-icon class="w-5 h-5" />
                <span class="text-sm">Google</span>
             </a>
           @endunless
