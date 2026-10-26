@@ -20,7 +20,16 @@
     <x-logo size="sm" :href="route('analyst.dashboard')" :with-microcopy="false" />
   </div>
   <div class="flex items-center gap-2">
-    <span class="px-2 py-0.5 text-[10px] font-black bg-emerald-100 text-[#006c47] rounded-full">Admin Console</span>
+    <a href="{{ route('chat.index') }}" data-no-ajax
+       class="relative inline-flex items-center justify-center gap-1.5 px-2.5 py-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-[#006c47] border border-emerald-200 font-extrabold text-xs"
+       aria-label="Abrir mensajes">
+      <span class="material-symbols-outlined text-[18px]">forum</span>
+      <span class="hidden sm:inline">Mensajes</span>
+      @if($unreadChatMessages > 0)
+        <span class="min-w-4 h-4 px-1 rounded-full bg-rose-600 text-white text-[9px] leading-4 text-center">{{ $unreadChatMessages > 99 ? '99+' : $unreadChatMessages }}</span>
+      @endif
+    </a>
+    <span class="hidden sm:inline-flex px-2 py-0.5 text-[10px] font-black bg-emerald-100 text-[#006c47] rounded-full">Admin Console</span>
   </div>
 </div>
 
