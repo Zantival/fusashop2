@@ -426,12 +426,33 @@ Route::get('/storage/{path}', fn (string $path) => $servePublicFile($path))
 // Fotos de perfil desde el disco público, sin depender de public/storage (symlink).
 Route::get('/user-avatars/{user}', function (\App\Models\User $user) {
     $path = $user->avatarStoragePath();
-    abort_unless($path, 404);
+    if ($path) {
+        $disk = \Illuminate\Support\Facades\Storage::disk('public');
+        abort_unless($disk->exists($path), 404);
 
-    $disk = \Illuminate\Support\Facades\Storage::disk('public');
-    abort_unless($disk->exists($path), 404);
+        return response()->file($disk->path($path), [
+            'Cache-Control' => 'public, max-age=3600, must-revalidate',
+        ]);
+    }
 
-    return response()->file($disk->path($path), [
+    // Las cuentas consumidoras creadas con Google guardan una URL pública de
+    // googleusercontent; servirla por proxy evita bloqueos del navegador/CDN.
+    $source = (string) $user->avatar;
+    $host = strtolower((string) parse_url($source, PHP_URL_HOST));
+    abort_unless(
+        preg_match('#^https://#i', $source) && preg_match('/^lh\d+\.googleusercontent\.com$/', $host),
+        404
+    );
+
+    $remote = \Illuminate\Support\Facades\Http::timeout(8)
+        ->withHeaders(['Accept' => 'image/*'])
+        ->get($source);
+    $contentType = strtolower((string) $remote->header('Content-Type'));
+    abort_unless($remote->successful() && str_starts_with($contentType, 'image/'), 404);
+
+    return response($remote->body(), 200, [
+        'Content-Type' => $contentType,
         'Cache-Control' => 'public, max-age=3600, must-revalidate',
+        'X-Content-Type-Options' => 'nosniff',
     ]);
 })->whereNumber('user')->name('users.avatar');

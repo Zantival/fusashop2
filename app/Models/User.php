@@ -141,6 +141,10 @@ class User extends Authenticatable implements MustVerifyEmail
 
         $avatar = trim($this->avatar);
         if (preg_match('#^https?://#i', $avatar)) {
+            $host = strtolower((string) parse_url($avatar, PHP_URL_HOST));
+            if (preg_match('/^lh\d+\.googleusercontent\.com$/', $host)) {
+                return route('users.avatar', ['user' => $this->getKey(), 'v' => $this->updated_at?->timestamp ?? 0]);
+            }
             return $avatar;
         }
 
