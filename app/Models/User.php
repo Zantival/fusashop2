@@ -113,10 +113,22 @@ class User extends Authenticatable implements MustVerifyEmail
         if (!$this->avatar) {
             return null;
         }
-        if (str_starts_with($this->avatar, 'http://') || str_starts_with($this->avatar, 'https://')) {
-            return $this->avatar;
+        $avatar = trim($this->avatar);
+        if (preg_match('#^https?://#i', $avatar)) {
+            return $avatar;
         }
-        return asset('storage/' . ltrim($this->avatar, '/'));
+
+        // Hostinger may disable symlink creation, so serve local avatars through
+        // the guarded Laravel file route instead of depending on public/storage.
+        $path = ltrim(str_replace('\\', '/', $avatar), '/');
+        foreach (['public/storage/', 'storage/app/public/', 'storage/', 'public/'] as $prefix) {
+            if (str_starts_with($path, $prefix)) {
+                $path = substr($path, strlen($prefix));
+                break;
+            }
+        }
+
+        return route('files.serve', ['disk' => 'public', 'path' => $path]);
     }
 
     public function products() { return $this->hasMany(Product::class, 'merchant_id'); }
