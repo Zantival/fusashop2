@@ -191,6 +191,19 @@
 
         <div>
           <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-1.5">
+            Cédula para facturación <span class="text-rose-500">*</span>
+          </label>
+          <div class="relative">
+            <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">badge</span>
+            <input type="text" name="billing_document" value="{{ old('billing_document', $user->billing_document) }}" required inputmode="numeric" pattern="[0-9]{6,10}" maxlength="10"
+                   class="w-full bg-surface-container-low pl-10 pr-3 py-3 rounded-xl border border-outline-variant/30 text-xs font-semibold text-on-surface outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                   placeholder="Número de cédula">
+          </div>
+          <p class="text-[11px] text-on-surface-variant/70 mt-1">Solo números, sin puntos ni espacios.</p>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-1.5">
             Número de Teléfono / WhatsApp <span class="text-rose-500">*</span>
           </label>
           <div class="relative">

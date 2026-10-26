@@ -35,6 +35,9 @@
                     <td class="px-6 py-4" data-label="Tipo / Asunto">
                         <span class="text-[9px] font-black uppercase tracking-widest text-primary mb-1 block">{{ $item->type }}</span>
                         <p class="text-sm font-medium text-on-surface truncate max-w-xs">{{ e($item->subject) }}</p>
+                        @if($item->category === 'seguridad')
+                            <span class="inline-flex mt-1 px-2 py-0.5 rounded-full bg-rose-100 text-rose-800 text-[9px] font-black uppercase">🛡️ Seguridad · Urgente</span>
+                        @endif
                     </td>
                     <td class="px-6 py-4 text-center" data-label="Estado">
                         <span class="px-2 py-1 rounded-full text-[9px] font-black uppercase tracking-wider

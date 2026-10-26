@@ -2,6 +2,8 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\Auth\RegistrationSecurityReportController;
+use App\Http\Controllers\MarketingPreferencesController;
 use App\Http\Controllers\Consumer\ConsumerController;
 use App\Http\Controllers\Merchant\MerchantController;
 use App\Http\Controllers\Analyst\AnalystController;
@@ -24,14 +26,29 @@ Route::get('/', function () {
     }
     return redirect()->route('consumer.home');
 });
-Route::get('/privacidad', fn() => view('privacy'))->name('privacy');
-Route::get('/terminos', fn() => view('terms'))->name('terms');
+Route::get('/privacidad', fn() => view('privacy-policy'))->name('privacy');
+Route::get('/terminos', fn() => view('terms-v2'))->name('terms');
+Route::get('/cookies', fn() => view('cookies-policy'))->name('cookies');
+Route::get('/devoluciones', fn() => view('returns'))->name('returns');
 Route::get('/tarifas', fn() => view('fees'))->name('fees');
 Route::post('/cookie-consent', function(\Illuminate\Http\Request $request) {
-    $consent = $request->input('consent', true);
-    session(['cookie_consent' => $consent]);
-    return response()->json(['ok' => true])->withCookie(cookie()->forever('cookie_consent', $consent));
+    $request->validate(['consent' => ['required', 'accepted']]);
+    session(['cookie_consent' => '1']);
+    return response()->json(['ok' => true])->withCookie(cookie()->forever('cookie_consent', '1', '/', null, $request->isSecure(), true, false, 'lax'));
 })->name('cookie.consent');
+
+Route::get('/security/report-registration/{user}', [RegistrationSecurityReportController::class, 'show'])
+    ->middleware(['signed', 'throttle:10,1'])
+    ->name('security.registration-report.show');
+Route::post('/security/report-registration/{user}', [RegistrationSecurityReportController::class, 'store'])
+    ->middleware(['signed', 'throttle:3,10'])
+    ->name('security.registration-report.store');
+Route::get('/email-preferences/unsubscribe/{user}', [MarketingPreferencesController::class, 'show'])
+    ->middleware(['signed', 'throttle:10,1'])
+    ->name('marketing.unsubscribe.show');
+Route::post('/email-preferences/unsubscribe/{user}', [MarketingPreferencesController::class, 'unsubscribe'])
+    ->middleware(['signed', 'throttle:3,10'])
+    ->name('marketing.unsubscribe.store');
 
 
 // --- Autenticación ---
@@ -105,6 +122,18 @@ Route::middleware('auth')->group(function () {
                 ->filter(fn($n) => ($n->data['type'] ?? '') === 'merchant_sales_report')
                 ->each->markAsRead();
             $targetUrl = $data['url'] ?? route('merchant.sales-report.show', ['user' => $user->id]);
+            $targetParts = is_string($targetUrl) ? parse_url($targetUrl) : false;
+            $appHost = parse_url((string) config('app.url'), PHP_URL_HOST);
+            $targetIsLocal = is_array($targetParts)
+                && !isset($targetParts['user'])
+                && !isset($targetParts['pass'])
+                && (!isset($targetParts['host']) || ($appHost !== null && strcasecmp($targetParts['host'], $appHost) === 0))
+                && (!isset($targetParts['scheme']) || in_array(strtolower($targetParts['scheme']), ['http', 'https'], true))
+                && !preg_match('/[\\\\\x00-\x1F\x7F]/', (string) $targetUrl)
+                && (isset($targetParts['host']) || (str_starts_with((string) $targetUrl, '/') && !str_starts_with((string) $targetUrl, '//')));
+            if (!$targetIsLocal) {
+                $targetUrl = route('merchant.sales-report.show', ['user' => $user->id]);
+            }
             if (!str_contains($targetUrl, 'notification_id=')) {
                 $targetUrl .= (str_contains($targetUrl, '?') ? '&' : '?') . 'notification_id=' . $notification->id;
             }
@@ -359,6 +388,9 @@ Route::middleware(['auth', 'role:analyst'])->prefix('admin')->name('analyst.')->
 
 // --- Archivos del disco público con validación de ruta, WebP y caché ---
 $servePublicFile = function (string $path) {
+    if (str_contains($path, '..') || str_contains($path, "\0") || str_contains($path, '\\')) {
+        abort(404);
+    }
     $publicRoot = realpath(storage_path('app/public'));
     $fullPath = $publicRoot ? realpath($publicRoot . DIRECTORY_SEPARATOR . ltrim($path, '/\\')) : false;
     $allowedPrefix = $publicRoot ? rtrim($publicRoot, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR : '';

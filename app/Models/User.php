@@ -14,10 +14,12 @@ class User extends Authenticatable implements MustVerifyEmail
     use HasApiTokens, Notifiable, SoftDeletes;
 
     protected $fillable = [
-        'name', 'email', 'password', 'role', 'admin_subrole', 'phone', 'address', 'avatar',
+        'name', 'email', 'password', 'role', 'admin_subrole', 'phone', 'billing_document', 'address', 'avatar',
         'is_blocked', 'blocked_reason', 'deleted_reason', 'last_seen_at', 'two_factor_enabled',
         'email_verified_at', 'verification_code', 'verification_code_expires_at',
-        'provider', 'provider_id',
+        'provider', 'provider_id', 'accepted_terms_at', 'accepted_privacy_at',
+        'accepted_terms_version', 'accepted_privacy_version', 'age_or_guardian_confirmed_at',
+        'marketing_consent_at',
     ];
 
     protected $hidden = ['password', 'remember_token'];
@@ -28,6 +30,10 @@ class User extends Authenticatable implements MustVerifyEmail
             'email_verified_at'             => 'datetime',
             'verification_code_expires_at'  => 'datetime',
             'last_seen_at'                  => 'datetime',
+            'accepted_terms_at'             => 'datetime',
+            'accepted_privacy_at'            => 'datetime',
+            'age_or_guardian_confirmed_at'  => 'datetime',
+            'marketing_consent_at'          => 'datetime',
             'password'                      => 'hashed',
             'is_blocked'                    => 'boolean',
             'two_factor_enabled'            => 'boolean',

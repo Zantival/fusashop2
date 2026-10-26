@@ -43,6 +43,17 @@
     </div>
   </div>
 
+  <div class="rounded-2xl border border-rose-200 bg-rose-50 p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+    <div class="flex items-start gap-3">
+      <span class="material-symbols-outlined text-rose-700">shield</span>
+      <div>
+        <p class="font-extrabold text-sm text-rose-950">¿Sospechas de una estafa o pago fraudulento?</p>
+        <p class="text-xs text-rose-800 mt-1">Reporta el caso al equipo con prioridad urgente. Nunca compartas contraseñas, códigos OTP ni claves de pago.</p>
+      </div>
+    </div>
+    <a href="{{ route('pqrs.create', ['category' => 'seguridad']) }}" class="shrink-0 px-4 py-2 bg-rose-700 hover:bg-rose-800 text-white font-bold text-xs rounded-xl">Reportar incidente</a>
+  </div>
+
   <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
     <!-- COLUMNA IZQUIERDA: LISTA DE ANALISTAS Y TEMAS RÁPIDOS (4/12) -->
     <div class="lg:col-span-4 space-y-4">
@@ -229,25 +240,7 @@ const pollUrl = '{{ route('chat.poll', $admin->id) }}';
 const storeUrl = '{{ route('chat.store') }}';
 const csrfToken = '{{ csrf_token() }}';
 const badWords = @json($badWords);
-
-function checkProfanity() {
-    if (!inputField || !sendBtn) return;
-    const content = inputField.value.toLowerCase();
-    const warning = document.getElementById('profanity-warning');
-    const hasBadWord = badWords.some(word => {
-        const regex = new RegExp('\\b' + word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b', 'i');
-        return regex.test(content);
-    });
-    if (hasBadWord) {
-        sendBtn.disabled = true;
-        sendBtn.classList.add('opacity-50', 'grayscale');
-        warning?.classList.remove('hidden');
-    } else {
-        sendBtn.disabled = false;
-        sendBtn.classList.remove('opacity-50', 'grayscale');
-        warning?.classList.add('hidden');
-    }
-}
+@include('chat.partials.moderation-script')
 
 function scrollToBottom() {
     if (chatBox) chatBox.scrollTop = chatBox.scrollHeight;
@@ -311,6 +304,11 @@ async function handleSendMessage() {
                 time: new Date().toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit' })
             });
             scrollToBottom();
+        } else {
+            const payload = await res.json().catch(() => ({}));
+            inputField.value = content;
+            window.chatServerModerationMessage = payload.errors?.content?.[0]
+                || 'No se pudo enviar el mensaje. Revísalo e intenta de nuevo.';
         }
     } catch (e) {
         inputField.value = content;

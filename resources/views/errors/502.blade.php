@@ -1,0 +1,1 @@
+@include('errors.page', ['code' => '502', 'title' => 'Servicio temporalmente no disponible', 'message' => 'Uno de los servicios que necesitamos no respondió correctamente.', 'hint' => 'Espera un momento y vuelve a intentarlo.'])

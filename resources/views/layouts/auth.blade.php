@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title') | FusaShop</title>
-    <link rel="icon" type="image/png" href="{{ asset('logo.png') }}?v={{ filemtime(public_path('logo.png')) }}">
+    <link rel="icon" type="image/png" href="{{ asset('logo.png') }}?v={{ substr(md5((string) @filemtime(public_path('logo.png'))), 0, 8) }}">
     <script>
         window.fusaShopPageTitle = document.title;
         document.addEventListener('visibilitychange', function() {

@@ -36,12 +36,15 @@ class UserProfileAndRegistrationTest extends TestCase
         $this->withoutMiddleware(\Illuminate\Routing\Middleware\ThrottleRequests::class);
 
         $response = $this->post(route('register.post'), [
-            'name'                  => 'Maria Gomez',
-            'email'                 => 'maria@example.com',
-            'phone'                 => '3101234567',
-            'password'              => 'Password123!',
-            'password_confirmation' => 'Password123!',
-            'role'                  => 'consumer',
+            'name'                      => 'Maria Gomez',
+            'email'                     => 'maria@example.com',
+            'phone'                     => '3101234567',
+            'password'                  => 'Password123!',
+            'password_confirmation'     => 'Password123!',
+            'role'                      => 'consumer',
+            'accepted_terms'            => 1,
+            'accepted_privacy'          => 1,
+            'age_or_guardian_confirmed' => 1,
         ]);
 
         $this->assertDatabaseHas('users', [
@@ -56,12 +59,15 @@ class UserProfileAndRegistrationTest extends TestCase
         $this->withoutMiddleware(\Illuminate\Routing\Middleware\ThrottleRequests::class);
 
         $response = $this->post(route('register.post'), [
-            'name'                  => 'Don Pedro',
-            'email'                 => 'pedro@example.com',
-            'phone'                 => '3209876543',
-            'password'              => 'Password123!',
-            'password_confirmation' => 'Password123!',
-            'role'                  => 'merchant',
+            'name'                      => 'Don Pedro',
+            'email'                     => 'pedro@example.com',
+            'phone'                     => '3209876543',
+            'password'                  => 'Password123!',
+            'password_confirmation'     => 'Password123!',
+            'role'                      => 'merchant',
+            'accepted_terms'            => 1,
+            'accepted_privacy'          => 1,
+            'age_or_guardian_confirmed' => 1,
         ]);
 
         $this->assertDatabaseHas('users', [

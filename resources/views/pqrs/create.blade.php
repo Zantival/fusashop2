@@ -13,6 +13,11 @@
     <form action="{{ route('pqrs.store') }}" method="POST" class="bg-surface-container-lowest p-8 rounded-3xl shadow-card border border-outline-variant/30">
         @csrf
         <div class="grid gap-6">
+            <div id="security-alert" class="{{ old('category', $category ?? '') === 'seguridad' ? '' : 'hidden' }} rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-900" role="alert">
+                <strong class="block mb-1">Reporte de seguridad o posible fraude</strong>
+                Incluye el número del pedido, la fecha y los datos de la transacción. No compartas contraseñas, códigos de verificación, claves de pago ni datos completos de tarjetas.
+            </div>
+
             <div>
                 <label class="block text-sm font-bold text-on-surface mb-2">Tipo de Solicitud</label>
                 <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -28,17 +33,27 @@
             </div>
 
             <div>
+                <label for="category" class="block text-sm font-bold text-on-surface mb-2">Tema del reporte</label>
+                <select name="category" id="category" required class="w-full bg-surface-container-low border border-outline-variant rounded-xl px-4 py-3 text-on-surface">
+                    @foreach(['plataforma' => 'Plataforma / soporte técnico', 'envio' => 'Envíos', 'producto' => 'Producto', 'pago' => 'Pago o cobro', 'comercio' => 'Comercio', 'seguridad' => 'Seguridad / posible estafa o fraude'] as $value => $label)
+                        <option value="{{ $value }}" {{ old('category', $category ?? 'plataforma') === $value ? 'selected' : '' }}>{{ $label }}</option>
+                    @endforeach
+                </select>
+                <p id="security-guidance" class="{{ old('category', $category ?? '') === 'seguridad' ? '' : 'hidden' }} mt-2 text-xs text-rose-700">No incluyas contraseñas, códigos OTP, PIN ni números completos de tarjetas.</p>
+            </div>
+
+            <div>
                 <label for="subject" class="block text-sm font-bold text-on-surface mb-2">Asunto</label>
                 <input type="text" name="subject" id="subject" value="{{ old('subject') }}" required
                     class="w-full bg-surface-container-low border border-outline-variant rounded-xl px-4 py-3 text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
-                    placeholder="Ej: Problema con un pedido, Sugerencia de mejora...">
+                    placeholder="Ej: Problema con un pedido, posible suplantación, cobro sospechoso...">
             </div>
 
             <div>
                 <label for="content" class="block text-sm font-bold text-on-surface mb-2">Descripción Detallada</label>
                 <textarea name="content" id="content" rows="6" required
                     class="w-full bg-surface-container-low border border-outline-variant rounded-xl px-4 py-3 text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
-                    placeholder="Describe aquí tu solicitud con el mayor detalle posible...">{{ old('content') }}</textarea>
+                    placeholder="Describe lo ocurrido. Para un reporte de seguridad incluye pedido, fecha y transacción; nunca envíes claves ni códigos de acceso...">{{ old('content') }}</textarea>
             </div>
 
             <div class="pt-4">
@@ -52,4 +67,10 @@
         </div>
     </form>
 </div>
+<script>
+document.getElementById('category')?.addEventListener('change', function () {
+    document.getElementById('security-guidance')?.classList.toggle('hidden', this.value !== 'seguridad');
+    document.getElementById('security-alert')?.classList.toggle('hidden', this.value !== 'seguridad');
+});
+</script>
 @endsection

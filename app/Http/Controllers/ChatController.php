@@ -7,6 +7,7 @@ use App\Models\Product;
 use App\Models\User;
 use App\Events\MessageSent;
 use App\Notifications\NewMessageNotification;
+use App\Support\ChatMessageModeration;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -100,7 +101,7 @@ class ChatController extends Controller
         return response()->json(['messages' => $messages, 'server_time' => now()->timestamp]);
     }
 
-    public function store(Request $request)
+    public function store(Request $request, ChatMessageModeration $moderator)
     {
         $request->validate([
             'receiver_id' => 'required|exists:users,id',
@@ -110,12 +111,11 @@ class ChatController extends Controller
 
         $content = strip_tags($request->content);
 
-        // Filtro de groserías (Profanity Filter)
-        $badWords = Message::getBadWords();
-
-        foreach ($badWords as $word) {
-            $pattern = '/\b' . preg_quote($word, '/') . '\b/iu';
-            $content = preg_replace($pattern, str_repeat('*', mb_strlen($word)), $content);
+        $moderation = $moderator->inspect($content);
+        if (!$moderation['allowed']) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'content' => 'No se envió el mensaje porque contiene lenguaje ofensivo. Puedes reformularlo o, si estás citando un insulto recibido para reportarlo, explica claramente ese contexto.',
+            ]);
         }
 
         $message = Message::create([

@@ -25,9 +25,12 @@ class NewPQRSNotification extends Notification
 
     public function toMail(object $notifiable): MailMessage
     {
+        $isSecurity = $this->pqrs->category === 'seguridad';
         return (new MailMessage)
-            ->subject('Nueva PQRS Recibida - ' . ucfirst($this->pqrs->type))
-            ->line('Se ha recibido una nueva solicitud de tipo ' . ucfirst($this->pqrs->type) . '.')
+            ->subject(($isSecurity ? '[URGENTE · SEGURIDAD] ' : '') . 'Nueva PQRS - ' . ucfirst($this->pqrs->type))
+            ->line($isSecurity
+                ? 'Se recibió un reporte urgente de seguridad o posible fraude.'
+                : 'Se ha recibido una nueva solicitud de tipo ' . ucfirst($this->pqrs->type) . '.')
             ->line('Usuario: ' . $this->pqrs->user->name)
             ->line('Asunto: ' . $this->pqrs->subject)
             ->action('Ver Detalle', url('/admin/pqrs/' . $this->pqrs->id))
@@ -37,7 +40,7 @@ class NewPQRSNotification extends Notification
     public function toArray(object $notifiable): array
     {
         return [
-            'title' => 'Nueva PQRS: ' . ucfirst($this->pqrs->type),
+            'title' => ($this->pqrs->category === 'seguridad' ? '🚨 Reporte urgente de seguridad: ' : 'Nueva PQRS: ') . ucfirst($this->pqrs->type),
             'message' => $this->pqrs->user->name . ' ha enviado una ' . $this->pqrs->type . '.',
             'icon' => 'assignment',
             'pqrs_id' => $this->pqrs->id

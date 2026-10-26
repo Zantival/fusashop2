@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
+use Illuminate\Support\Facades\URL;
 
 class VerifyEmailCodeMail extends Mailable
 {
@@ -17,7 +18,7 @@ class VerifyEmailCodeMail extends Mailable
 
     public function envelope(): Envelope
     {
-        return new Envelope(subject: "Tu código de verificación de FusaShop: {$this->code}");
+        return new Envelope(subject: '🔐 Código de verificación FusaShop: ' . $this->code);
     }
 
     public function content(): Content
@@ -27,6 +28,11 @@ class VerifyEmailCodeMail extends Mailable
             with: [
                 'user' => $this->user,
                 'code' => $this->code,
+                'reportUrl' => URL::temporarySignedRoute(
+                    'security.registration-report.show',
+                    now()->addDays(30),
+                    ['user' => $this->user->id]
+                ),
             ]
         );
     }

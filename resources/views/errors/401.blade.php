@@ -1,0 +1,1 @@
+@include('errors.page', ['code' => '401', 'title' => 'Necesitas iniciar sesión', 'message' => 'Para ver esta página, primero inicia sesión en tu cuenta de FusaShop.', 'hint' => 'Después de ingresar, vuelve a intentar la acción.'])

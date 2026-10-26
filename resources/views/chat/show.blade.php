@@ -114,28 +114,7 @@ const storeUrl = '{{ route('chat.store') }}';
 const productId = {{ request('product_id', 'null') }};
 const csrfToken = '{{ csrf_token() }}';
 const badWords = @json($badWords);
-
-function checkProfanity() {
-    const content = inputField.value.toLowerCase();
-    const warning = document.getElementById('profanity-warning');
-    
-    // Check if any bad word is present
-    const hasBadWord = badWords.some(word => {
-        // Simple word boundary check in JS
-        const regex = new RegExp('\\b' + word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b', 'i');
-        return regex.test(content);
-    });
-
-    if (hasBadWord) {
-        sendBtn.disabled = true;
-        sendBtn.classList.add('opacity-50', 'grayscale');
-        warning.classList.remove('hidden');
-    } else {
-        sendBtn.disabled = false;
-        sendBtn.classList.remove('opacity-50', 'grayscale');
-        warning.classList.add('hidden');
-    }
-}
+@include('chat.partials.moderation-script')
 
 function scrollToBottom() {
     chatBox.scrollTop = chatBox.scrollHeight;
@@ -222,6 +201,11 @@ async function handleSendMessage() {
                 time: new Date().toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit' })
             });
             scrollToBottom();
+        } else {
+            const payload = await res.json().catch(() => ({}));
+            inputField.value = content;
+            window.chatServerModerationMessage = payload.errors?.content?.[0]
+                || 'No se pudo enviar el mensaje. Revísalo e intenta de nuevo.';
         }
     } catch (e) {
         console.error("Error sending message:", e);

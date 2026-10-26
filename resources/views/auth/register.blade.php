@@ -154,7 +154,7 @@
             </label>
             <!-- Vender / Vendedor -->
             <label class="relative cursor-pointer block h-full">
-              <input type="radio" name="role" value="merchant" class="role-input absolute inset-0 w-full h-full opacity-0 z-20 cursor-pointer" {{ old('role', request('role'))==='merchant' ? 'checked' : '' }} onchange="toggleMerchantPayoutRegister()"/>
+              <input type="radio" name="role" value="merchant" class="role-input absolute inset-0 w-full h-full opacity-0 z-20 cursor-pointer" {{ old('role', $role ?? 'consumer')==='merchant' ? 'checked' : '' }} onchange="toggleMerchantPayoutRegister()"/>
               <div class="role-box flex flex-col items-center gap-2 p-4 bg-surface-container rounded-2xl border-2 border-transparent transition-all h-full relative z-10 text-center">
                 <span class="material-symbols-outlined role-icon text-on-surface-variant text-3xl">storefront</span>
                 <span class="text-sm font-bold text-on-surface">Vendedor</span>
@@ -169,9 +169,11 @@
             <label class="block text-sm font-semibold text-on-surface mb-1.5">Nombre completo</label>
             <div class="input-wrap">
               <span class="material-symbols-outlined input-icon-box">person</span>
-              <input type="text" name="name" value="{{ old('name', session('social_registration.name')) }}" required
-                class="input-field" placeholder="Tu nombre y apellido">
+              <input type="text" id="register-name" name="name" value="{{ old('name', session('social_registration.name')) }}" required
+                class="input-field" placeholder="Tu nombre y apellido" autocomplete="name" pattern="\S+(?: \S+)*" title="No uses espacios al inicio, al final ni repetidos" aria-describedby="name-help">
             </div>
+            <p id="name-help" class="mt-1 text-xs text-on-surface-variant">Usa letras; se permiten nombres compuestos con un solo espacio entre palabras.</p>
+            <p id="name-error" class="hidden mt-1 text-xs font-semibold text-error" role="alert">Revisa el nombre: no uses espacios al inicio, al final ni repetidos, y escribe solo letras.</p>
           </div>
 
           <div class="form-enter md:col-span-2">
@@ -183,6 +185,7 @@
                 placeholder="correo@ejemplo.com" autocomplete="email"
                 {{ session('social_registration') ? 'readonly' : '' }}>
             </div>
+            <p class="mt-1 text-xs text-on-surface-variant">Escribe un correo real al que tengas acceso. Te enviaremos un código para comprobarlo antes de activar la cuenta.</p>
             @if(session('social_registration'))
               <p class="text-[11px] text-on-surface-variant mt-1">Este correo proviene de tu cuenta de Google verificada.</p>
             @endif
@@ -192,9 +195,15 @@
             <label class="block text-sm font-semibold text-on-surface mb-1.5">Número de teléfono / WhatsApp <span class="text-error">*</span></label>
             <div class="input-wrap">
               <span class="material-symbols-outlined input-icon-box">call</span>
-              <input type="tel" name="phone" value="{{ old('phone') }}" required
-                class="input-field" placeholder="Ej. 310 123 4567" autocomplete="tel">
+              <select name="phone_country" aria-label="Indicativo del país" class="border-r border-slate-200 bg-transparent px-2 py-3 text-sm font-semibold text-on-surface outline-none" required>
+                @foreach(['57' => '🇨🇴 +57', '1' => '🇺🇸 +1', '52' => '🇲🇽 +52', '34' => '🇪🇸 +34', '51' => '🇵🇪 +51', '56' => '🇨🇱 +56', '54' => '🇦🇷 +54'] as $code => $label)
+                  <option value="{{ $code }}" {{ old('phone_country', '57') === $code ? 'selected' : '' }}>{{ $label }}</option>
+                @endforeach
+              </select>
+              <input type="tel" name="phone" value="{{ old('phone') }}" required inputmode="numeric" pattern="[0-9]{7,15}" maxlength="15"
+                class="input-field" placeholder="3101234567" autocomplete="tel-national" aria-describedby="phone-help">
             </div>
+            <p id="phone-help" class="mt-1 text-xs text-on-surface-variant">Colombia: 10 dígitos, debe comenzar por 3. Escribe solo números.</p>
           </div>
 
           <div class="form-enter {{ session('social_registration') ? 'md:col-span-1' : '' }}">
@@ -233,9 +242,12 @@
           </div>
 
           <div class="form-enter md:col-span-2 w-full max-w-xl mx-auto">
-            <p id="password-policy-hint" class="rounded-xl border border-emerald-200 bg-emerald-50/70 px-3 py-2 text-center text-xs leading-relaxed text-on-surface-variant">
-              Usa al menos 12 caracteres, con mayúsculas, minúsculas, un número y un símbolo.
-            </p>
+            <div id="password-policy-hint" class="mx-auto w-full max-w-xl rounded-xl border border-emerald-200 bg-emerald-50/70 px-4 py-3 text-sm text-on-surface-variant">
+              <p class="mb-2 text-center font-semibold">La contraseña debe cumplir:</p>
+              <ul class="mx-auto grid w-fit gap-1 list-disc pl-5 text-left">
+                <li>Al menos 12 caracteres</li><li>Una letra mayúscula y una minúscula</li><li>Un número</li><li>Un símbolo (por ejemplo, ! o #)</li>
+              </ul>
+            </div>
             <p id="password-error" class="{{ $errors->has('password') ? 'mt-1 text-center text-xs font-semibold text-error' : 'hidden' }}" role="alert" aria-live="polite">{{ $errors->first('password') }}</p>
           </div>
         </div>
@@ -245,7 +257,7 @@
           $regMethodType = old('payout_method_type', 'bank');
           $regBanks = \App\Models\CompanyProfile::availableBanks();
         @endphp
-        <div id="merchant-payout-register-section" class="p-4 rounded-2xl bg-emerald-50/50 border-2 border-[#006c47]/25 space-y-3.5 transition-all" style="display: {{ old('role', request('role')) === 'merchant' ? 'block' : 'none' }};">
+        <div id="merchant-payout-register-section" class="p-4 rounded-2xl bg-emerald-50/50 border-2 border-[#006c47]/25 space-y-3.5 transition-all" style="display: {{ old('role', $role ?? 'consumer') === 'merchant' ? 'block' : 'none' }};">
           <div class="flex items-start gap-2.5">
             <div class="w-9 h-9 rounded-xl bg-[#006c47] text-white flex items-center justify-center shrink-0">
               <span class="material-symbols-outlined text-[18px]">payments</span>
@@ -347,6 +359,26 @@
           <span>Al crear tu cuenta, te enviaremos un <strong>código de 6 dígitos a tu correo</strong> para confirmar tu identidad.</span>
         </div>
 
+        <fieldset class="form-enter space-y-3 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+          <legend class="px-1 text-xs font-extrabold text-slate-700">Consentimientos de la cuenta</legend>
+          <label class="flex items-start gap-2.5 text-xs leading-relaxed text-slate-700">
+            <input type="checkbox" name="accepted_terms" value="1" required {{ old('accepted_terms') ? 'checked' : '' }} class="mt-0.5 rounded border-slate-300 text-emerald-700 focus:ring-emerald-600">
+            <span>Acepto los <a href="{{ route('terms') }}" target="_blank" rel="noopener noreferrer" class="font-bold text-emerald-800 underline">Términos y condiciones</a>.</span>
+          </label>
+          <label class="flex items-start gap-2.5 text-xs leading-relaxed text-slate-700">
+            <input type="checkbox" name="accepted_privacy" value="1" required {{ old('accepted_privacy') ? 'checked' : '' }} class="mt-0.5 rounded border-slate-300 text-emerald-700 focus:ring-emerald-600">
+            <span>Autorizo el tratamiento de mis datos para crear y operar mi cuenta, conforme a la <a href="{{ route('privacy') }}" target="_blank" rel="noopener noreferrer" class="font-bold text-emerald-800 underline">Política de privacidad</a>.</span>
+          </label>
+          <label class="flex items-start gap-2.5 text-xs leading-relaxed text-slate-700">
+            <input type="checkbox" name="age_or_guardian_confirmed" value="1" required {{ old('age_or_guardian_confirmed') ? 'checked' : '' }} class="mt-0.5 rounded border-slate-300 text-emerald-700 focus:ring-emerald-600">
+            <span>Confirmo que soy mayor de edad o que mi madre, padre o representante legal conoce y autoriza este registro.</span>
+          </label>
+          <label class="flex items-start gap-2.5 border-t border-slate-200 pt-3 text-xs leading-relaxed text-slate-600">
+            <input type="checkbox" name="marketing_opt_in" value="1" {{ old('marketing_opt_in') ? 'checked' : '' }} class="mt-0.5 rounded border-slate-300 text-emerald-700 focus:ring-emerald-600">
+            <span>Quiero recibir correos opcionales sobre promociones y descuentos. No es necesario para usar FusaShop y puedo darme de baja.</span>
+          </label>
+        </fieldset>
+
         <div class="form-enter pt-2">
           <button type="submit" id="reg-btn" class="w-full btn-primary py-4 text-sm font-bold text-white rounded-2xl shadow-lg shadow-emerald-500/25 flex items-center justify-center gap-2 hover:opacity-95 transition-all" style="background: linear-gradient(135deg, #10B981 0%, #047857 100%) !important;">
             <span class="material-symbols-outlined text-[20px]">how_to_reg</span>
@@ -366,11 +398,6 @@
           @endunless
         </div>
 
-        <p class="text-center text-xs text-on-surface-variant font-medium pt-4 form-enter">
-          Al registrarte, aceptas nuestros
-          <a href="{{ route('terms') }}" class="text-primary hover:underline">Términos de Servicio</a> y
-          <a href="{{ route('privacy') }}" class="text-primary hover:underline">Privacidad</a>.
-        </p>
       </form>
     </div>
   </div>
@@ -430,6 +457,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 const registerForm = document.getElementById('register-form');
+const registerName = document.getElementById('register-name');
 const passwordInput = document.getElementById('password');
 const passwordConfirmationInput = document.getElementById('password_confirmation');
 
@@ -465,6 +493,12 @@ function validateRegistrationPasswords() {
 
   return !passwordMessage && !confirmationMessage;
 }
+
+registerName?.addEventListener('input', function () {
+  const valid = /^\p{L}+(?:[ '\u2019-]\p{L}+)*$/u.test(registerName.value);
+  document.getElementById('name-error')?.classList.toggle('hidden', !valid || !registerName.value);
+  registerName.setCustomValidity(valid || !registerName.value ? '' : 'Escribe un nombre válido, sin espacios sobrantes ni caracteres no permitidos.');
+});
 
 passwordInput?.addEventListener('input', validateRegistrationPasswords);
 passwordConfirmationInput?.addEventListener('input', validateRegistrationPasswords);

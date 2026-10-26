@@ -77,7 +77,7 @@ class AddressController extends Controller
             'label' => 'required|string|max:60',
             'recipient' => 'required|string|max:120',
             'phone' => ['required', 'regex:/^[0-9+\s\-]{7,20}$/'],
-            'street' => 'required|string|max:160',
+            'street' => ['required', 'string', 'max:160', 'regex:/^(calle|cl\.?|carrera|cra\.?|kr\.?|avenida|av\.?|diagonal|diag\.?|transversal|transv\.?|tv\.?|circular|vereda|vía|via|kilómetro|kilometro)(?:\s|$)/iu'],
             'number' => 'nullable|string|max:30',
             'district' => 'nullable|string|max:100',
             'city' => 'required|string|max:100',
@@ -85,6 +85,14 @@ class AddressController extends Controller
             'postal_code' => ['nullable', 'regex:/^[0-9]{6}$/'],
             'reference' => 'nullable|string|max:255',
         ]);
+
+        $location = ColombiaLocations::find($data['city'], $data['state']);
+        if (!$location || $location['state_code'] !== $data['state']) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'city' => 'Selecciona un municipio válido que pertenezca al departamento elegido.',
+            ]);
+        }
+        $data['city'] = $location['name'];
 
         $dummyPostals = ['000000', '123456', '123465', '111111', '999999', '123123'];
         if (empty($data['postal_code']) || in_array($data['postal_code'], $dummyPostals, true)) {
@@ -94,8 +102,14 @@ class AddressController extends Controller
             }
         }
 
+        if (empty($data['postal_code']) && !empty($location['postal_code'])) {
+            $data['postal_code'] = $location['postal_code'];
+        }
+
         if (empty($data['postal_code'])) {
-            $data['postal_code'] = '110111';
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'postal_code' => 'No encontramos el código postal del municipio. Escríbelo para continuar.',
+            ]);
         }
 
         return $data;

@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1050 1040" width="1050" height="1040">
+  
+  <defs>
+    <marker id="arrow-open" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 1.5 L 8 5 L 0 8.5" fill="none" stroke="#000000" stroke-width="1.6" />
+    </marker>
+  </defs>
+  <style>
+    .title-main { font-family: 'Segoe UI', Arial, sans-serif; font-size: 18px; font-weight: 800; fill: #000000; letter-spacing: 0.8px; text-anchor: middle; }
+    .title-sub { font-family: 'Segoe UI', Arial, sans-serif; font-size: 11.5px; font-weight: 600; fill: #333333; text-anchor: middle; }
+    .boundary-title { font-family: 'Segoe UI', Arial, sans-serif; font-size: 12.5px; font-weight: 800; fill: #000000; letter-spacing: 0.5px; }
+    .assoc-line { fill: none; stroke: #000000; stroke-width: 1.6; }
+    .dep-line { fill: none; stroke: #000000; stroke-width: 1.4; stroke-dasharray: 5,4; }
+    .legend-title { font-family: 'Segoe UI', Arial, sans-serif; font-size: 11px; font-weight: 800; fill: #000000; }
+    .legend-text { font-family: 'Segoe UI', Arial, sans-serif; font-size: 10px; fill: #000000; }
+  </style>
+
+  <rect width="1050" height="1040" fill="#FFFFFF" />
+
+  <!-- Encabezado -->
+  <text x="525" y="38" class="title-main">DIAGRAMA DE CASOS DE USO — ROL COMERCIANTE</text>
+  <text x="525" y="60" class="title-sub">Plataforma FusaShop · Especificación UML 2.5 en Blanco y Negro (Con Muñequito)</text>
+
+  <!-- Límite del Sistema -->
+  <rect x="230" y="80" width="780" height="870" fill="#FFFFFF" stroke="#000000" stroke-width="1.8" />
+  <text x="245" y="104" class="boundary-title">Sistema FusaShop — Panel de Administración de Tienda</text>
+
+  <!-- Muñequito: Comerciante -->
+  
+    <g class="actor-group" transform="translate(115, 460)">
+      <!-- Cabeza -->
+      <circle cx="0" cy="-44" r="19" fill="#FFFFFF" stroke="#000000" stroke-width="2.4" />
+      <!-- Tronco -->
+      <line x1="0" y1="-25" x2="0" y2="24" stroke="#000000" stroke-width="2.4" />
+      <!-- Brazos -->
+      <line x1="-30" y1="-6" x2="30" y2="-6" stroke="#000000" stroke-width="2.4" />
+      <!-- Piernas -->
+      <line x1="0" y1="24" x2="-24" y2="65" stroke="#000000" stroke-width="2.4" />
+      <line x1="0" y1="24" x2="24" y2="65" stroke="#000000" stroke-width="2.4" />
+      <!-- Etiqueta del Actor -->
+      <text x="0" y="90" font-family="'Segoe UI', Arial, sans-serif" font-size="13.5" font-weight="800" fill="#000000" text-anchor="middle">Comerciante</text>
+      <text x="0" y="108" font-family="'Segoe UI', Arial, sans-serif" font-size="11" font-weight="600" fill="#333333" text-anchor="middle">(Vendedor Verificado)</text>
+    </g>
+  
+
+  <!-- Casos de Uso Principales (Columna Izquierda) -->
+  
+    <g class="usecase-node">
+      <ellipse cx="420" cy="140" rx="120" ry="26" fill="#FFFFFF" stroke="#000000" stroke-width="1.8" />
+      <text x="420" y="133" font-family="'Segoe UI', Arial, sans-serif" font-size="11.5" font-weight="700" fill="#000000" text-anchor="middle" dominant-baseline="middle">CU-M01: Enviar Registro KYC</text>
+      <text x="420" y="149" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="500" fill="#222222" text-anchor="middle" dominant-baseline="middle">Carga de RUT y Documentos</text>
+    </g>
+  
+  
+    <g class="usecase-node">
+      <ellipse cx="420" cy="220" rx="120" ry="26" fill="#FFFFFF" stroke="#000000" stroke-width="1.8" />
+      <text x="420" y="213" font-family="'Segoe UI', Arial, sans-serif" font-size="11.5" font-weight="700" fill="#000000" text-anchor="middle" dominant-baseline="middle">CU-M02: Configurar Tienda</text>
+      <text x="420" y="229" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="500" fill="#222222" text-anchor="middle" dominant-baseline="middle">Perfil Comercial y Políticas</text>
+    </g>
+  
+  
+    <g class="usecase-node">
+      <ellipse cx="420" cy="300" rx="120" ry="26" fill="#FFFFFF" stroke="#000000" stroke-width="1.8" />
+      <text x="420" y="293" font-family="'Segoe UI', Arial, sans-serif" font-size="11.5" font-weight="700" fill="#000000" text-anchor="middle" dominant-baseline="middle">CU-M03: Publicar Catálogo</text>
+      <text x="420" y="309" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="500" fill="#222222" text-anchor="middle" dominant-baseline="middle">Crear y Modificar Productos</text>
+    </g>
+  
+  
+    <g class="usecase-node">
+      <ellipse cx="420" cy="380" rx="120" ry="26" fill="#FFFFFF" stroke="#000000" stroke-width="1.8" />
+      <text x="420" y="373" font-family="'Segoe UI', Arial, sans-serif" font-size="11.5" font-weight="700" fill="#000000" text-anchor="middle" dominant-baseline="middle">CU-M04: Controlar Inventario</text>
+      <text x="420" y="389" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="500" fill="#222222" text-anchor="middle" dominant-baseline="middle">Stock y Alertas de Agotado</text>
+    </g>
+  
+  
+    <g class="usecase-node">
+      <ellipse cx="420" cy="460" rx="120" ry="26" fill="#FFFFFF" stroke="#000000" stroke-width="1.8" />
+      <text x="420" y="453" font-family="'Segoe UI', Arial, sans-serif" font-size="11.5" font-weight="700" fill="#000000" text-anchor="middle" dominant-baseline="middle">CU-M05: Gestionar Pedidos</text>
+      <text x="420" y="469" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="500" fill="#222222" text-anchor="middle" dominant-baseline="middle">Recepción y Despacho</text>
+    </g>
+  
+  
+    <g class="usecase-node">
+      <ellipse cx="420" cy="550" rx="120" ry="26" fill="#FFFFFF" stroke="#000000" stroke-width="1.8" />
+      <text x="420" y="543" font-family="'Segoe UI', Arial, sans-serif" font-size="11.5" font-weight="700" fill="#000000" text-anchor="middle" dominant-baseline="middle">CU-M08: Gestionar Reservas</text>
+      <text x="420" y="559" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="500" fill="#222222" text-anchor="middle" dominant-baseline="middle">Aprobar Citas y Servicios</text>
+    </g>
+  
+  
+    <g class="usecase-node">
+      <ellipse cx="420" cy="635" rx="120" ry="26" fill="#FFFFFF" stroke="#000000" stroke-width="1.8" />
+      <text x="420" y="628" font-family="'Segoe UI', Arial, sans-serif" font-size="11.5" font-weight="700" fill="#000000" text-anchor="middle" dominant-baseline="middle">CU-M09: Consultar Finanzas</text>
+      <text x="420" y="644" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="500" fill="#222222" text-anchor="middle" dominant-baseline="middle">Ventas y Liquidaciones</text>
+    </g>
+  
+  
+    <g class="usecase-node">
+      <ellipse cx="420" cy="715" rx="120" ry="26" fill="#FFFFFF" stroke="#000000" stroke-width="1.8" />
+      <text x="420" y="708" font-family="'Segoe UI', Arial, sans-serif" font-size="11.5" font-weight="700" fill="#000000" text-anchor="middle" dominant-baseline="middle">CU-M10: Atender Mensajes</text>
+      <text x="420" y="724" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="500" fill="#222222" text-anchor="middle" dominant-baseline="middle">Chat y Soporte a Clientes</text>
+    </g>
+  
+  
+    <g class="usecase-node">
+      <ellipse cx="420" cy="795" rx="120" ry="26" fill="#FFFFFF" stroke="#000000" stroke-width="1.8" />
+      <text x="420" y="788" font-family="'Segoe UI', Arial, sans-serif" font-size="11.5" font-weight="700" fill="#000000" text-anchor="middle" dominant-baseline="middle">CU-M11: Responder Reseñas</text>
+      <text x="420" y="804" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="500" fill="#222222" text-anchor="middle" dominant-baseline="middle">Gestión de Reputación</text>
+    </g>
+  
+  
+    <g class="usecase-node">
+      <ellipse cx="420" cy="875" rx="120" ry="26" fill="#FFFFFF" stroke="#000000" stroke-width="1.8" />
+      <text x="420" y="868" font-family="'Segoe UI', Arial, sans-serif" font-size="11.5" font-weight="700" fill="#000000" text-anchor="middle" dominant-baseline="middle">CU-M12: Solicitar Publicidad</text>
+      <text x="420" y="884" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="500" fill="#222222" text-anchor="middle" dominant-baseline="middle">Postulación de Banners</text>
+    </g>
+  
+
+  <!-- Casos de Uso Subordinados (Columna Derecha) -->
+  
+    <g class="usecase-node">
+      <ellipse cx="780" cy="300" rx="120" ry="25" fill="#FFFFFF" stroke="#000000" stroke-width="1.8" />
+      <text x="780" y="293" font-family="'Segoe UI', Arial, sans-serif" font-size="11.5" font-weight="700" fill="#000000" text-anchor="middle" dominant-baseline="middle">CU-M03.1: Gestionar Fotos</text>
+      <text x="780" y="309" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="500" fill="#222222" text-anchor="middle" dominant-baseline="middle">Variantes, Tallas y Precios</text>
+    </g>
+  
+  
+    <g class="usecase-node">
+      <ellipse cx="780" cy="425" rx="120" ry="25" fill="#FFFFFF" stroke="#000000" stroke-width="1.8" />
+      <text x="780" y="418" font-family="'Segoe UI', Arial, sans-serif" font-size="11.5" font-weight="700" fill="#000000" text-anchor="middle" dominant-baseline="middle">CU-M06: Generar Guía Envío</text>
+      <text x="780" y="434" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="500" fill="#222222" text-anchor="middle" dominant-baseline="middle">Etiqueta Envia.com</text>
+    </g>
+  
+  
+    <g class="usecase-node">
+      <ellipse cx="780" cy="500" rx="120" ry="25" fill="#FFFFFF" stroke="#000000" stroke-width="1.8" />
+      <text x="780" y="493" font-family="'Segoe UI', Arial, sans-serif" font-size="11.5" font-weight="700" fill="#000000" text-anchor="middle" dominant-baseline="middle">CU-M07: Emitir Factura DIAN</text>
+      <text x="780" y="509" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="500" fill="#222222" text-anchor="middle" dominant-baseline="middle">Integración Factus Electrónica</text>
+    </g>
+  
+  
+    <g class="usecase-node">
+      <ellipse cx="780" cy="635" rx="120" ry="25" fill="#FFFFFF" stroke="#000000" stroke-width="1.8" />
+      <text x="780" y="628" font-family="'Segoe UI', Arial, sans-serif" font-size="11.5" font-weight="700" fill="#000000" text-anchor="middle" dominant-baseline="middle">CU-M09.1: Exportar Balance</text>
+      <text x="780" y="644" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="500" fill="#222222" text-anchor="middle" dominant-baseline="middle">Reporte de Ventas en CSV</text>
+    </g>
+  
+
+  <!-- Asociaciones Directas Actor -> Casos de Uso -->
+  <line x1="145" y1="410" x2="300" y2="140" class="assoc-line" />
+  <line x1="145" y1="425" x2="300" y2="220" class="assoc-line" />
+  <line x1="145" y1="440" x2="300" y2="300" class="assoc-line" />
+  <line x1="145" y1="455" x2="300" y2="380" class="assoc-line" />
+  <line x1="145" y1="470" x2="300" y2="460" class="assoc-line" />
+  <line x1="145" y1="485" x2="300" y2="550" class="assoc-line" />
+  <line x1="145" y1="500" x2="300" y2="635" class="assoc-line" />
+  <line x1="145" y1="515" x2="300" y2="715" class="assoc-line" />
+  <line x1="145" y1="530" x2="300" y2="795" class="assoc-line" />
+  <line x1="145" y1="545" x2="300" y2="875" class="assoc-line" />
+
+  <!-- Dependencias <<include>> y <<extend>> -->
+  <!-- CU-M03 -> CU-M03.1 (include) -->
+  <line x1="540" y1="300" x2="660" y2="300" class="dep-line" marker-end="url(#arrow-open)" />
+  
+    <g transform="translate(600, 295)">
+      <rect x="-36.5" y="-8" width="73" height="16" fill="#FFFFFF" stroke="none" />
+      <text x="0" y="4" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="700" fill="#000000" text-anchor="middle">«include»</text>
+    </g>
+  
+
+  <!-- CU-M06 -> CU-M05 (extend) -->
+  <path d="M 660 435 L 538 455" class="dep-line" marker-end="url(#arrow-open)" />
+  
+    <g transform="translate(600, 440)">
+      <rect x="-33" y="-8" width="66" height="16" fill="#FFFFFF" stroke="none" />
+      <text x="0" y="4" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="700" fill="#000000" text-anchor="middle">«extend»</text>
+    </g>
+  
+
+  <!-- CU-M07 -> CU-M05 (extend) -->
+  <path d="M 660 495 L 538 475" class="dep-line" marker-end="url(#arrow-open)" />
+  
+    <g transform="translate(600, 490)">
+      <rect x="-33" y="-8" width="66" height="16" fill="#FFFFFF" stroke="none" />
+      <text x="0" y="4" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="700" fill="#000000" text-anchor="middle">«extend»</text>
+    </g>
+  
+
+  <!-- CU-M09.1 -> CU-M09 (extend) -->
+  <line x1="660" y1="635" x2="540" y2="635" class="dep-line" marker-end="url(#arrow-open)" />
+  
+    <g transform="translate(600, 630)">
+      <rect x="-33" y="-8" width="66" height="16" fill="#FFFFFF" stroke="none" />
+      <text x="0" y="4" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="700" fill="#000000" text-anchor="middle">«extend»</text>
+    </g>
+  
+
+  <!-- Cuadro de Convenciones Inferior -->
+  <rect x="230" y="965" width="780" height="55" fill="#FFFFFF" stroke="#000000" stroke-width="1.2" />
+  <text x="245" y="985" class="legend-title">CONVENCIONES UML 2.5 (PANEL COMERCIANTE):</text>
+  <text x="245" y="1002" class="legend-text">• Muñequito: Actor Comerciante (Tienda Habilitada tras KYC). • Rectángulo: Límite del panel del vendedor.</text>
+  <text x="245" y="1014" class="legend-text">• «include»: Inclusión mandataria del caso. • «extend»: Flujo opcional de apoyo logístico o tributario.</text>
+</svg>

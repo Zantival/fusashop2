@@ -18,16 +18,19 @@ class PQRSController extends Controller
         return view('pqrs.index', compact('pqrs'));
     }
 
-    public function create()
+    public function create(Request $request)
     {
-        return view('pqrs.create');
+        $category = in_array($request->query('category'), ['envio', 'producto', 'pago', 'comercio', 'plataforma', 'seguridad'], true)
+            ? $request->query('category')
+            : null;
+        return view('pqrs.create', compact('category'));
     }
 
     public function store(Request $request)
     {
         $data = $request->validate([
             'type'     => 'required|in:peticion,queja,reclamo,sugerencia',
-            'category' => 'nullable|in:envio,producto,pago,comercio,plataforma',
+            'category' => 'nullable|in:envio,producto,pago,comercio,plataforma,seguridad',
             'priority' => 'nullable|in:baja,media,alta,urgente',
             'subject'  => 'required|string|max:255',
             'content'  => 'required|string|max:2000',
@@ -39,7 +42,7 @@ class PQRSController extends Controller
             'user_id'              => Auth::id(),
             'type'                 => $data['type'],
             'category'             => $data['category'] ?? 'plataforma',
-            'priority'             => $data['priority'] ?? ($data['type'] === 'reclamo' ? 'alta' : 'media'),
+            'priority'             => ($data['category'] ?? null) === 'seguridad' ? 'urgente' : ($data['priority'] ?? ($data['type'] === 'reclamo' ? 'alta' : 'media')),
             'subject'              => strip_tags($data['subject']),
             'content'              => strip_tags($data['content']),
             'status'               => 'pending',
@@ -85,7 +88,11 @@ class PQRSController extends Controller
             $query->where('priority', $request->priority);
         }
 
-        $pqrs = $query->latest()->paginate(20)->withQueryString();
+        $pqrs = $query
+            ->orderByRaw("CASE WHEN priority = 'urgente' THEN 0 WHEN priority = 'alta' THEN 1 ELSE 2 END")
+            ->latest()
+            ->paginate(20)
+            ->withQueryString();
 
         // Métricas SLA y categorías (§2.6)
         $allPqrs = PQRS::all();
@@ -101,7 +108,7 @@ class PQRSController extends Controller
         $request->validate([
             'admin_response' => 'required|string|max:2000',
             'status'         => 'required|in:in_review,resolved,closed',
-            'category'       => 'nullable|in:envio,producto,pago,comercio,plataforma',
+            'category'       => 'nullable|in:envio,producto,pago,comercio,plataforma,seguridad',
             'priority'       => 'nullable|in:baja,media,alta,urgente',
         ]);
 

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Mail\VerifyEmailCodeMail;
+use App\Mail\WelcomeMail;
 use App\Models\Cart;
 use App\Models\User;
 use App\Support\PasswordPolicy;
@@ -21,9 +22,10 @@ class AuthController extends Controller
 {
     public function showLogin(Request $request)
     {
-        // Guardar URL de retorno si viene como query param
-        if ($request->has('intended')) {
-            redirect()->setIntendedUrl($request->input('intended'));
+        // Aceptar solo destinos locales para evitar redirecciones abiertas.
+        $intended = $request->query('intended');
+        if (is_string($intended) && $this->isSafeLocalRedirect($intended)) {
+            redirect()->setIntendedUrl($intended);
         }
         return view('auth.login');
     }
@@ -31,8 +33,8 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $credentials = $request->validate([
-            'email'    => ['required', 'email'],
-            'password' => ['required'],
+            'email'    => ['required', 'string', 'email:rfc', 'max:254'],
+            'password' => ['required', 'string', 'max:1024'],
         ]);
 
         if (Auth::attempt($credentials, $request->boolean('remember'))) {
@@ -67,9 +69,31 @@ class AuthController extends Controller
         return back()->withErrors(['email' => 'Credenciales incorrectas.'])->onlyInput('email');
     }
 
-    public function showRegister()
+    private function isSafeLocalRedirect(string $url): bool
     {
-        return view('auth.register');
+        if ($url === '' || preg_match('/[\\\\\x00-\x1F\x7F]/', $url)) {
+            return false;
+        }
+
+        $parts = parse_url($url);
+        if ($parts === false || isset($parts['user']) || isset($parts['pass'])) {
+            return false;
+        }
+
+        if (isset($parts['host'])) {
+            $appHost = parse_url((string) config('app.url'), PHP_URL_HOST);
+            return $appHost !== null
+                && strcasecmp($parts['host'], $appHost) === 0
+                && in_array(strtolower((string) ($parts['scheme'] ?? '')), ['http', 'https'], true);
+        }
+
+        return str_starts_with($url, '/') && !str_starts_with($url, '//');
+    }
+
+    public function showRegister(Request $request)
+    {
+        $role = in_array($request->query('role'), ['consumer', 'merchant']) ? $request->query('role') : 'consumer';
+        return view('auth.register', compact('role'));
     }
 
     public function register(Request $request)
@@ -78,10 +102,19 @@ class AuthController extends Controller
         $socialData = session('social_registration', []);
 
         $rules = [
-            'name'     => ['required', 'string', 'max:255'],
+            'name'     => ['required', 'string', 'max:255', function ($attribute, $value, $fail) {
+                if (!preg_match('/^\p{L}+(?:[ \'\x{2019}-]\p{L}+)*$/u', $value)) {
+                    $fail('Escribe tu nombre y apellidos usando letras; permite un solo espacio entre palabras, sin espacios al inicio, al final ni repetidos.');
+                }
+            }],
             'email'    => ['required', 'email', 'unique:users,email'],
             'role'     => ['required', 'in:consumer,merchant'],
-            'phone'    => ['required', 'string', 'max:25'],
+            'phone_country' => ['required', 'in:57,1,52,34,51,56,54'],
+            'phone'    => ['required', 'regex:/^[0-9]{7,15}$/'],
+            'accepted_terms' => ['required', 'accepted'],
+            'accepted_privacy' => ['required', 'accepted'],
+            'age_or_guardian_confirmed' => ['required', 'accepted'],
+            'marketing_opt_in'          => ['nullable', 'boolean'],
         ];
 
         if ($isSocial) {
@@ -92,8 +125,20 @@ class AuthController extends Controller
 
         $data = $request->validate($rules, [
             'phone.required' => 'El número de teléfono es obligatorio.',
+            'phone.regex' => 'Escribe un número válido sin espacios. En Colombia debe tener 10 dígitos y comenzar por 3 (no por 0).',
+            'phone_country.required' => 'Selecciona el indicativo de tu país.',
+            'name.regex' => 'Escribe un nombre válido, sin espacios al inicio, al final ni repetidos.',
             ...PasswordPolicy::messages(),
         ]);
+
+        if (($data['phone_country'] === '57' && (!preg_match('/^3[0-9]{9}$/', $data['phone'])))
+            || ($data['phone_country'] !== '57' && strlen($data['phone']) < 7)) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'phone' => $data['phone_country'] === '57'
+                    ? 'El celular colombiano debe tener 10 dígitos y comenzar por 3.'
+                    : 'Revisa el número para el indicativo internacional seleccionado.',
+            ]);
+        }
 
         // Si el usuario se registra como Comerciante, validar y extraer su método de pago preferido
         $merchantPayoutData = [];
@@ -115,13 +160,19 @@ class AuthController extends Controller
             'email'                        => strtolower($data['email']),
             'password'                     => $hashedPassword,
             'role'                         => $data['role'],
-            'phone'                        => $data['phone'] ?? null,
+            'phone'                        => '+' . $data['phone_country'] . $data['phone'],
             'provider'                     => $isSocial ? ($socialData['provider'] ?? null) : null,
             'provider_id'                  => $isSocial ? ($socialData['provider_id'] ?? null) : null,
             'avatar'                       => $isSocial ? ($socialData['avatar'] ?? null) : null,
             'verification_code'            => $code,
             'verification_code_expires_at' => now()->addMinutes(30),
             'email_verified_at'            => null,
+            'accepted_terms_at'             => now(),
+            'accepted_privacy_at'           => now(),
+            'accepted_terms_version'        => '2026-10-25',
+            'accepted_privacy_version'      => '2026-10-25',
+            'age_or_guardian_confirmed_at' => now(),
+            'marketing_consent_at'          => !empty($data['marketing_opt_in']) ? now() : null,
         ]);
 
         if ($isSocial) {
@@ -152,9 +203,8 @@ class AuthController extends Controller
         }
 
         try {
-            $user->notify(new WelcomeNotification());
-
-            // Notificar a los analistas sobre la nueva cuenta
+            // Avisar a administración del registro. La bienvenida al usuario se reserva
+            // para después de que confirme el código recibido por correo.
             $analysts = User::where('role', 'analyst')->get();
             foreach ($analysts as $analyst) {
                 $analyst->notify(new NewUserNotification($user));
@@ -194,6 +244,24 @@ class AuthController extends Controller
         if (! $user->verifyCode($request->code)) {
             return back()->withErrors([
                 'code' => 'El código de 6 números es incorrecto o ha vencido. Por favor solicita un nuevo código.'
+            ]);
+        }
+
+        try {
+            Mail::to($user->email)->send(new WelcomeMail($user));
+        } catch (\Throwable $e) {
+            Log::error('No fue posible enviar el correo de bienvenida posterior a la verificación.', [
+                'user_id' => $user->id,
+                'exception' => $e::class,
+            ]);
+        }
+
+        try {
+            $user->notify(new WelcomeNotification());
+        } catch (\Throwable $e) {
+            Log::error('No fue posible guardar la notificación de bienvenida posterior a la verificación.', [
+                'user_id' => $user->id,
+                'exception' => $e::class,
             ]);
         }
 

@@ -357,27 +357,7 @@
   const productId = {{ $activeProduct ? $activeProduct->id : 'null' }};
   const csrfToken = '{{ csrf_token() }}';
   const badWords = @json($badWords);
-
-  function checkProfanity() {
-      if (!inputField || !sendBtn) return;
-      const content = inputField.value.toLowerCase();
-      const warning = document.getElementById('profanity-warning');
-      
-      const hasBadWord = badWords.some(word => {
-          const regex = new RegExp('\\b' + word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b', 'i');
-          return regex.test(content);
-      });
-
-      if (hasBadWord) {
-          sendBtn.disabled = true;
-          sendBtn.classList.add('opacity-50', 'grayscale');
-          warning?.classList.remove('hidden');
-      } else {
-          sendBtn.disabled = false;
-          sendBtn.classList.remove('opacity-50', 'grayscale');
-          warning?.classList.add('hidden');
-      }
-  }
+  @include('chat.partials.moderation-script')
 
   function scrollToBottom() {
       if (chatBox) {
@@ -455,6 +435,11 @@
                   time: new Date().toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit' })
               });
               scrollToBottom();
+          } else {
+              const payload = await res.json().catch(() => ({}));
+              inputField.value = content;
+              window.chatServerModerationMessage = payload.errors?.content?.[0]
+                  || 'No se pudo enviar el mensaje. Revísalo e intenta de nuevo.';
           }
       } catch (e) {
           console.error("Error al enviar mensaje:", e);

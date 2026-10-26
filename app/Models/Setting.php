@@ -181,7 +181,18 @@ class Setting extends Model
         if ($raw) {
             $decoded = json_decode($raw, true);
             if (is_array($decoded)) {
-                return $decoded;
+                // Estos textos son afirmaciones de seguridad/finanzas y deben
+                // conservarse veraces incluso si existe una configuración antigua.
+                return array_replace($decoded, [
+                    'card_subtitle' => 'Elige si quieres comprar en el catálogo o registrar tu tienda y conoce los pasos desde la plataforma.',
+                    'buyer_description' => 'Explora comercios de Fusagasugá, revisa las condiciones de compra y consulta el estado de tu pedido desde tu cuenta.',
+                    'buyer_video_url' => '',
+                    'seller_video_url' => '',
+                    'buyer_steps' => "1. Crea tu cuenta y confirma el correo con el código recibido.\n2. Explora productos y revisa precio, disponibilidad y condiciones.\n3. Confirma el pedido y consulta su estado desde tu cuenta.",
+                    'seller_why_verify' => 'La revisión de documentos ayuda a validar la información de tu tienda y puede habilitar funciones que requieren verificación. El resultado y los requisitos se informan en tu panel; la revisión no garantiza ventas ni elimina obligaciones legales o tributarias.',
+                    'seller_description' => 'Conoce los requisitos para registrar tu tienda y solicitar una revisión de documentos desde tu cuenta.',
+                    'seller_steps' => "1. Crea tu cuenta de comerciante y confirma el correo.\n2. Completa los datos de tu tienda y carga solo los documentos solicitados en el panel.\n3. Consulta el estado y las observaciones de la revisión en tu cuenta.",
+                ]);
             }
         }
 
@@ -193,16 +204,16 @@ class Setting extends Model
             
             // Comprador
             'buyer_title'       => '¿Cómo Comprar en FusaShop?',
-            'buyer_description' => 'Guía rápida para explorar comercios de Fusagasugá, pagar de forma 100% segura con pasarela Wompi, ganar FusaCoins y recibir tu pedido rastreado con Envia.com.',
+            'buyer_description' => 'Explora comercios de Fusagasugá, revisa las condiciones de compra y consulta el estado de tu pedido desde tu cuenta.',
             'buyer_video_url'   => 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-            'buyer_steps'       => "1. Registro Rápido con Código: Crea tu cuenta y confírmala con el código de 6 dígitos que llega a tu correo.\n2. Explora Productos & Servicios: Encuentra productos agrícolas del Sumapaz y reserva en restaurantes y hoteles.\n3. Ahorra con FusaCoins: Gana 1 punto por cada $10.000 COP y aplícalo en el carrito para pagar menos.\n4. Pagos Wompi y Rastreo: Paga con Nequi, PSE o tarjetas y sigue tu pedido con guía Envia.com en tiempo real.",
+            'buyer_steps'       => "1. Crea tu cuenta y confirma el correo con el código recibido.\n2. Explora productos y revisa precio, disponibilidad y condiciones.\n3. Confirma el pedido y consulta su estado desde tu cuenta.",
 
             // Vendedor
             'seller_title'       => '¿Cómo Vender y Formalizar tu Negocio?',
-            'seller_description' => 'Aprende a registrar tu tienda, formalizarte ante la DIAN y Cámara de Comercio y obtener tu Chulito de Comercio Verificado.',
+            'seller_description' => 'Conoce los requisitos para registrar tu tienda y solicitar una revisión de documentos desde tu cuenta.',
             'seller_video_url'   => '',
-            'seller_why_verify'  => '¿Por qué es necesario verificar tu negocio y en qué te ayuda? Obtener la certificación con RUT y Cámara de Comercio activa la insignia oficial de Comerciante Verificado ✅. Esto genera máxima confianza en los compradores, incrementa tus ventas hasta un 300%, te da acceso prioritario a pautar en los banners principales de FusaShop y agiliza las dispersiones bancarias de tus ingresos directamente a tu cuenta bancaria sin retenciones cautelares.',
-            'seller_steps'       => "1. Registro Comercial: Crea tu cuenta con rol de Comerciante y valida tu correo con el código de 6 números.\n2. Tramita tu RUT en la DIAN: Es 100% gratuito en dian.gov.co. Genera el Formulario 001 con tu actividad económica comercial.\n3. Matrícula en Cámara de Comercio: Registra tu establecimiento ante la Cámara de Comercio de Bogotá/Fusagasugá y figura en el RUES nacional.\n4. Certificación y Chulito ✅: Sube tus documentos para que el Analista active tu insignia oficial de verificación tras cotejar tu NIT.",
+            'seller_why_verify'  => 'La revisión de documentos ayuda a validar la información de tu tienda y puede habilitar funciones que requieren verificación. El resultado y los requisitos se informan en tu panel; la revisión no garantiza ventas ni elimina obligaciones legales o tributarias.',
+            'seller_steps'       => "1. Crea tu cuenta de comerciante y confirma el correo.\n2. Completa los datos de tu tienda y carga solo los documentos solicitados en el panel.\n3. Consulta el estado y las observaciones de la revisión en tu cuenta.",
             'dian_url'           => 'https://www.dian.gov.co',
             'rues_url'           => 'https://www.rues.org.co'
         ];
