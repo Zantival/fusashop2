@@ -129,7 +129,7 @@
                 @endforeach
               </optgroup>
               <optgroup label="Servicios y turismo">
-                @foreach(['Hoteles y Alojamientos','Restaurantes y Gastronomía','Turismo y Experiencias','Servicios profesionales'] as $cat)
+                @foreach(['Hoteles y Alojamientos','Spa, Estética y Bienestar','Restaurantes y Gastronomía','Turismo y Experiencias','Servicios profesionales'] as $cat)
                   <option value="{{ $cat }}" {{ $currentCategory === $cat ? 'selected' : '' }}>{{ $cat }}</option>
                 @endforeach
               </optgroup>
@@ -432,6 +432,7 @@
     'Juguetes': [{ name: 'Edad recomendada', values: '0-3 años, 4-7 años, 8+ años' }, { name: 'Color', type: 'color' }],
     'Libros': [{ name: 'Formato', values: 'Pasta blanda, Pasta dura, Digital' }],
     'Hoteles y Alojamientos': [{ name: 'Habitación', values: 'Sencilla, Doble, Familiar, Suite' }, { name: 'Ocupación', values: '1 persona, 2 personas, 4 personas' }],
+    'Spa, Estética y Bienestar': [{ name: 'Servicio', values: 'Masaje Relajante, Circuito Hidrotermal, Tratamiento Facial, Spa en Pareja, Terapia Corporal' }, { name: 'Duración', values: '45 min, 60 min, 90 min, 120 min' }],
     'Restaurantes y Gastronomía': [{ name: 'Plato o menú (solo referencia)', values: 'Desayuno, Almuerzo, Cena' }, { name: 'Tipo de mesa', values: 'Interior, Terraza, Familiar' }],
     'Turismo y Experiencias': [{ name: 'Experiencia', values: 'Individual, Pareja, Grupo' }, { name: 'Duración', values: '2 horas, Medio día, Día completo' }],
     'Medicamentos y Farmacia': [{ name: 'Presentación', values: 'Tabletas, Cápsulas, Jarabe, Gotas, Crema, Inyectable' }, { name: 'Concentración', values: '250 mg, 500 mg, 1 g' }],
@@ -445,6 +446,7 @@
     'Alimentos': [{ key: 'exp', label: 'Vencimiento' }, { key: 'origin', label: 'Origen' }],
     'Hogar': [{ key: 'dims', label: 'Dimensiones' }, { key: 'material', label: 'Material' }],
     'Hoteles y Alojamientos': [{ key: 'amenities', label: 'Servicios de la habitación' }, { key: 'checkin', label: 'Hora de ingreso' }, { key: 'checkout', label: 'Hora de salida' }],
+    'Spa, Estética y Bienestar': [{ key: 'duration', label: 'Duración del servicio' }, { key: 'therapist', label: 'Especialista o terapeuta' }, { key: 'requirements', label: 'Requisitos / Qué traer' }, { key: 'reservation_policy', label: 'Política de reserva y cancelación' }],
     'Restaurantes y Gastronomía': [{ key: 'menu', label: 'Platos ofrecidos (información)' }, { key: 'reservation_policy', label: 'Política de reserva de mesa' }],
     'Turismo y Experiencias': [{ key: 'duration', label: 'Duración' }, { key: 'meeting_point', label: 'Punto de encuentro' }],
     'Medicamentos y Farmacia': [{ key: 'active_ingredient', label: 'Principio activo' }, { key: 'concentration', label: 'Concentración' }, { key: 'laboratory', label: 'Laboratorio' }, { key: 'invima', label: 'Registro INVIMA' }, { key: 'prescription', label: 'Requiere fórmula médica (Sí/No)' }, { key: 'exp', label: 'Fecha de vencimiento' }, { key: 'lot', label: 'Lote' }, { key: 'dosage', label: 'Dosis / modo de uso' }, { key: 'contraindications', label: 'Contraindicaciones' }],
@@ -492,7 +494,7 @@
     const technicalSpecs = cat === 'Electrónica' && isAudioProduct
       ? [{key:'brand',label:'Marca'}, {key:'model',label:'Modelo'}, {key:'sound',label:'Sonido / respuesta de frecuencia'}, {key:'connectivity',label:'Conectividad'}, {key:'battery',label:'Batería'}, {key:'microphone',label:'Micrófono'}, {key:'noise_cancellation',label:'Cancelación de ruido'}]
       : (specSchemas[cat] || []);
-    const reservationType = ['Hoteles y Alojamientos','Restaurantes y Gastronomía','Turismo y Experiencias','Servicios profesionales'].includes(cat);
+    const reservationType = ['Hoteles y Alojamientos','Spa, Estética y Bienestar','Restaurantes y Gastronomía','Turismo y Experiencias','Servicios profesionales'].includes(cat) || /(hotel|alojam|glamping|spa|bienestar|masaje|restaur|gastronom|turism|experiencia|servicio)/i.test(cat);
     const typeSelect = document.querySelector('select[name="type"]');
     if (!isEditingProduct && typeSelect && reservationType) typeSelect.value = 'service';
     const presetsCont = document.getElementById('presets-container');

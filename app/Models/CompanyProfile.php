@@ -71,9 +71,13 @@ class CompanyProfile extends Model
         ])), 'UTF-8');
 
         foreach ([
-            'restaurante', 'gastronom', 'cafeter', 'comida rápida', 'comida rapida', 'pizzer', 'asadero',
-            'hotel', 'hostal', 'hostería', 'hospedaje', 'alojamiento', 'glamping', 'cabaña', 'cabana', 'finca turístic',
-            'turismo', 'turístic', 'operador turístico', 'agencia de viajes', 'viajes',
+
+
+            'restaurante', 'gastronom', 'cafeter', 'comida rápida', 'comida rapida', 'pizzer', 'asadero', 'bar',
+            'hotel', 'hostal', 'hostería', 'hosteria', 'hospedaje', 'alojamiento', 'glamping', 'cabaña', 'cabana', 'finca turístic', 'finca turistic',
+            'turismo', 'turístic', 'turistic', 'operador turístico', 'agencia de viajes', 'viajes', 'tour', 'guía', 'guia', 'ecoturismo',
+            'spa', 'bienestar', 'estética', 'estetica', 'masaje', 'belleza', 'peluquería', 'peluqueria', 'barbería', 'barberia', 'salón', 'salon',
+            'servicios', 'servicio', 'evento', 'recreación', 'recreacion',
         ] as $keyword) {
             if (str_contains($businessText, $keyword)) {
                 return true;

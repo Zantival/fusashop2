@@ -187,6 +187,13 @@ Route::middleware('auth')->group(function () {
                 : redirect()->route('pqrs.show', $data['pqrs_id']);
         }
 
+        if (isset($data['reservation_id']) || in_array($type, ['new_reservation', 'reservation_status', 'reservation_cancelled'], true)) {
+            if ($user->isMerchant()) {
+                return redirect()->route('merchant.reservations');
+            }
+            return redirect()->route('consumer.reservations');
+        }
+
         if (isset($data['order_id']) || $type === 'new_order' || $type === 'order_cancelled') {
             if ($user->isMerchant()) {
                 return $type === 'order_cancelled'

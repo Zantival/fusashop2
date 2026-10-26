@@ -280,7 +280,20 @@ $specLabels = [
                   @endif
                 </div>
                 @if($product->isReservationOnly())
-                  @php $reservationBusinessText = mb_strtolower(($product->category ?? '') . ' ' . ($product->merchant?->companyProfile?->business_type ?? ''), 'UTF-8'); $isRestaurantReservation = str_contains($reservationBusinessText, 'restaur') || str_contains($reservationBusinessText, 'gastronom'); @endphp
+                  @php
+                    $resText = mb_strtolower(($product->category ?? '') . ' ' . ($product->name ?? '') . ' ' . ($product->merchant?->companyProfile?->business_type ?? ''), 'UTF-8');
+                    $isRestaurantReservation = str_contains($resText, 'restaur') || str_contains($resText, 'gastronom');
+                    $isHotelReservation = str_contains($resText, 'hotel') || str_contains($resText, 'alojam') || str_contains($resText, 'glamping') || str_contains($resText, 'hosped');
+                    $isSpaReservation = str_contains($resText, 'spa') || str_contains($resText, 'bienestar') || str_contains($resText, 'masaje') || str_contains($resText, 'estétic') || str_contains($resText, 'estetic');
+                    $partyLabel = $isRestaurantReservation ? 'Comensales / Personas' : ($isHotelReservation ? 'Huéspedes / Personas' : ($isSpaReservation ? 'Asistentes / Personas' : 'Personas'));
+                    $notesPlaceholder = $isSpaReservation
+                      ? 'Indica preferencias para tu sesión de spa, terapeuta o preguntas sobre el tratamiento'
+                      : ($isHotelReservation
+                          ? 'Indica hora estimada de llegada (check-in), estadía o requerimientos de habitación'
+                          : ($isRestaurantReservation
+                              ? 'Indica ubicación deseada de mesa (interior/terraza), motivo especial, etc.'
+                              : 'Indica fechas, preferencias o preguntas para el comercio'));
+                  @endphp
                   <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-4 rounded-xl border border-emerald-200 bg-emerald-50/80 p-4 text-slate-800">
                     <label class="text-xs font-bold">Fecha deseada (opcional)
                       <input type="date" name="preferred_date" min="{{ now()->toDateString() }}" class="mt-1 w-full rounded-lg border border-emerald-200 bg-white px-3 py-2 text-sm font-normal">
@@ -288,13 +301,13 @@ $specLabels = [
                     <label class="text-xs font-bold">Hora deseada (opcional)
                       <input type="time" name="preferred_time" class="mt-1 w-full rounded-lg border border-emerald-200 bg-white px-3 py-2 text-sm font-normal">
                     </label>
-                    <label class="text-xs font-bold">{{ $isRestaurantReservation ? 'Personas / comensales' : 'Personas' }} (opcional)
+                    <label class="text-xs font-bold">{{ $partyLabel }} (opcional)
                       <input type="number" name="party_size" min="1" max="100" value="1" class="mt-1 w-full rounded-lg border border-emerald-200 bg-white px-3 py-2 text-sm font-normal">
                     </label>
                     <label class="text-xs font-bold sm:col-span-3">Detalles para el comercio (opcional)
-                      <textarea name="customer_notes" maxlength="1500" rows="2" placeholder="Indica fechas, preferencias o preguntas para el comercio" class="mt-1 w-full rounded-lg border border-emerald-200 bg-white px-3 py-2 text-sm font-normal"></textarea>
+                      <textarea name="customer_notes" maxlength="1500" rows="2" placeholder="{{ $notesPlaceholder }}" class="mt-1 w-full rounded-lg border border-emerald-200 bg-white px-3 py-2 text-sm font-normal"></textarea>
                     </label>
-                    <p class="text-[11px] text-emerald-900 sm:col-span-3">{{ $isRestaurantReservation ? 'Esta solicitud es solo para reservar mesa; los platos mostrados son informativos y no se compran aquí.' : 'Enviar la solicitud no genera un pago ni confirma disponibilidad. El comercio debe responder para confirmar.' }}</p>
+                    <p class="text-[11px] text-emerald-900 sm:col-span-3">{{ $isRestaurantReservation ? 'Esta solicitud es para reservar tu mesa; los platos son informativos.' : 'Tu solicitud enviará una notificación inmediata al comercio para coordinar y confirmar la disponibilidad del servicio.' }}</p>
                   </div>
                 @endif
                 <div class="flex flex-wrap sm:flex-nowrap items-stretch gap-2.5 sm:gap-3">

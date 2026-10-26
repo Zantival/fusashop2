@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Merchant;
 
 use App\Http\Controllers\Controller;
-use App\Models\{Product, Order, OrderItem, CompanyProfile, Review, BannerRequest, Message, User};
+use App\Models\{Product, Order, OrderItem, CompanyProfile, Review, BannerRequest, Message, User, Reservation};
 use App\Notifications\OrderStatusChanged;
 use App\Services\Admin\SalesDiagnosisService;
 use Illuminate\Http\Request;
@@ -60,7 +60,19 @@ class MerchantController extends Controller
 
         // Productos del comerciante para pestaña de catálogo & stock
         $products = $merchant->products()->latest()->get();
-        $hasServiceProducts = $products->contains(fn ($product) => strtolower((string) $product->type) === 'service');
+        // Reservas del comerciante (Hoteles, Spas, Restaurantes, Experiencias y Servicios)
+        $pendingReservations = Reservation::where('merchant_id', $merchant->id)->where('status', 'pending')->count();
+        $totalReservations   = Reservation::where('merchant_id', $merchant->id)->count();
+        $confirmedReservations = Reservation::where('merchant_id', $merchant->id)->where('status', 'confirmed')->count();
+        $recentReservations  = Reservation::where('merchant_id', $merchant->id)
+            ->with(['customer', 'product'])
+            ->latest()
+            ->take(8)
+            ->get();
+
+        $hasServiceProducts = $products->contains(fn ($product) => $product->isService())
+            || (bool) $merchant->companyProfile?->isReservationBusiness()
+            || $totalReservations > 0;
 
         // Datos de ventas diarias para el gráfico Chart.js (últimos 7 días)
         $dailySales = [];
@@ -135,7 +147,8 @@ class MerchantController extends Controller
             'pendingOrders','totalOrdersCount','deliveredOrders','fulfillmentRate',
             'netIncome','readyToWithdraw','recentOrders',
             'recentReviews','avgRating','totalReviews','aiDiagnostics','academyCourses',
-            'products','dailySales','categoryDistribution','hasServiceProducts'
+            'products','dailySales','categoryDistribution','hasServiceProducts',
+            'pendingReservations','totalReservations','confirmedReservations','recentReservations'
         ));
     }
 

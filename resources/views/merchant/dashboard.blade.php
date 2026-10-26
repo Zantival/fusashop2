@@ -13,7 +13,7 @@
 
 @section('content')
 <div x-data="{ 
-       activeTab: 'global', 
+       activeTab: '{{ request('tab', ($hasServiceProducts && $totalOrdersCount === 0 && $totalReservations > 0 ? 'reservations' : 'global')) }}', 
        selectedPeriod: '30d', 
        courseModalOpen: false, 
        activeCourse: null,
@@ -196,48 +196,66 @@
         @endif
       </button>
 
-      <!-- Tab 3: Reservas para negocios de servicios; pedidos para comercios de productos -->
+            <!-- Tab 3: Pedidos & Envia.com -->
       <button type="button"
-              @click="activeTab = '{{ $hasServiceProducts ? 'reservations' : 'orders' }}'"
-              :class="activeTab === '{{ $hasServiceProducts ? 'reservations' : 'orders' }}' ? 'bg-[#006c47] text-white font-bold shadow-md shadow-[#006c47]/20' : 'bg-surface-container-low text-on-surface-variant font-semibold hover:bg-surface-container-high'"
+              @click="activeTab = 'orders'"
+              :class="activeTab === 'orders' ? 'bg-[#006c47] text-white font-bold shadow-md shadow-[#006c47]/20' : 'bg-surface-container-low text-on-surface-variant font-semibold hover:bg-surface-container-high'"
               class="px-4 py-2.5 rounded-xl text-xs transition-all flex items-center gap-2 shrink-0 cursor-pointer relative">
-        <span class="material-symbols-outlined text-base">{{ $hasServiceProducts ? 'event_available' : 'local_shipping' }}</span>
-        <span>{{ $hasServiceProducts ? 'Tab 3: Reservas de Servicios' : 'Tab 3: Pedidos & Despachos Envia.com' }}</span>
-        @if(!$hasServiceProducts && $pendingOrders > 0)
+        <span class="material-symbols-outlined text-base">local_shipping</span>
+        <span>Tab 3: Pedidos & Despachos Envia.com</span>
+        @if($pendingOrders > 0)
           <span class="px-1.5 py-0.5 rounded-full text-[10px] font-black bg-amber-500 text-white leading-none">
             {{ $pendingOrders }}
           </span>
         @endif
       </button>
 
-      <!-- Tab 4: Finanzas & Banners -->
+      <!-- Tab 4: Reservas de Servicios (Hoteles, Spas, Restaurantes y Turismo) -->
+      <button type="button"
+              @click="activeTab = 'reservations'"
+              :class="activeTab === 'reservations' ? 'bg-[#006c47] text-white font-bold shadow-md shadow-[#006c47]/20' : 'bg-surface-container-low text-on-surface-variant font-semibold hover:bg-surface-container-high'"
+              class="px-4 py-2.5 rounded-xl text-xs transition-all flex items-center gap-2 shrink-0 cursor-pointer relative">
+        <span class="material-symbols-outlined text-base">event_available</span>
+        <span>Tab 4: Reservas de Servicios</span>
+        @if($pendingReservations > 0)
+          <span class="px-1.5 py-0.5 rounded-full text-[10px] font-black bg-amber-500 text-white leading-none animate-pulse">
+            {{ $pendingReservations }}
+          </span>
+        @elseif($totalReservations > 0)
+          <span class="px-1.5 py-0.5 rounded-full text-[10px] font-black bg-slate-200 text-slate-700 leading-none">
+            {{ $totalReservations }}
+          </span>
+        @endif
+      </button>
+
+      <!-- Tab 5: Finanzas & Banners -->
       <button type="button"
               @click="activeTab = 'finances'"
               :class="activeTab === 'finances' ? 'bg-[#006c47] text-white font-bold shadow-md shadow-[#006c47]/20' : 'bg-surface-container-low text-on-surface-variant font-semibold hover:bg-surface-container-high'"
               class="px-4 py-2.5 rounded-xl text-xs transition-all flex items-center gap-2 shrink-0 cursor-pointer">
         <span class="material-symbols-outlined text-base">payments</span>
-        <span>Tab 4: Finanzas, Balance & Pautas Publicitarias</span>
+        <span>Tab 5: Finanzas, Balance & Pautas Publicitarias</span>
       </button>
 
-      <!-- Tab 5: Reseñas & Rating -->
+      <!-- Tab 6: Reseñas & Rating -->
       <button type="button"
               @click="activeTab = 'reviews'"
               :class="activeTab === 'reviews' ? 'bg-[#006c47] text-white font-bold shadow-md shadow-[#006c47]/20' : 'bg-surface-container-low text-on-surface-variant font-semibold hover:bg-surface-container-high'"
               class="px-4 py-2.5 rounded-xl text-xs transition-all flex items-center gap-2 shrink-0 cursor-pointer">
         <span class="material-symbols-outlined text-base">reviews</span>
-        <span>Tab 5: Reseñas & Reputación</span>
+        <span>Tab 6: Reseñas & Reputación</span>
         <span class="px-1.5 py-0.5 rounded-full text-[10px] font-black bg-amber-100 text-amber-800 ml-1">
           ★ {{ $avgRating }}
         </span>
       </button>
 
-      <!-- Tab 6: Academia -->
+      <!-- Tab 7: Academia -->
       <button type="button"
               @click="activeTab = 'academy'"
               :class="activeTab === 'academy' ? 'bg-[#006c47] text-white font-bold shadow-md shadow-[#006c47]/20' : 'bg-surface-container-low text-on-surface-variant font-semibold hover:bg-surface-container-high'"
               class="px-4 py-2.5 rounded-xl text-xs transition-all flex items-center gap-2 shrink-0 cursor-pointer">
         <span class="material-symbols-outlined text-base">school</span>
-        <span>Tab 6: Academia de Formación</span>
+        <span>Tab 7: Academia de Formación</span>
       </button>
     </div>
 
@@ -247,6 +265,28 @@
   <!-- TAB 1: VISIÓN GENERAL, VENTAS & DIAGNÓSTICO IA                            -->
   <!-- ========================================================================= -->
   <div x-show="activeTab === 'global'" class="space-y-6">
+
+    @if($pendingReservations > 0)
+      <div class="p-4 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center shrink-0 shadow-sm animate-pulse">
+            <span class="material-symbols-outlined text-2xl">event_available</span>
+          </div>
+          <div>
+            <h4 class="text-sm font-extrabold text-amber-950">¡Tienes {{ $pendingReservations }} {{ $pendingReservations === 1 ? 'solicitud' : 'solicitudes' }} de reserva pendiente(s) por responder!</h4>
+            <p class="text-xs text-amber-800 mt-0.5">Revisa la disponibilidad de tu hotel, spa, restaurante o servicio y confirma a tus clientes.</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2 shrink-0">
+          <button type="button" @click="activeTab = 'reservations'" class="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs rounded-xl shadow-xs transition-all flex items-center gap-1.5 cursor-pointer">
+            <span class="material-symbols-outlined text-sm">calendar_month</span> Ver Reservas
+          </button>
+          <a href="{{ route('merchant.reservations') }}" class="px-3 py-2 bg-white hover:bg-amber-100/80 border border-amber-300 text-amber-900 font-bold text-xs rounded-xl transition-all">
+            Abrir Módulo
+          </a>
+        </div>
+      </div>
+    @endif
 
     <!-- KPI STRIP (4 TARJETAS CON BADGES COMPARATIVOS IDÉNTICAS AL ANALISTA) -->
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -528,20 +568,6 @@
   <!-- ========================================================================= -->
   <!-- TAB 3: PEDIDOS & LOGÍSTICA ENVIA.COM                                      -->
   <!-- ========================================================================= -->
-  @if($hasServiceProducts)
-  <div x-show="activeTab === 'reservations'" class="space-y-6" style="display: none;">
-    <div class="rounded-2xl border border-emerald-200 bg-white p-6 shadow-sm">
-      <div class="flex items-start gap-4">
-        <span class="material-symbols-outlined rounded-xl bg-emerald-50 p-3 text-emerald-700">event_available</span>
-        <div class="flex-1">
-          <h2 class="text-xl font-extrabold text-slate-900">Reservas de tus servicios</h2>
-          <p class="mt-1 text-sm text-slate-600">Consulta quién reservó, revisa fechas y horarios, y confirma o responde cada solicitud.</p>
-          <a href="{{ route('merchant.reservations') }}" class="mt-4 inline-flex items-center gap-2 rounded-xl bg-emerald-700 px-4 py-3 text-sm font-bold text-white"><span class="material-symbols-outlined text-base">calendar_month</span> Ver solicitudes de reserva</a>
-        </div>
-      </div>
-    </div>
-  </div>
-  @else
   <div x-show="activeTab === 'orders'" class="space-y-6" style="display: none;">
     <div class="bg-white rounded-2xl p-6 shadow-[0_12px_32px_rgba(27,28,28,.06)] border border-outline-variant/20 space-y-4">
       
@@ -679,10 +705,209 @@
 
     </div>
   </div>
-  @endif
 
   <!-- ========================================================================= -->
-  <!-- TAB 4: FINANZAS, BALANCE & PAUTAS PUBLICITARIAS                           -->
+  <!-- TAB 4: RESERVAS DE SERVICIOS (HOTELES, SPAS, RESTAURANTES Y TURISMO)       -->
+  <!-- ========================================================================= -->
+  <div x-show="activeTab === 'reservations'" class="space-y-6" style="display: none;">
+    <div class="bg-white rounded-2xl p-6 shadow-[0_12px_32px_rgba(27,28,28,.06)] border border-outline-variant/20 space-y-5">
+      
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-outline-variant/15">
+        <div>
+          <div class="flex items-center gap-2">
+            <h2 class="text-xl font-['Manrope'] font-extrabold text-on-background flex items-center gap-2">
+              <span class="material-symbols-outlined text-emerald-700">event_available</span> Reservas de Servicios & Experiencias
+            </h2>
+            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-[#006c47] border border-emerald-200 uppercase tracking-wider flex items-center gap-1">
+              Hoteles · Spas · Restaurantes · Turismo
+            </span>
+          </div>
+          <p class="text-xs text-on-surface-variant mt-1">
+            Supervisa las solicitudes de reserva de tus clientes. Confirma disponibilidad, asigna fechas y coordina la prestación de tus servicios.
+          </p>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <a href="{{ route('merchant.reservations') }}" class="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs rounded-xl flex items-center gap-1.5 transition-all shadow-xs">
+            <span class="material-symbols-outlined text-sm">calendar_month</span> Ver Módulo Completo
+          </a>
+        </div>
+      </div>
+
+      <!-- Resumen rápido de reservas -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div class="bg-amber-50/80 border border-amber-200/80 rounded-xl p-3.5 flex items-center justify-between">
+          <div>
+            <p class="text-[11px] font-bold text-amber-900 uppercase tracking-wider">Pendientes de Confirmar</p>
+            <p class="text-2xl font-black text-amber-700 mt-0.5">{{ $pendingReservations }}</p>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center">
+            <span class="material-symbols-outlined text-xl">hourglass_top</span>
+          </div>
+        </div>
+
+        <div class="bg-emerald-50/80 border border-emerald-200/80 rounded-xl p-3.5 flex items-center justify-between">
+          <div>
+            <p class="text-[11px] font-bold text-emerald-900 uppercase tracking-wider">Confirmadas / Agendadas</p>
+            <p class="text-2xl font-black text-emerald-700 mt-0.5">{{ $confirmedReservations }}</p>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center">
+            <span class="material-symbols-outlined text-xl">check_circle</span>
+          </div>
+        </div>
+
+        <div class="bg-slate-50 border border-slate-200 rounded-xl p-3.5 flex items-center justify-between">
+          <div>
+            <p class="text-[11px] font-bold text-slate-700 uppercase tracking-wider">Total Histórico Recibidas</p>
+            <p class="text-2xl font-black text-slate-900 mt-0.5">{{ $totalReservations }}</p>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-slate-200 text-slate-700 flex items-center justify-center">
+            <span class="material-symbols-outlined text-xl">receipt_long</span>
+          </div>
+        </div>
+      </div>
+
+      @if($recentReservations->isEmpty())
+        <div class="text-center py-12 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200 space-y-3">
+          <span class="material-symbols-outlined text-5xl text-emerald-400">event_available</span>
+          <div>
+            <p class="text-sm font-bold text-slate-800">Aún no tienes solicitudes de reserva registradas</p>
+            <p class="text-xs text-slate-500 mt-1 max-w-md mx-auto">Cuando tus clientes soliciten reservas para habitaciones de hotel, citas de spa, mesas de restaurante o tours, aparecerán aquí para que las confirmes en tiempo real.</p>
+          </div>
+          <a href="{{ route('merchant.products.create') }}" class="inline-flex items-center gap-1.5 px-4 py-2 bg-[#006c47] hover:bg-[#10B981] text-white font-bold text-xs rounded-xl shadow-xs transition-all">
+            <span class="material-symbols-outlined text-sm">add_circle</span> Publicar Nuevo Servicio o Reserva
+          </a>
+        </div>
+      @else
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse responsive-stack-table">
+            <thead>
+              <tr class="border-b border-outline-variant/20 text-[11px] font-bold text-on-surface-variant uppercase tracking-wider">
+                <th class="py-3 px-4">Referencia</th>
+                <th class="py-3 px-4">Cliente</th>
+                <th class="py-3 px-4">Servicio Solicitado</th>
+                <th class="py-3 px-4">Fecha & Hora</th>
+                <th class="py-3 px-4">Personas / Opciones</th>
+                <th class="py-3 px-4">Estado</th>
+                <th class="py-3 px-4 text-right">Acción</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-outline-variant/10 text-xs">
+              @foreach($recentReservations as $rsv)
+                @php
+                  $statusClasses = [
+                    'pending'   => 'bg-amber-100 text-amber-800 border-amber-200',
+                    'confirmed' => 'bg-emerald-100 text-emerald-800 border-emerald-200',
+                    'rejected'  => 'bg-rose-100 text-rose-800 border-rose-200',
+                    'cancelled' => 'bg-slate-100 text-slate-700 border-slate-200',
+                    'completed' => 'bg-blue-100 text-blue-800 border-blue-200',
+                  ][$rsv->status] ?? 'bg-slate-100 text-slate-700 border-slate-200';
+                  $statusLabels = [
+                    'pending'   => 'Pendiente',
+                    'confirmed' => 'Confirmada',
+                    'rejected'  => 'No disponible',
+                    'cancelled' => 'Cancelada cliente',
+                    'completed' => 'Completada',
+                  ][$rsv->status] ?? ucfirst($rsv->status);
+                @endphp
+                <tr class="hover:bg-slate-50 transition-colors">
+                  <td class="py-3.5 px-4 font-mono font-bold text-slate-900" data-label="Referencia">
+                    <span class="px-2 py-0.5 rounded bg-slate-100 text-slate-800 font-mono text-[11px] font-bold">{{ $rsv->reference }}</span>
+                    <span class="block text-[10px] text-slate-400 font-normal mt-1">{{ $rsv->created_at->diffForHumans() }}</span>
+                  </td>
+
+                  <td class="py-3.5 px-4" data-label="Cliente">
+                    <div class="flex items-center gap-2">
+                      <div class="w-8 h-8 rounded-full bg-emerald-100 text-emerald-800 font-bold text-xs flex items-center justify-center shrink-0">
+                        {{ strtoupper(substr($rsv->customer->name ?? 'C', 0, 1)) }}
+                      </div>
+                      <div class="min-w-0">
+                        <p class="font-bold text-slate-900 truncate">{{ $rsv->customer->name ?? 'Cliente' }}</p>
+                        <p class="text-[11px] text-slate-500 truncate">{{ $rsv->customer->email ?? '' }}</p>
+                        @if($rsv->customer?->phone)
+                          <p class="text-[10px] text-emerald-700 font-bold flex items-center gap-1 mt-0.5">
+                            <span class="material-symbols-outlined text-[12px]">call</span> {{ $rsv->customer->phone }}
+                          </p>
+                        @endif
+                      </div>
+                    </div>
+                  </td>
+
+                  <td class="py-3.5 px-4" data-label="Servicio">
+                    <p class="font-bold text-slate-900">{{ $rsv->product->name ?? 'Servicio' }}</p>
+                    <p class="text-[11px] text-slate-500">Cantidad: {{ $rsv->quantity }}</p>
+                    @if($rsv->quoted_price !== null)
+                      <p class="text-[11px] font-extrabold text-[#006c47]">${{ number_format($rsv->quoted_price, 0, ',', '.') }} COP</p>
+                    @endif
+                  </td>
+
+                  <td class="py-3.5 px-4" data-label="Fecha & Hora">
+                    <div class="space-y-0.5">
+                      <span class="font-bold text-slate-800 flex items-center gap-1">
+                        <span class="material-symbols-outlined text-xs text-emerald-600">calendar_today</span>
+                        {{ $rsv->preferred_date ? $rsv->preferred_date->format('d/m/Y') : 'Por convenir' }}
+                      </span>
+                      <span class="text-[11px] text-slate-600 flex items-center gap-1">
+                        <span class="material-symbols-outlined text-xs text-emerald-600">schedule</span>
+                        {{ $rsv->preferred_time ? substr((string) $rsv->preferred_time, 0, 5) : 'Por convenir' }}
+                      </span>
+                    </div>
+                  </td>
+
+                  <td class="py-3.5 px-4" data-label="Personas / Opciones">
+                    <div class="space-y-1">
+                      @if($rsv->party_size)
+                        <span class="inline-block px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-blue-50 text-blue-800 border border-blue-100">
+                          👥 {{ $rsv->party_size }} {{ $rsv->party_size === 1 ? 'persona' : 'personas' }}
+                        </span>
+                      @endif
+                      @if($rsv->selected_options)
+                        <p class="text-[10px] text-slate-600 line-clamp-2">
+                          {{ collect($rsv->selected_options)->map(fn($v,$k) => $k.': '.$v)->implode(' · ') }}
+                        </p>
+                      @endif
+                      @if($rsv->customer_notes)
+                        <p class="text-[10px] text-slate-500 italic line-clamp-2 bg-slate-50 rounded p-1 border border-slate-100" title="{{ $rsv->customer_notes }}">
+                          "{{ $rsv->customer_notes }}"
+                        </p>
+                      @endif
+                    </div>
+                  </td>
+
+                  <td class="py-3.5 px-4" data-label="Estado">
+                    <span class="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border {{ $statusClasses }}">
+                      {{ $statusLabels }}
+                    </span>
+                  </td>
+
+                  <td class="py-3.5 px-4 text-right" data-label="Acción">
+                    <div class="flex items-center justify-end gap-1.5">
+                      @if($rsv->status === 'pending')
+                        <form method="POST" action="{{ route('merchant.reservations.update', $rsv) }}" class="inline">
+                          @csrf @method('PATCH')
+                          <input type="hidden" name="status" value="confirmed">
+                          <button type="submit" class="px-2.5 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-[11px] rounded-lg transition-all flex items-center gap-1 shadow-2xs cursor-pointer" title="Confirmar esta reserva">
+                            <span class="material-symbols-outlined text-[13px]">check</span> Confirmar
+                          </button>
+                        </form>
+                      @endif
+                      <a href="{{ route('merchant.reservations') }}" class="p-1.5 text-slate-500 hover:text-[#006c47] hover:bg-emerald-50 rounded-lg transition-all" title="Gestionar en detalle">
+                        <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+                      </a>
+                    </div>
+                  </td>
+                </tr>
+              @endforeach
+            </tbody>
+          </table>
+        </div>
+      @endif
+
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- TAB 5: FINANZAS, BALANCE & PAUTAS PUBLICITARIAS                           -->
   <!-- ========================================================================= -->
   <div x-show="activeTab === 'finances'" class="space-y-6" style="display: none;">
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -728,7 +953,7 @@
   </div>
 
   <!-- ========================================================================= -->
-  <!-- TAB 5: RESEÑAS & SATISFACCIÓN                                             -->
+  <!-- TAB 6: RESEÑAS & REPUTACIÓN                                               -->
   <!-- ========================================================================= -->
   <div x-show="activeTab === 'reviews'" class="space-y-6" style="display: none;">
     <div class="bg-white rounded-2xl p-6 shadow-[0_12px_32px_rgba(27,28,28,.06)] border border-outline-variant/20 space-y-4">
@@ -768,7 +993,7 @@
   </div>
 
   <!-- ========================================================================= -->
-  <!-- TAB 6: ACADEMIA DE CAPACITACIÓN                                           -->
+  <!-- TAB 7: ACADEMIA DE CAPACITACIÓN                                           -->
   <!-- ========================================================================= -->
   <div x-show="activeTab === 'academy'" class="space-y-6" style="display: none;">
     <div class="bg-white rounded-2xl p-6 shadow-[0_12px_32px_rgba(27,28,28,.06)] border border-outline-variant/20 space-y-4">

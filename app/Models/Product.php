@@ -77,7 +77,7 @@ class Product extends Model
         }
 
         $cat = mb_strtolower($this->category ?? '', 'UTF-8');
-        foreach (['servicio', 'glamping', 'turismo', 'hotel', 'alojamiento', 'restaurante', 'gastronom', 'cafeter', 'reparación', 'clases', 'consultoría', 'transporte', 'evento', 'experiencia', 'spa'] as $kw) {
+        foreach (['servicio', 'glamping', 'turismo', 'hotel', 'hostal', 'hospedaje', 'alojamiento', 'cabaña', 'cabana', 'finca', 'restaurante', 'gastronom', 'cafeter', 'bar', 'reparación', 'clases', 'consultoría', 'transporte', 'evento', 'experiencia', 'spa', 'estética', 'estetica', 'bienestar', 'masaje', 'recreación', 'recreacion', 'tour'] as $kw) {
             if (str_contains($cat, $kw)) {
                 return true;
             }

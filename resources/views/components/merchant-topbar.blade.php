@@ -7,6 +7,11 @@
       $q->where('merchant_id', $merchantUser->id);
   })->whereIn('status', ['pending', 'processing'])->count() : 0;
 
+  $pendingReservationsCount = $merchantUser ? \App\Models\Reservation::where('merchant_id', $merchantUser->id)
+      ->where('status', 'pending')->count() : 0;
+
+  $reservationsCount = $merchantUser ? \App\Models\Reservation::where('merchant_id', $merchantUser->id)->count() : 0;
+
   $lowStockCount = $merchantUser ? \App\Models\Product::where('merchant_id', $merchantUser->id)
       ->where('stock', '<=', 5)
       ->where('stock', '>', 0)
@@ -45,7 +50,7 @@
       ->count();
   // El globo de Alertas representa solo elementos por ver. Los pedidos,
   // el stock y las reseñas conservan sus contadores operativos independientes.
-  $totalAlertsCount = $unreadDirectMessages->count() + $unreadMerchantNotifs;
+  $totalAlertsCount = $unreadDirectMessages->count() + $unreadMerchantNotifs + $pendingReservationsCount;
 @endphp
 
 <!-- Barra móvil superior para Comerciante (solo en móviles < 768px) -->
@@ -179,6 +184,25 @@
         </a>
       </div>
 
+      <!-- Atajo directo Reservas de Servicios -->
+      <a href="{{ route('merchant.reservations') }}" 
+         class="w-full px-3 py-2 rounded-xl border text-xs font-extrabold flex items-center justify-between transition-all shadow-2xs {{ request()->routeIs('merchant.reservations*') ? 'bg-[#006c47] text-white border-[#006c47]' : 'bg-white text-slate-700 border-slate-200 hover:border-[#10B981] hover:text-[#006c47]' }}"
+         title="Gestión de Solicitudes de Reserva">
+        <span class="flex items-center gap-1.5">
+          <span class="material-symbols-outlined text-[17px] {{ request()->routeIs('merchant.reservations*') ? 'text-white' : 'text-[#006c47]' }}">event_available</span>
+          <span>Reservas de Servicios</span>
+        </span>
+        @if($pendingReservationsCount > 0)
+          <span class="px-1.5 py-0.5 rounded-full text-[10px] font-black leading-none bg-amber-500 text-white animate-pulse">
+            {{ $pendingReservationsCount }}
+          </span>
+        @elseif($reservationsCount > 0)
+          <span class="px-1.5 py-0.5 rounded-full text-[10px] font-black leading-none bg-slate-100 text-slate-600">
+            {{ $reservationsCount }}
+          </span>
+        @endif
+      </a>
+
       <!-- Botón Fusabot Negocios (Estilizado, Pequeño y Redondito) -->
       <button id="merchant-fusabot-launcher" type="button" data-fusabot-open="true" onclick="if(window.setFusaBotOpen){window.setFusaBotOpen(true);}else{const m=document.getElementById('fusabot-modal');if(m){m.style.setProperty('display','flex','important');m.classList.remove('hidden');}}" class="fusabot-launcher-btn w-full py-1.5 px-3 rounded-full text-white text-xs font-extrabold flex items-center justify-between shadow-[0_3px_12px_rgba(16,185,129,0.28)] hover:shadow-[0_4px_16px_rgba(16,185,129,0.38)] hover:scale-[1.01] active:scale-98 transition-all duration-200 cursor-pointer border border-emerald-400/40 bg-gradient-to-r from-[#006c47] via-[#10B981] to-[#047857] group"
               title="Abrir Asistente FusaBot IA">
@@ -204,6 +228,10 @@
         </div>
 
         <div class="p-2 bg-emerald-50/40 border-b border-slate-100 space-y-1">
+          <a href="{{ route('merchant.reservations') }}" class="p-1.5 rounded-lg bg-white border border-slate-200/80 hover:border-[#10B981] flex items-center justify-between transition-all">
+            <span class="font-bold text-slate-700 flex items-center gap-1 text-[11px]"><span class="material-symbols-outlined text-xs text-emerald-600">event_available</span> Reservas por Confirmar</span>
+            <span class="px-1.5 py-0.5 rounded-full text-[10px] font-black {{ $pendingReservationsCount > 0 ? 'bg-amber-100 text-amber-800 animate-pulse' : 'bg-slate-100 text-slate-500' }}">{{ $pendingReservationsCount }}</span>
+          </a>
           <a href="{{ route('merchant.orders') }}" class="p-1.5 rounded-lg bg-white border border-slate-200/80 hover:border-[#10B981] flex items-center justify-between transition-all">
             <span class="font-bold text-slate-700 flex items-center gap-1 text-[11px]"><span class="material-symbols-outlined text-xs text-amber-600">hourglass_top</span> Pedidos por Despachar</span>
             <span class="px-1.5 py-0.5 rounded-full text-[10px] font-black {{ $pendingOrdersCount > 0 ? 'bg-amber-100 text-amber-800' : 'bg-slate-100 text-slate-500' }}">{{ $pendingOrdersCount }}</span>
@@ -312,6 +340,9 @@
         <a href="{{ route('merchant.products.create') }}" class="flex items-center gap-2 px-2.5 py-2 rounded-xl hover:bg-emerald-50 text-slate-700 hover:text-[#006c47] font-bold">
           <span class="material-symbols-outlined text-base text-[#10B981]">add_circle</span> Nuevo Producto
         </a>
+        <a href="{{ route('merchant.reservations') }}" class="flex items-center gap-2 px-2.5 py-2 rounded-xl hover:bg-emerald-50 text-slate-700 hover:text-[#006c47] font-bold">
+          <span class="material-symbols-outlined text-base text-[#10B981]">event_available</span> Ver Solicitudes de Reserva
+        </a>
         <a href="{{ route('merchant.inventory') }}" class="flex items-center gap-2 px-2.5 py-2 rounded-xl hover:bg-emerald-50 text-slate-700 hover:text-[#006c47] font-bold">
           <span class="material-symbols-outlined text-base text-[#10B981]">warehouse</span> Ajustar Stock Rápido
         </a>
@@ -374,6 +405,20 @@
           </span>
           @if($pendingOrdersCount > 0)
             <span class="px-1.5 py-0.5 rounded-full text-[10px] font-black bg-amber-100 text-amber-800">{{ $pendingOrdersCount }}</span>
+          @endif
+        </a>
+
+        <!-- Reservas de Servicios -->
+        <a href="{{ route('merchant.reservations') }}" 
+           class="px-3 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-between {{ request()->routeIs('merchant.reservations*') ? 'bg-emerald-100 text-[#006c47] font-extrabold shadow-2xs' : 'text-slate-600 hover:text-[#006c47] hover:bg-slate-100' }}">
+          <span class="flex items-center gap-2.5">
+            <span class="material-symbols-outlined text-[18px]">event_available</span>
+            <span>Reservas de Servicios</span>
+          </span>
+          @if($pendingReservationsCount > 0)
+            <span class="px-1.5 py-0.5 rounded-full text-[10px] font-black bg-amber-500 text-white animate-pulse" title="Reservas pendientes por responder">{{ $pendingReservationsCount }}</span>
+          @elseif($reservationsCount > 0)
+            <span class="px-1.5 py-0.5 rounded-full text-[10px] font-black bg-slate-100 text-slate-700">{{ $reservationsCount }}</span>
           @endif
         </a>
 

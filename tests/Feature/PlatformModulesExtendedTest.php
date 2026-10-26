@@ -9,6 +9,10 @@ use App\Models\Product;
 use App\Models\Reservation;
 use App\Models\ShippingAddress;
 use App\Models\User;
+use App\Notifications\NewReservationNotification;
+use App\Notifications\ReservationCancelledNotification;
+use App\Notifications\ReservationStatusNotification;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
@@ -204,6 +208,8 @@ class PlatformModulesExtendedTest extends TestCase
 
     public function test_consumer_and_merchant_reservation_lifecycle(): void
     {
+        Notification::fake();
+
         // Producto tipo servicio / glamping
         $product = Product::create([
             'merchant_id' => $this->merchant->id,
@@ -215,7 +221,7 @@ class PlatformModulesExtendedTest extends TestCase
             'is_active' => true,
         ]);
 
-        // 1. Consumidor solicita reserva
+        // 1. Consumidor solicita reserva y se notifica al comerciante
         $storeResponse = $this->actingAs($this->consumer)->post(route('consumer.reservations.store'), [
             'product_id' => $product->id,
             'quantity' => 1,
@@ -230,6 +236,10 @@ class PlatformModulesExtendedTest extends TestCase
         $this->assertNotNull($reservation);
         $this->assertSame('pending', $reservation->status);
 
+        Notification::assertSentTo($this->merchant, NewReservationNotification::class, function ($n) use ($reservation) {
+            return $n->reservation->id === $reservation->id;
+        });
+
         // 2. Consumidor consulta sus reservas
         $consumerList = $this->actingAs($this->consumer)->get(route('consumer.reservations'));
         $consumerList->assertOk();
@@ -240,7 +250,7 @@ class PlatformModulesExtendedTest extends TestCase
         $merchantList->assertOk();
         $merchantList->assertSee('Celebración de aniversario');
 
-        // 4. Comerciante confirma la reserva
+        // 4. Comerciante confirma la reserva y se notifica al consumidor
         $updateResponse = $this->actingAs($this->merchant)->patch(route('merchant.reservations.update', $reservation->id), [
             'status' => 'confirmed',
             'merchant_notes' => 'Reserva confirmada. Los esperamos a partir de las 3:00 PM.',
@@ -248,9 +258,71 @@ class PlatformModulesExtendedTest extends TestCase
         $updateResponse->assertRedirect();
         $this->assertSame('confirmed', $reservation->fresh()->status);
 
-        // 5. Consumidor cancela la reserva
+        Notification::assertSentTo($this->consumer, ReservationStatusNotification::class, function ($n) use ($reservation) {
+            return $n->reservation->id === $reservation->id && $n->reservation->status === 'confirmed';
+        });
+
+        // 5. Consumidor cancela la reserva y se notifica al comerciante
         $cancelResponse = $this->actingAs($this->consumer)->patch(route('consumer.reservations.cancel', $reservation->id));
         $cancelResponse->assertRedirect();
         $this->assertSame('cancelled', $reservation->fresh()->status);
+
+        Notification::assertSentTo($this->merchant, ReservationCancelledNotification::class, function ($n) use ($reservation) {
+            return $n->reservation->id === $reservation->id;
+        });
+    }
+
+    public function test_spa_and_hotel_services_show_in_merchant_panel_and_dashboard(): void
+    {
+        Notification::fake();
+
+        // Crear perfil comercial de Spa & Estética
+        CompanyProfile::updateOrCreate(['merchant_id' => $this->merchant->id], [
+            'company_name' => 'Sumapaz Wellness & Spa',
+            'business_type' => 'Spa y Centro de Estética',
+            'phone' => '3101234567',
+            'kyc_status' => 'approved',
+        ]);
+
+        $spaProduct = Product::create([
+            'merchant_id' => $this->merchant->id,
+            'name' => 'Circuito Hidrotermal y Masaje con Piedras Volcánicas',
+            'slug' => 'circuito-hidrotermal-masaje',
+            'category' => 'Spa, Estética y Bienestar',
+            'type' => 'service',
+            'price' => 120000,
+            'stock' => 10,
+            'is_active' => true,
+        ]);
+
+        $this->assertTrue($spaProduct->isService());
+        $this->assertTrue($spaProduct->isReservationOnly());
+
+        // Consumidor solicita reserva de spa
+        $resp = $this->actingAs($this->consumer)->post(route('consumer.reservations.store'), [
+            'product_id' => $spaProduct->id,
+            'quantity' => 1,
+            'party_size' => 2,
+            'preferred_date' => now()->addDays(3)->format('Y-m-d'),
+            'preferred_time' => '14:30',
+            'customer_notes' => 'Queremos cabina doble para pareja.',
+        ]);
+        $resp->assertRedirect(route('consumer.reservations'));
+
+        $rsv = Reservation::where('product_id', $spaProduct->id)->first();
+        $this->assertNotNull($rsv);
+
+        // Dashboard del comerciante muestra la pestaña de reservas y la reserva recibida
+        $dash = $this->actingAs($this->merchant)->get(route('merchant.dashboard'));
+        $dash->assertOk();
+        $dash->assertSee('Tab 4: Reservas de Servicios');
+        $dash->assertSee($rsv->reference);
+        $dash->assertSee('Circuito Hidrotermal');
+
+        // Módulo de reservas del comerciante
+        $rsvView = $this->actingAs($this->merchant)->get(route('merchant.reservations'));
+        $rsvView->assertOk();
+        $rsvView->assertSee($rsv->reference);
+        $rsvView->assertSee('Queremos cabina doble para pareja');
     }
 }

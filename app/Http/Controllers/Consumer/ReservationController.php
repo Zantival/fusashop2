@@ -5,8 +5,11 @@ namespace App\Http\Controllers\Consumer;
 use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Models\Reservation;
+use App\Notifications\NewReservationNotification;
+use App\Notifications\ReservationCancelledNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class ReservationController extends Controller
@@ -19,7 +22,7 @@ class ReservationController extends Controller
             'options' => ['nullable', 'array'],
             'options.*' => ['nullable', 'string', 'max:120'],
             'preferred_date' => ['nullable', 'date', 'after_or_equal:today'],
-            'preferred_time' => ['nullable', 'date_format:H:i'],
+            'preferred_time' => ['nullable', 'regex:/^([01]?[0-9]|2[0-3]):[0-5][0-9](:[0-5][0-9])?$/'],
             'party_size' => ['nullable', 'integer', 'min:1', 'max:100'],
             'customer_notes' => ['nullable', 'string', 'max:1500'],
         ]);
@@ -34,6 +37,8 @@ class ReservationController extends Controller
             abort_if($data['quantity'] > max(0, (int) $variant['stock'] - (int) ($variant['reserved_stock'] ?? 0)), 422, 'No hay disponibilidad suficiente para esta opción.');
         }
 
+        $preferredTime = !empty($data['preferred_time']) ? substr((string) $data['preferred_time'], 0, 5) : null;
+
         $reservation = Reservation::create([
             'reference' => 'RSV-' . strtoupper(Str::ulid()->toBase32()),
             'user_id' => Auth::id(),
@@ -43,11 +48,17 @@ class ReservationController extends Controller
             'selected_options' => $selectedOptions,
             'quoted_price' => $product->priceForOptions($selectedOptions),
             'preferred_date' => $data['preferred_date'] ?? null,
-            'preferred_time' => $data['preferred_time'] ?? null,
+            'preferred_time' => $preferredTime,
             'party_size' => $data['party_size'] ?? null,
             'customer_notes' => isset($data['customer_notes']) ? strip_tags($data['customer_notes']) : null,
             'status' => 'pending',
         ]);
+
+        try {
+            $product->merchant?->notify(new NewReservationNotification($reservation));
+        } catch (\Throwable $e) {
+            Log::warning('Error notificando al comerciante sobre nueva reserva: ' . $e->getMessage());
+        }
 
         if ($request->expectsJson()) {
             return response()->json([
@@ -64,6 +75,12 @@ class ReservationController extends Controller
 
     public function index()
     {
+        if (Auth::check()) {
+            Auth::user()->unreadNotifications
+                ->filter(fn($n) => in_array($n->data['type'] ?? '', ['reservation_status'], true))
+                ->each->markAsRead();
+        }
+
         $reservations = Reservation::where('user_id', Auth::id())
             ->with(['product.merchant.companyProfile'])
             ->latest()
@@ -78,6 +95,12 @@ class ReservationController extends Controller
         abort_unless(in_array($reservation->status, ['pending', 'confirmed'], true), 409, 'Esta reserva ya no se puede cancelar.');
 
         $reservation->update(['status' => 'cancelled']);
+
+        try {
+            $reservation->merchant?->notify(new ReservationCancelledNotification($reservation));
+        } catch (\Throwable $e) {
+            Log::warning('Error notificando al comerciante sobre cancelación de reserva: ' . $e->getMessage());
+        }
 
         return back()->with('success', 'La solicitud de reserva fue cancelada.');
     }

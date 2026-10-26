@@ -482,11 +482,11 @@ document.addEventListener('click', function(e) {
                 <a href="{{ route('merchant.products') }}" class="flex items-center gap-2.5 px-3 py-2 text-slate-700 hover:bg-slate-100 rounded-xl font-semibold transition-colors">
                   <span class="material-symbols-outlined text-base text-slate-500">inventory_2</span> Catálogo de Productos
                 </a>
-                @unless(auth()->user()->products()->where('type', 'service')->exists())
+
                 <a href="{{ route('merchant.orders') }}" class="flex items-center gap-2.5 px-3 py-2 text-slate-700 hover:bg-slate-100 rounded-xl font-semibold transition-colors">
                   <span class="material-symbols-outlined text-base text-slate-500">local_shipping</span> Gestión de Guías Envia
                 </a>
-                @endunless
+
                 <a href="{{ route('merchant.reservations') }}" class="flex items-center gap-2.5 px-3 py-2 text-slate-700 hover:bg-slate-100 rounded-xl font-semibold transition-colors">
                   <span class="material-symbols-outlined text-base text-slate-500">event_available</span> Solicitudes de Reserva
                 </a>
@@ -949,11 +949,11 @@ document.addEventListener('click', function(e) {
                 <a href="{{ route('merchant.products') }}" onclick="toggleMobileMenu(false)" class="flex items-center gap-2 py-1.5 text-slate-700 font-semibold">
                   <span class="material-symbols-outlined text-base text-slate-500">inventory_2</span> Catálogo de Productos
                 </a>
-                @unless(auth()->user()->products()->where('type', 'service')->exists())
+
                 <a href="{{ route('merchant.orders') }}" onclick="toggleMobileMenu(false)" class="flex items-center gap-2 py-1.5 text-slate-700 font-semibold">
                   <span class="material-symbols-outlined text-base text-slate-500">local_shipping</span> Gestión de Guías Envia
                 </a>
-                @endunless
+
                 <a href="{{ route('merchant.reservations') }}" onclick="toggleMobileMenu(false)" class="flex items-center gap-2 py-1.5 text-slate-700 font-semibold">
                   <span class="material-symbols-outlined text-base text-slate-500">event_available</span> Solicitudes de Reserva
                 </a>
