@@ -62,7 +62,7 @@
       <!-- Logo -->
       <div class="w-20 h-20 md:w-24 md:h-24 rounded-2xl overflow-hidden border-2 border-surface-container shrink-0">
         @if($profile->logo_path)
-          <img loading="lazy" decoding="async" src="{{ url('files/' . $profile->logo_path) }}" alt="Logo" class="w-full h-full object-cover">
+          <img loading="lazy" decoding="async" src="{{ $profile->logoUrl() }}" alt="Logo de {{ $profile->company_name }}" class="w-full h-full object-cover">
         @else
           <div class="w-full h-full bg-greenhouse-gradient flex items-center justify-center text-white text-3xl font-black">
             {{ strtoupper(substr($profile->company_name, 0, 1)) }}

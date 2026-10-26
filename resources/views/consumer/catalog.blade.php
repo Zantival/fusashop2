@@ -89,7 +89,7 @@
           <a href="{{ route('consumer.merchant.profile', $brand->merchant_id) }}" class="flex items-center gap-2 sm:gap-2.5 p-2 pr-3.5 sm:pr-4 bg-white rounded-xl border border-slate-100 shadow-xs hover:border-emerald-300 hover:shadow-md transition-all group shrink-0">
             <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-slate-50 border border-slate-200 flex items-center justify-center overflow-hidden shrink-0">
               @if($brand->logo_path)
-                <img loading="lazy" decoding="async" src="{{ Storage::url($brand->logo_path) }}" alt="{{ $brand->company_name }}" class="w-full h-full object-cover">
+                <img loading="lazy" decoding="async" src="{{ $brand->logoUrl() }}" alt="{{ $brand->company_name }}" class="w-full h-full object-cover">
               @else
                 <span class="material-symbols-outlined text-slate-400 text-base sm:text-lg group-hover:text-[#10B981] transition-colors">store</span>
               @endif

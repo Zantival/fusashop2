@@ -173,7 +173,7 @@ $specLabels = [
         <div class="flex items-center gap-2 pd-fi" style="--d:.21s">
           <a href="{{ route('consumer.merchant.profile', $product->merchant_id) }}" class="pd-merchant flex-1">
             @if($product->merchant->companyProfile?->logo_path)
-              <img loading="lazy" decoding="async" src="{{ Storage::url($product->merchant->companyProfile->logo_path) }}" alt="Logo de {{ $product->merchant->companyProfile->company_name }}" class="w-10 h-10 rounded-full object-cover">
+              <img loading="lazy" decoding="async" src="{{ $product->merchant->companyProfile->logoUrl() }}" alt="Logo de {{ $product->merchant->companyProfile->company_name }}" class="w-10 h-10 rounded-full object-cover">
             @elseif($product->merchant->avatarUrl())
               <img loading="lazy" decoding="async" src="{{ $product->merchant->avatarUrl() }}" alt="Foto de perfil de {{ $product->merchant->name }}" class="w-10 h-10 rounded-full object-cover">
             @else

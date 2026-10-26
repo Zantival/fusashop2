@@ -59,7 +59,7 @@
         {{-- Logo --}}
         <div class="w-32 h-32 md:w-44 md:h-44 rounded-full border-4 border-white overflow-hidden bg-white shrink-0 -mt-16 md:-mt-22 shadow-lg relative group/logo">
           @if($profile && $profile->logo_path)
-            <img loading="lazy" decoding="async" id="logo-img" src="{{ Storage::url($profile->logo_path) }}" alt="Logo" class="w-full h-full object-cover">
+            <img loading="lazy" decoding="async" id="logo-img" src="{{ $profile->logoUrl() }}" alt="Logo" class="w-full h-full object-cover">
           @else
             <div id="logo-placeholder" class="w-full h-full flex items-center justify-center bg-surface-container">
               <span class="material-symbols-outlined text-5xl text-on-surface-variant">storefront</span>

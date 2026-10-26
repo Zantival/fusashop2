@@ -148,7 +148,7 @@
           <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-3">Logo de la Empresa</label>
           @if($profile?->logo_path)
             <div class="w-20 h-20 rounded-2xl overflow-hidden border border-surface-container mb-3">
-              <img loading="lazy" decoding="async" src="{{ Storage::url($profile->logo_path) }}" class="w-full h-full object-cover">
+              <img loading="lazy" decoding="async" src="{{ $profile->logoUrl() }}" class="w-full h-full object-cover">
             </div>
           @endif
           <input type="file" name="logo" accept="image/*"

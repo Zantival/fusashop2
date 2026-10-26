@@ -53,19 +53,31 @@
       $kycStatus = $u->companyProfile?->kyc_status ?? 'pending';
       $isMerchantVerified = $isMerchantUser && $kycStatus === 'approved';
       $companyName = $u->companyProfile?->company_name;
+      $personAvatarUrl = $u->avatarUrl();
+      $companyLogoUrl = $isMerchantUser ? $u->companyProfile?->logoUrl() : null;
+      $primaryAvatarUrl = $personAvatarUrl ?: $companyLogoUrl;
+      $hasSeparateStoreLogo = $personAvatarUrl && $companyLogoUrl && $personAvatarUrl !== $companyLogoUrl;
     @endphp
     <div class="bg-white rounded-2xl shadow-sm border border-outline-variant/20 overflow-hidden {{ $u->is_blocked ? 'opacity-70' : '' }}">
 
       {{-- Cabecera de la tarjeta --}}
       <div class="flex items-center gap-4 p-4 md:p-5">
         {{-- Avatar --}}
-        @if($u->avatarUrl())
-          <img loading="lazy" decoding="async" src="{{ $u->avatarUrl() }}" alt="{{ $u->name }}" class="w-12 h-12 rounded-full object-cover shrink-0 border-2 border-[#10B981] bg-white">
-        @else
-          <div class="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg shrink-0 {{ $u->is_blocked ? 'bg-gray-400' : 'bg-primary-gradient' }}">
-            {{ strtoupper(substr($u->name,0,1)) }}
-          </div>
-        @endif
+        <div class="relative w-12 h-12 shrink-0">
+          @if($primaryAvatarUrl)
+            <img loading="lazy" decoding="async" src="{{ $primaryAvatarUrl }}" data-fallback="{{ $personAvatarUrl && $companyLogoUrl ? $companyLogoUrl : '' }}" alt="{{ $isMerchantUser && !$personAvatarUrl ? $companyName : $u->name }}" class="w-12 h-12 rounded-full object-cover border-2 border-[#10B981] bg-white" onerror="if(this.dataset.fallback){this.src=this.dataset.fallback;this.dataset.fallback='';}else{this.remove();this.nextElementSibling?.classList.remove('hidden');}">
+            <div class="hidden w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg {{ $u->is_blocked ? 'bg-gray-400' : 'bg-primary-gradient' }}">
+              {{ strtoupper(substr($u->name,0,1)) }}
+            </div>
+          @else
+            <div class="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg {{ $u->is_blocked ? 'bg-gray-400' : 'bg-primary-gradient' }}">
+              {{ strtoupper(substr($u->name,0,1)) }}
+            </div>
+          @endif
+          @if($hasSeparateStoreLogo)
+            <img loading="lazy" decoding="async" src="{{ $companyLogoUrl }}" alt="Logo de {{ $companyName }}" title="{{ $companyName }}" class="absolute -right-1 -bottom-1 w-6 h-6 rounded-full object-cover border-2 border-white bg-white shadow-sm" onerror="this.remove()">
+          @endif
+        </div>
 
         {{-- Info principal --}}
         <div class="flex-1 min-w-0">

@@ -44,7 +44,7 @@
     <div class="flex items-center gap-4">
       <div class="w-14 h-14 rounded-2xl bg-emerald-50 border-2 border-emerald-200 shrink-0 flex items-center justify-center shadow-inner overflow-hidden">
         @if(auth()->user()->companyProfile && auth()->user()->companyProfile->logo_path)
-          <img loading="lazy" decoding="async" src="{{ Storage::url(auth()->user()->companyProfile->logo_path) }}" alt="{{ auth()->user()->companyProfile->company_name }}" class="w-full h-full object-cover">
+          <img loading="lazy" decoding="async" src="{{ auth()->user()->companyProfile->logoUrl() }}" alt="{{ auth()->user()->companyProfile->company_name }}" class="w-full h-full object-cover">
         @else
           <span class="material-symbols-outlined text-3xl text-[#006c47]">storefront</span>
         @endif

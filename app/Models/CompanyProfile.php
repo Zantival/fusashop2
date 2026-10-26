@@ -105,10 +105,24 @@ class CompanyProfile extends Model
         if (!$this->logo_path) {
             return null;
         }
-        if (str_starts_with($this->logo_path, 'http://') || str_starts_with($this->logo_path, 'https://')) {
-            return $this->logo_path;
+        $logo = trim($this->logo_path);
+        if (preg_match('#^https?://#i', $logo)) {
+            return $logo;
         }
-        return asset('storage/' . ltrim($this->logo_path, '/'));
+
+        $path = ltrim(str_replace('\\', '/', $logo), '/');
+        foreach (['public/storage/', 'storage/app/public/', 'storage/', 'public/'] as $prefix) {
+            if (str_starts_with($path, $prefix)) {
+                $path = substr($path, strlen($prefix));
+                break;
+            }
+        }
+
+        if ($path === '' || str_contains($path, '..') || str_contains($path, "\0")) {
+            return null;
+        }
+
+        return route('storage.serve', ['path' => $path]);
     }
 
     public function hasCustomWompi(): bool
