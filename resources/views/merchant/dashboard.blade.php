@@ -2,7 +2,6 @@
 @section('title', 'Panel Ejecutivo Comercial | ' . (auth()->user()->companyProfile->company_name ?? auth()->user()->name) . ' | FusaShop')
 
 @push('styles')
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
   [x-cloak] { display: none !important; }
   .custom-scrollbar::-webkit-scrollbar { width: 5px; height: 5px; }
@@ -97,7 +96,7 @@
       ->first(fn($n) => ($n->data['type'] ?? '') === 'merchant_sales_report');
   @endphp
   @if($latestSalesReportNotif)
-    <a href="{{ route('notifications.open', $latestSalesReportNotif->id) }}" class="bg-emerald-50/90 hover:bg-emerald-100/80 text-slate-900 border border-emerald-300 p-4 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm transition-all group block">
+    <a href="{{ route('notifications.open', $latestSalesReportNotif->id) }}" data-no-ajax class="bg-emerald-50/90 hover:bg-emerald-100/80 text-slate-900 border border-emerald-300 p-4 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm transition-all group block">
       <div class="flex items-center gap-3">
         <div class="w-9 h-9 rounded-xl bg-[#006c47] text-white flex items-center justify-center shrink-0">
           <span class="material-symbols-outlined text-lg">insights</span>
@@ -987,13 +986,26 @@
 
 <!-- SCRIPT DE INICIALIZACIÓN DE GRÁFICOS CHART.JS -->
 <script>
-document.addEventListener('DOMContentLoaded', function() {
+function initializeMerchantCharts() {
+  if (!window.Chart) {
+    let loader = document.getElementById('merchant-chartjs-loader');
+    if (!loader) {
+      loader = document.createElement('script');
+      loader.id = 'merchant-chartjs-loader';
+      loader.src = 'https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js';
+      loader.onload = initializeMerchantCharts;
+      document.head.appendChild(loader);
+    }
+    return;
+  }
+
   const salesLabels = {!! json_encode(array_column($dailySales, 'label')) !!};
   const salesValues = {!! json_encode(array_column($dailySales, 'sales')) !!};
 
   // 1. Gráfico de Tendencia de Ventas (Línea con Gradiente)
   const salesCanvas = document.getElementById('merchantSalesChart');
   if (salesCanvas) {
+    window.Chart.getChart(salesCanvas)?.destroy();
     const ctx = salesCanvas.getContext('2d');
     const gradient = ctx.createLinearGradient(0, 0, 0, 260);
     gradient.addColorStop(0, 'rgba(0, 108, 71, 0.35)');
@@ -1061,6 +1073,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
   const catCanvas = document.getElementById('merchantCategoryChart');
   if (catCanvas && catLabels.length > 0) {
+    window.Chart.getChart(catCanvas)?.destroy();
     new Chart(catCanvas, {
       type: 'doughnut',
       data: {
@@ -1092,6 +1105,12 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     });
   }
-});
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initializeMerchantCharts, { once: true });
+} else {
+  initializeMerchantCharts();
+}
 </script>
 @endsection

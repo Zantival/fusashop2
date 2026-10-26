@@ -5,17 +5,16 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Mail\VerifyEmailCodeMail;
 use App\Models\Cart;
-use App\Models\PasswordResetOfflineRequest;
 use App\Models\User;
 use App\Support\PasswordPolicy;
 use App\Notifications\NewUserNotification;
-use App\Notifications\OfflinePasswordResetRequested;
 use App\Notifications\WelcomeNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Password as PasswordBroker;
 use Illuminate\Support\Str;
 
 class AuthController extends Controller
@@ -256,30 +255,59 @@ class AuthController extends Controller
         };
     }
 
-    public function showOfflinePasswordRequest()
+    public function showPasswordRequest()
     {
         return view('auth.forgot-password');
     }
 
-    public function processOfflinePasswordRequest(Request $request)
+    public function sendPasswordResetLink(Request $request)
     {
-        $request->validate([
-            'email' => ['required', 'email', 'exists:users,email'],
-        ], [
-            'email.exists' => 'No encontramos ninguna cuenta con ese correo electrónico.'
+        $request->validate(['email' => ['required', 'email']]);
+
+        try {
+            PasswordBroker::sendResetLink($request->only('email'));
+        } catch (\Throwable $exception) {
+            Log::error('Password reset email could not be sent.', ['exception' => $exception::class]);
+
+            return back()->withInput($request->only('email'))
+                ->with('error', 'No pudimos enviar el correo en este momento. Revisa la configuración del servicio de correo e inténtalo de nuevo.');
+        }
+        $message = 'Si el correo está asociado a una cuenta, recibirás un enlace para cambiar tu contraseña. Revisa también la carpeta de spam.';
+
+        return back()->with('status', $message);
+    }
+
+    public function showPasswordReset(Request $request, string $token)
+    {
+        return view('auth.reset-password', [
+            'token' => $token,
+            'email' => $request->query('email', ''),
         ]);
+    }
 
-        $user = User::where('email', $request->email)->first();
+    public function resetPassword(Request $request)
+    {
+        $data = $request->validate([
+            'token' => ['required'],
+            'email' => ['required', 'email'],
+            'password' => ['required', 'confirmed', PasswordPolicy::rule()],
+        ], PasswordPolicy::messages());
 
-        PasswordResetOfflineRequest::create([
-            'email' => $request->email,
-        ]);
+        $status = PasswordBroker::reset(
+            $data,
+            function (User $user, string $password): void {
+                $user->forceFill([
+                    'password' => Hash::make($password),
+                    'remember_token' => Str::random(60),
+                ])->save();
+            }
+        );
 
-        $analysts = User::where('role', 'analyst')->get();
-        foreach($analysts as $analyst) {
-            $analyst->notify(new OfflinePasswordResetRequested($user));
+        if ($status === PasswordBroker::PASSWORD_RESET) {
+            return redirect()->route('login')->with('status', 'Tu contraseña se cambió correctamente. Ya puedes iniciar sesión.');
         }
 
-        return back()->with('success', 'Se ha notificado a nuestros analistas. Pronto se pondrán en contacto para restablecer tu contraseña.');
+        return back()->withInput($request->only('email'))
+            ->withErrors(['email' => 'El enlace de recuperación no es válido o venció. Solicita uno nuevo.']);
     }
 }

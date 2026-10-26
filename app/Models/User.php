@@ -6,6 +6,7 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use App\Notifications\PasswordResetLinkNotification;
 use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable implements MustVerifyEmail
@@ -41,6 +42,11 @@ class User extends Authenticatable implements MustVerifyEmail
             'verification_code_expires_at' => now()->addMinutes(30),
         ]);
         return $code;
+    }
+
+    public function sendPasswordResetNotification($token): void
+    {
+        $this->notify(new PasswordResetLinkNotification($token));
     }
 
     public function verifyCode(string $code): bool

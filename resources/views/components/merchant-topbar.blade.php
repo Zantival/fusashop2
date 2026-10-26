@@ -43,7 +43,9 @@
   $unreadMerchantNotifs = $unreadMerchantNotifsAll
       ->reject(fn($n) => isset($n->data['sender_id']) || $n->type === \App\Notifications\NewMessageNotification::class)
       ->count();
-  $totalAlertsCount = $pendingOrdersCount + $lowStockCount + $pendingReviewsCount + $unreadDirectMessages->count() + $unreadMerchantNotifs;
+  // El globo de Alertas representa solo elementos por ver. Los pedidos,
+  // el stock y las reseñas conservan sus contadores operativos independientes.
+  $totalAlertsCount = $unreadDirectMessages->count() + $unreadMerchantNotifs;
 @endphp
 
 <!-- Barra móvil superior para Comerciante (solo en móviles < 768px) -->
@@ -252,6 +254,7 @@
 
             @forelse($unreadMerchantNotifsList as $notif)
               <a href="{{ route('notifications.open', $notif->id) }}"
+                 data-no-ajax
                  class="p-2.5 hover:bg-emerald-50/80 transition-all flex items-start gap-2 bg-emerald-50/30 group cursor-pointer block"
                  title="Haz clic para abrir y ver el mensaje completo">
                 <div class="w-6 h-6 rounded-full bg-emerald-100 text-[#006c47] flex items-center justify-center shrink-0 mt-0.5">

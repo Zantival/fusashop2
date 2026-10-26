@@ -157,6 +157,8 @@
           <input type="number" step="0.1" name="commission_rate" value="{{ $commissionRate ?? 8.0 }}" class="w-12 bg-white border border-emerald-200 rounded px-1.5 py-0.5 text-xs font-black text-slate-800 text-center">
           <span class="font-extrabold text-[#006c47] ml-1" title="Tarifa de banner patrocinado COP">Banner $:</span>
           <input type="number" step="5000" name="banner_fee" value="{{ \App\Models\Setting::bannerFee() }}" class="w-20 bg-white border border-emerald-200 rounded px-1.5 py-0.5 text-xs font-black text-slate-800 text-center">
+          <span class="font-extrabold text-[#006c47] ml-1" title="Tarifa de tarjeta promocional COP">Tarjeta $:</span>
+          <input type="number" step="5000" name="promo_card_fee" value="{{ \App\Models\Setting::promoCardFee() }}" class="w-20 bg-white border border-emerald-200 rounded px-1.5 py-0.5 text-xs font-black text-slate-800 text-center">
           <button type="submit" class="px-2 py-0.5 bg-[#006c47] hover:bg-[#10B981] text-white font-bold rounded-lg text-[11px] transition-colors">Guardar</button>
         </form>
 

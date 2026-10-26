@@ -50,10 +50,10 @@
           <div class="flex items-end justify-between mt-1.5">
             <div>
               @if($p->hasDiscount())
-                <span class="text-[10px] text-slate-400 line-through block leading-none">${{ number_format($p->originalPrice(),0,',','.') }}</span>
-                <span class="font-black text-sm text-[#006c47]">${{ number_format($p->effectivePrice(),0,',','.') }}</span>
+                <span class="text-[10px] text-slate-400 line-through block leading-none">${{ number_format($p->startingListPrice(),0,',','.') }}</span>
+                <span class="font-black text-sm text-[#006c47]">{{ $p->variants ? 'Desde ' : '' }}${{ number_format($p->startingPrice(),0,',','.') }}</span>
               @else
-                <span class="font-bold text-sm" style="color:#006c47">${{ number_format($p->price,0,',','.') }}</span>
+                <span class="font-bold text-sm" style="color:#006c47">{{ $p->variants ? 'Desde ' : '' }}${{ number_format($p->startingPrice(),0,',','.') }}</span>
               @endif
             </div>
             <span class="text-xs text-[#3c4a41]">Stock: <strong class="{{ $p->stock==0?'text-red-600':($p->stock<=5?'text-amber-600':'') }}">{{ $p->stock }}</strong></span>

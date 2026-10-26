@@ -40,8 +40,10 @@ Route::middleware('guest')->group(function () {
     Route::post('/login',   [AuthController::class, 'login'])->name('login.post')->middleware('throttle:5,1');
     Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
     Route::post('/register',[AuthController::class, 'register'])->name('register.post')->middleware('throttle:5,1');
-    Route::get('/forgot-password-offline', [AuthController::class, 'showOfflinePasswordRequest'])->name('password.request.offline');
-    Route::post('/forgot-password-offline', [AuthController::class, 'processOfflinePasswordRequest'])->name('password.offline.post');
+    Route::get('/forgot-password', [AuthController::class, 'showPasswordRequest'])->name('password.request');
+    Route::post('/forgot-password', [AuthController::class, 'sendPasswordResetLink'])->name('password.email')->middleware('throttle:5,1');
+    Route::get('/reset-password/{token}', [AuthController::class, 'showPasswordReset'])->name('password.reset');
+    Route::post('/reset-password', [AuthController::class, 'resetPassword'])->name('password.update')->middleware('throttle:5,1');
     Route::get('/auth/cancel', [\App\Http\Controllers\Auth\SocialAuthController::class, 'cancel'])->name('social.cancel');
     Route::get('/auth/{provider}/redirect', [\App\Http\Controllers\Auth\SocialAuthController::class, 'redirect'])->name('social.redirect');
     Route::get('/auth/{provider}/callback', [\App\Http\Controllers\Auth\SocialAuthController::class, 'callback'])->name('social.callback');

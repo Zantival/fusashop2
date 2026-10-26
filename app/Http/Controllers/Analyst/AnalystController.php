@@ -44,16 +44,19 @@ class AnalystController extends Controller
         $data = $request->validate([
             'commission_rate'        => 'required|numeric|min:0|max:50',
             'banner_fee'             => 'required|integer|min:0|max:5000000',
+            'promo_card_fee'         => 'required|integer|min:0|max:5000000',
             'pqrs_sla_business_days' => 'nullable|integer|min:1|max:60',
         ]);
 
         $before = [
             'commission_rate' => Setting::commissionRate(),
             'banner_fee'      => Setting::bannerFee(),
+            'promo_card_fee'  => Setting::promoCardFee(),
         ];
 
         Setting::setValue('commission_rate', $data['commission_rate'], 'financial');
         Setting::setValue('banner_fee', $data['banner_fee'], 'financial');
+        Setting::setValue('promo_card_fee', $data['promo_card_fee'], 'financial');
         if (!empty($data['pqrs_sla_business_days'])) {
             Setting::setValue('pqrs_sla_business_days', $data['pqrs_sla_business_days'], 'operations');
         }
@@ -583,6 +586,8 @@ class AnalystController extends Controller
             'email'               => $br->user->email ?? '-',
             'amount'              => $br->cost > 0 ? $br->cost : $defaultBannerFee,
             'status'              => $br->status,
+            'payment_status'      => $br->payment_status ?? 'pending',
+            'refund_status'       => $br->refund_status ?? 'not_required',
             'reference'           => $br->payment_proof_path,
             'destination_mode'    => $br->isCorporateDestination() ? 'corporate' : 'custom',
             'destination_badge'   => $br->isCorporateDestination() ? 'Cuenta Corporativa Central' : 'Cuenta Específica Analista',
@@ -621,7 +626,7 @@ class AnalystController extends Controller
             ];
         });
 
-        $totalBannerRevenue = $bannerPayments->where('status', 'approved')->sum('amount');
+        $totalBannerRevenue = $bannerPayments->where('payment_status', 'paid')->sum('amount');
 
         return view('analyst.payments', compact('bannerPayments', 'merchantAccounts', 'totalBannerRevenue', 'commissionRate', 'defaultBannerFee', 'activeBannerPayout'));
     }
@@ -831,6 +836,9 @@ class AnalystController extends Controller
         if ($requestInfo->status !== 'pending') {
             return back()->with('error', 'Esta solicitud ya ha sido procesada.');
         }
+        if ($requestInfo->payment_status !== 'paid') {
+            return back()->with('error', 'No se puede publicar: Wompi aún no ha confirmado el pago.');
+        }
 
         $publishAs = $request->input('publish_as', $requestInfo->target_type === 'promo_card' ? 'promo_card' : 'banner');
 
@@ -955,14 +963,21 @@ class AnalystController extends Controller
     {
         $request->validate(['rejection_reason' => 'required|string|max:500']);
         $requestInfo = BannerRequest::with('user')->findOrFail($id);
+        if ($requestInfo->status !== 'pending') {
+            return back()->with('error', 'Esta solicitud ya ha sido procesada.');
+        }
 
         $requestInfo->update([
             'status'           => 'rejected',
             'rejection_reason' => strip_tags($request->rejection_reason),
+            'refund_status'    => $requestInfo->payment_status === 'paid' ? 'pending' : 'not_required',
         ]);
 
         AdminAuditLog::record('banner_request.rejected', $requestInfo, $request->rejection_reason);
-        return redirect()->route('analyst.banners')->with('success', 'Solicitud de banner rechazada con motivo registrado.');
+        $message = $requestInfo->payment_status === 'paid'
+            ? 'Solicitud rechazada. El pago requiere una devolución manual en Wompi.'
+            : 'Solicitud de banner rechazada con motivo registrado.';
+        return redirect()->route('analyst.banners')->with('success', $message);
     }
 
     public function bannerStore(Request $request)

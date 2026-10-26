@@ -34,7 +34,7 @@
 
     <div class="flex items-center gap-2 flex-wrap">
       @if($user && $user->unreadNotifications->count() > 0)
-      <form action="{{ route('notifications.readAll') }}" method="POST">
+      <form action="{{ route('notifications.readAll') }}" method="POST" data-no-ajax>
         @csrf
         <button type="submit" class="px-4 py-2 bg-emerald-50 hover:bg-emerald-100 text-[#006c47] border border-emerald-200 rounded-xl text-xs font-extrabold flex items-center gap-1.5 transition-colors cursor-pointer shadow-2xs">
           <span class="material-symbols-outlined text-sm">done_all</span>
@@ -117,7 +117,7 @@
         @endphp
 
         <div class="p-4 rounded-2xl border transition-all bg-emerald-50/40 border-emerald-200 hover:border-[#10B981] shadow-2xs flex items-start gap-4 group">
-          <a href="{{ $openUrl }}" class="w-10 h-10 rounded-xl shrink-0 flex items-center justify-center mt-0.5 bg-emerald-100 text-[#006c47] group-hover:bg-[#006c47] group-hover:text-white transition-colors" title="Abrir mensaje">
+          <a href="{{ $openUrl }}" data-no-ajax class="w-10 h-10 rounded-xl shrink-0 flex items-center justify-center mt-0.5 bg-emerald-100 text-[#006c47] group-hover:bg-[#006c47] group-hover:text-white transition-colors" title="Abrir mensaje">
             <span class="material-symbols-outlined text-xl">
               {{ $notification->data['icon'] ?? 'notifications' }}
             </span>
@@ -125,7 +125,7 @@
 
           <div class="flex-1 min-w-0">
             <div class="flex items-start justify-between gap-2">
-              <a href="{{ $openUrl }}" class="font-extrabold text-slate-900 group-hover:text-[#006c47] text-sm hover:underline transition-colors">
+              <a href="{{ $openUrl }}" data-no-ajax class="font-extrabold text-slate-900 group-hover:text-[#006c47] text-sm hover:underline transition-colors">
                 {{ $notification->data['title'] ?? 'Notificación del Sistema' }}
               </a>
               <span class="text-[11px] font-semibold text-slate-400 shrink-0">
@@ -133,12 +133,12 @@
               </span>
             </div>
 
-            <a href="{{ $openUrl }}" class="block text-xs text-slate-600 hover:text-slate-900 mt-1 leading-relaxed">
+            <a href="{{ $openUrl }}" data-no-ajax class="block text-xs text-slate-600 hover:text-slate-900 mt-1 leading-relaxed">
               {{ $notification->data['message'] ?? '' }}
             </a>
 
             <div class="mt-2.5">
-              <a href="{{ $openUrl }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-[#006c47] hover:bg-[#10B981] text-white shadow-2xs transition-colors">
+              <a href="{{ $openUrl }}" data-no-ajax class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-[#006c47] hover:bg-[#10B981] text-white shadow-2xs transition-colors">
                 <span class="material-symbols-outlined text-sm">visibility</span>
                 <span>{{ $isSalesReport ? 'Abrir Reporte de Ventas y Diagnóstico Causal →' : 'Ver Mensaje / Detalle →' }}</span>
               </a>
@@ -146,7 +146,7 @@
           </div>
 
           <div class="shrink-0">
-             <form action="{{ route('notifications.read', $notification->id) }}" method="POST">
+             <form action="{{ route('notifications.read', $notification->id) }}" method="POST" data-no-ajax>
                @csrf
                <button type="submit" class="p-2 text-slate-400 hover:text-[#006c47] hover:bg-emerald-100 rounded-xl transition-colors cursor-pointer" title="Marcar como leída y ocultar">
                  <span class="material-symbols-outlined text-lg">check</span>

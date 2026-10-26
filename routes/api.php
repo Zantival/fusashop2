@@ -7,8 +7,10 @@ use App\Http\Controllers\McpController;
 use App\Http\Controllers\Webhooks\EnviaWebhookController;
 use App\Http\Controllers\Webhooks\WompiWebhookController;
 
-Route::post('/login',    [ApiController::class, 'login']);
-Route::post('/register', [ApiController::class, 'register']);
+Route::post('/login',    [ApiController::class, 'login'])->middleware('throttle:5,1');
+Route::post('/register', [ApiController::class, 'register'])->middleware('throttle:5,1');
+Route::post('/email/verify-code', [ApiController::class, 'verifyEmailCode'])->middleware('throttle:6,1');
+Route::post('/email/resend-code', [ApiController::class, 'resendVerificationCode'])->middleware('throttle:3,1');
 
 Route::get('/products',      [ApiController::class, 'products']);
 Route::get('/products/{id}', [ApiController::class, 'productShow']);

@@ -26,6 +26,13 @@ class ReservationController extends Controller
 
         $product = Product::active()->with('merchant.companyProfile')->findOrFail($data['product_id']);
         abort_unless($product->merchant_id && $product->isReservationOnly(), 422, 'Este artículo no está configurado para reservas.');
+        $selectedOptions = $data['options'] ?? [];
+        abort_unless($product->validOptionSelection($selectedOptions), 422, 'Selecciona una opción válida para cada especificación.');
+        $variant = $product->variantForOptions($selectedOptions);
+        abort_if($product->variants && !$variant, 422, 'La opción seleccionada ya no está disponible.');
+        if ($variant) {
+            abort_if($data['quantity'] > max(0, (int) $variant['stock'] - (int) ($variant['reserved_stock'] ?? 0)), 422, 'No hay disponibilidad suficiente para esta opción.');
+        }
 
         $reservation = Reservation::create([
             'reference' => 'RSV-' . strtoupper(Str::ulid()->toBase32()),
@@ -33,7 +40,8 @@ class ReservationController extends Controller
             'merchant_id' => $product->merchant_id,
             'product_id' => $product->id,
             'quantity' => $data['quantity'],
-            'selected_options' => $data['options'] ?? [],
+            'selected_options' => $selectedOptions,
+            'quoted_price' => $product->priceForOptions($selectedOptions),
             'preferred_date' => $data['preferred_date'] ?? null,
             'preferred_time' => $data['preferred_time'] ?? null,
             'party_size' => $data['party_size'] ?? null,

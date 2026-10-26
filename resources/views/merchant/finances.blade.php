@@ -112,43 +112,45 @@
             <p class="text-on-surface-variant font-medium">¡Todo al día! No tienes productos con stock bajo.</p>
           </div>
         @else
-          <table class="w-full text-left responsive-stack-table">
-            <thead class="bg-surface-container-lowest text-[#3c4a41] text-xs font-bold uppercase">
-              <tr>
-                <th class="px-8 py-4">Producto</th>
-                <th class="px-8 py-4">Stock Actual</th>
-                <th class="px-8 py-4">Estado</th>
-                <th class="px-8 py-4 text-right">Acción</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-outline-variant/20">
-              @foreach($lowStockProducts as $p)
-              <tr class="hover:bg-surface-container-lowest/50 transition-colors">
-                <td class="px-8 py-5" data-label="Producto">
-                  <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-lg overflow-hidden bg-surface-container">
-                       <x-product-image :product="$p" class="w-full h-full object-cover"/>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left responsive-stack-table">
+              <thead class="bg-surface-container-lowest text-[#3c4a41] text-xs font-bold uppercase">
+                <tr>
+                  <th class="px-8 py-4">Producto</th>
+                  <th class="px-8 py-4">Stock Actual</th>
+                  <th class="px-8 py-4">Estado</th>
+                  <th class="px-8 py-4 text-right">Acción</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-outline-variant/20">
+                @foreach($lowStockProducts as $p)
+                <tr class="hover:bg-surface-container-lowest/50 transition-colors">
+                  <td class="px-8 py-5" data-label="Producto">
+                    <div class="flex items-center gap-3">
+                      <div class="w-10 h-10 rounded-lg overflow-hidden bg-surface-container">
+                         <x-product-image :product="$p" class="w-full h-full object-cover"/>
+                      </div>
+                      <span class="font-bold text-[#1b1c1c] text-sm">{{ $p->name }}</span>
                     </div>
-                    <span class="font-bold text-[#1b1c1c] text-sm">{{ $p->name }}</span>
-                  </div>
-                </td>
-                <td class="px-8 py-5" data-label="Stock Actual">
-                  <span class="text-lg font-black {{ $p->stock == 0 ? 'text-error' : 'text-amber-600' }}">{{ $p->stock }}</span>
-                </td>
-                <td class="px-8 py-5" data-label="Estado">
-                  @if($p->stock == 0)
-                    <span class="px-2 py-1 bg-error-container text-error text-[10px] font-black uppercase rounded">Agotado</span>
-                  @else
-                    <span class="px-2 py-1 bg-amber-100 text-amber-700 text-[10px] font-black uppercase rounded">Crítico</span>
-                  @endif
-                </td>
-                <td class="px-8 py-5 text-right" data-label="Acción">
-                  <a href="{{ route('merchant.inventory') }}" class="text-primary font-bold text-sm hover:underline">Reponer</a>
-                </td>
-              </tr>
-              @endforeach
-            </tbody>
-          </table>
+                  </td>
+                  <td class="px-8 py-5" data-label="Stock Actual">
+                    <span class="text-lg font-black {{ $p->stock == 0 ? 'text-error' : 'text-amber-600' }}">{{ $p->stock }}</span>
+                  </td>
+                  <td class="px-8 py-5" data-label="Estado">
+                    @if($p->stock == 0)
+                      <span class="px-2 py-1 bg-error-container text-error text-[10px] font-black uppercase rounded">Agotado</span>
+                    @else
+                      <span class="px-2 py-1 bg-amber-100 text-amber-700 text-[10px] font-black uppercase rounded">Crítico</span>
+                    @endif
+                  </td>
+                  <td class="px-8 py-5 text-right" data-label="Acción">
+                    <a href="{{ route('merchant.inventory') }}" class="text-primary font-bold text-sm hover:underline">Reponer</a>
+                  </td>
+                </tr>
+                @endforeach
+              </tbody>
+            </table>
+          </div>
           @if($lowStockProducts->hasPages())
             <div class="p-4 border-t border-outline-variant/20">
               {{ $lowStockProducts->links() }}

@@ -1,8 +1,8 @@
 @extends('layouts.app')
 @section('title','Checkout')
 @section('content')
-<div class="max-w-5xl mx-auto px-6 py-8">
-  <h1 class="text-3xl font-['Manrope'] font-bold text-on-background mb-8">Finalizar Compra</h1>
+<div class="max-w-5xl mx-auto px-3 sm:px-6 py-4 sm:py-8">
+  <h1 class="text-2xl sm:text-3xl font-['Manrope'] font-bold text-on-background mb-5 sm:mb-8">Finalizar Compra</h1>
 
   @if(session('error'))
     <div class="mb-6 p-4 rounded-xl bg-[#ffdad6] text-[#ba1a1a] text-sm font-semibold">{{ session('error') }}</div>
@@ -13,22 +13,22 @@
     </div>
   @endif
 
-  <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-    <form method="POST" action="{{ route('consumer.checkout.process') }}" id="checkout-form" class="space-y-6">
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
+    <form method="POST" action="{{ route('consumer.checkout.process') }}" id="checkout-form" class="space-y-4 sm:space-y-6">
       @csrf
 
       {{-- 1. Dirección de envío, solo para productos físicos --}}
       @if($requiresShipping)
-      <section class="bg-surface-container-lowest rounded-2xl p-6 shadow-[0_12px_32px_rgba(27,28,28,.06)]">
+      <section class="bg-surface-container-lowest rounded-2xl p-4 sm:p-6 shadow-[0_12px_32px_rgba(27,28,28,.06)]">
         <div class="flex items-center justify-between mb-4">
-          <h2 class="font-['Manrope'] font-bold text-lg">1. Dirección de envío</h2>
-          <a href="{{ route('consumer.addresses') }}" class="text-primary text-sm font-semibold hover:underline">Administrar</a>
+          <h2 class="font-['Manrope'] font-bold text-base sm:text-lg">1. Dirección de envío</h2>
+          <a href="{{ route('consumer.addresses') }}" class="text-primary text-xs sm:text-sm font-semibold hover:underline">Administrar</a>
         </div>
         <div class="space-y-2">
           @foreach($addresses as $addr)
             <label class="flex gap-3 p-3 rounded-xl border border-outline-variant/30 cursor-pointer has-[:checked]:border-primary has-[:checked]:bg-primary/5">
               <input type="radio" name="address_id" value="{{ $addr->id }}" class="mt-1" {{ old('address_id', $addresses->first()->id) == $addr->id ? 'checked' : '' }} required>
-              <span class="text-sm">
+              <span class="text-xs sm:text-sm">
                 <strong>{{ e($addr->label) }}</strong> · {{ e($addr->recipient) }}<br>
                 <span class="text-on-surface-variant">{{ e($addr->fullLine()) }}</span>
               </span>
@@ -38,29 +38,29 @@
       </section>
 
       {{-- 2. Envío --}}
-      <section class="bg-surface-container-lowest rounded-2xl p-6 shadow-[0_12px_32px_rgba(27,28,28,.06)]">
-        <h2 class="font-['Manrope'] font-bold text-lg mb-4">2. Envío de productos físicos</h2>
-        <div id="rates" class="space-y-2 text-sm text-on-surface-variant">Cotizando envío…</div>
-        <button type="button" id="requote" class="mt-3 text-primary text-sm font-semibold hover:underline">Volver a cotizar</button>
+      <section class="bg-surface-container-lowest rounded-2xl p-4 sm:p-6 shadow-[0_12px_32px_rgba(27,28,28,.06)]">
+        <h2 class="font-['Manrope'] font-bold text-base sm:text-lg mb-4">2. Envío de productos físicos</h2>
+        <div id="rates" class="space-y-2 text-xs sm:text-sm text-on-surface-variant">Cotizando envío…</div>
+        <button type="button" id="requote" class="mt-3 text-primary text-xs sm:text-sm font-semibold hover:underline">Volver a cotizar</button>
       </section>
       @else
-      <section class="bg-emerald-50 border border-emerald-200 rounded-2xl p-6 text-emerald-900">
-        <h2 class="font-['Manrope'] font-bold text-lg mb-2">Reserva del servicio</h2>
-        <p class="text-sm">Al completar el pago reservaremos las unidades disponibles del servicio. Recibirás por correo la factura, el código de reserva y el detalle de lo adquirido.</p>
+      <section class="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 sm:p-6 text-emerald-900">
+        <h2 class="font-['Manrope'] font-bold text-base sm:text-lg mb-2">Reserva del servicio</h2>
+        <p class="text-xs sm:text-sm">Al completar el pago reservaremos las unidades disponibles del servicio. Recibirás por correo la factura, el código de reserva y el detalle de lo adquirido.</p>
       </section>
       @endif
 
       {{-- 3. Facturación electrónica --}}
-      <section class="bg-surface-container-lowest rounded-2xl p-6 shadow-[0_12px_32px_rgba(27,28,28,.06)]">
-        <h2 class="font-['Manrope'] font-bold text-lg mb-4">3. Datos para factura electrónica</h2>
-        <div class="grid grid-cols-3 gap-3">
-          <select name="document_type" class="col-span-1 rounded-xl border border-outline-variant/40 px-3 py-3 text-sm" required>
+      <section class="bg-surface-container-lowest rounded-2xl p-4 sm:p-6 shadow-[0_12px_32px_rgba(27,28,28,.06)]">
+        <h2 class="font-['Manrope'] font-bold text-base sm:text-lg mb-4">3. Datos para factura electrónica</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3">
+          <select name="document_type" class="sm:col-span-1 rounded-xl border border-outline-variant/40 px-3 py-2.5 sm:py-3 text-xs sm:text-sm" required>
             @foreach(['CC'=>'Cédula (CC)','NIT'=>'NIT','CE'=>'Cédula extranjería','PP'=>'Pasaporte','TI'=>'T. identidad','TE'=>'T. extranjería'] as $k=>$v)
               <option value="{{ $k }}" {{ old('document_type','CC')===$k?'selected':'' }}>{{ $v }}</option>
             @endforeach
           </select>
           <input type="text" name="document" value="{{ old('document') }}" required maxlength="20" pattern="[A-Za-z0-9\-]{5,20}" placeholder="Número de documento"
-                 class="col-span-2 rounded-xl border border-outline-variant/40 px-4 py-3 text-sm">
+                 class="sm:col-span-2 rounded-xl border border-outline-variant/40 px-3 sm:px-4 py-2.5 sm:py-3 text-xs sm:text-sm">
         </div>
       </section>
 
@@ -103,8 +103,8 @@
 
     {{-- Resumen --}}
     <div>
-      <div class="bg-surface-container-lowest rounded-2xl p-6 shadow-[0_12px_32px_rgba(27,28,28,.06)] sticky top-24">
-        <h2 class="font-['Manrope'] font-bold text-on-background text-xl mb-6">Resumen del pedido</h2>
+      <div class="bg-surface-container-lowest rounded-2xl p-4 sm:p-6 shadow-[0_12px_32px_rgba(27,28,28,.06)] sticky top-24">
+        <h2 class="font-['Manrope'] font-bold text-on-background text-lg sm:text-xl mb-4 sm:mb-6">Resumen del pedido</h2>
         <div class="space-y-4 mb-6">
           @foreach($cart->items as $item)
           <div class="flex gap-3">
@@ -125,9 +125,9 @@
             </div>
             <div class="text-right">
               @if($item->product->hasDiscount())
-                <span class="text-[10px] text-slate-400 line-through block">${{ number_format($item->quantity*$item->product->originalPrice(),0,',','.') }}</span>
+                <span class="text-[10px] text-slate-400 line-through block">${{ number_format($item->quantity*$item->product->listPriceForOptions($item->selected_options ?? []),0,',','.') }}</span>
               @endif
-              <span class="font-bold text-on-background">${{ number_format($item->quantity*$item->product->effectivePrice(),0,',','.') }}</span>
+              <span class="font-bold text-on-background">${{ number_format($item->quantity*$item->product->priceForOptions($item->selected_options ?? []),0,',','.') }}</span>
             </div>
           </div>
           @endforeach

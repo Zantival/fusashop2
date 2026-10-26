@@ -2,6 +2,11 @@
 
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
+use App\Models\User;
+use App\Support\PasswordPolicy;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 
 Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
@@ -53,4 +58,30 @@ Artisan::command('integrations:status', function () {
     $this->line("");
     $this->comment("Para ingresar o editar tus credenciales, edita el archivo .env");
 })->purpose('Muestra el estado de configuración de las APIs de Wompi, Envia, Factus y Resend');
+
+Artisan::command('admin:rotate-password {email=admin@fusashop.com}', function (string $email) {
+    $user = User::where('email', strtolower($email))->where('role', 'analyst')->first();
+    if (!$user) {
+        $this->error('No se encontró una cuenta de administrador con ese correo.');
+        return 1;
+    }
+
+    $password = $this->secret('Nueva contraseña (mínimo 12 caracteres, mayúscula, minúscula, número y símbolo)');
+    $confirmation = $this->secret('Confirma la nueva contraseña');
+    if (!is_string($password) || $password === '' || !hash_equals($password, (string) $confirmation)) {
+        $this->error('La confirmación no coincide. No se cambió la contraseña.');
+        return 1;
+    }
+
+    $validation = Validator::make(['password' => $password], ['password' => PasswordPolicy::rule()], PasswordPolicy::messages());
+    if ($validation->fails()) {
+        $this->error($validation->errors()->first('password'));
+        return 1;
+    }
+
+    $user->forceFill(['password' => Hash::make($password), 'remember_token' => Str::random(60)])->save();
+    $user->tokens()->delete();
+    $this->info('Contraseña del administrador actualizada. Las sesiones API anteriores fueron revocadas.');
+    return 0;
+})->purpose('Cambia de forma interactiva y segura la contraseña de una cuenta administradora');
 

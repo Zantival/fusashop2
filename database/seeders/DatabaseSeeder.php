@@ -5,16 +5,27 @@ namespace Database\Seeders;
 use App\Models\{User, Product, Cart, Order, OrderItem, ShippingAddress, GlobalBanner};
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+use App\Support\PasswordPolicy;
+use Illuminate\Support\Facades\Validator;
 
 class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        // Analyst
-        User::create([
-            'name' => 'Admin FusaShop', 'email' => 'admin@fusashop.com',
-            'password' => Hash::make('password123'), 'role' => 'analyst',
-        ]);
+        // Admin is provisioned only from a strong, deployment-specific secret.
+        $adminPassword = (string) env('FUSASHOP_ADMIN_SEED_PASSWORD', '');
+        $passwordCheck = Validator::make(['password' => $adminPassword], ['password' => PasswordPolicy::rule()], PasswordPolicy::messages());
+        if ($passwordCheck->fails()) {
+            throw new \RuntimeException('Define FUSASHOP_ADMIN_SEED_PASSWORD con al menos 12 caracteres, mayúsculas, minúsculas, números y símbolos antes de ejecutar el seeder.');
+        }
+        User::updateOrCreate(
+            ['email' => 'admin@fusashop.com'],
+            [
+                'name' => 'Admin FusaShop',
+                'password' => Hash::make($adminPassword),
+                'role' => 'analyst',
+            ]
+        );
 
         // Merchants
         $m1 = User::create([

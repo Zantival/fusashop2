@@ -164,12 +164,12 @@
                 <p class="font-bold text-sm text-on-surface line-clamp-2 leading-tight mb-2">{{ $p->name }}</p>
                 @if($p->hasDiscount())
                   <div class="flex items-center gap-1.5 text-xs text-slate-400">
-                    <span>Antes: <span class="line-through">${{ number_format($p->originalPrice(), 0, ',', '.') }}</span></span>
+                    <span>Antes: <span class="line-through">${{ number_format($p->startingListPrice(), 0, ',', '.') }}</span></span>
                     <span class="text-[10px] font-black text-[#ba1a1a] bg-red-50 px-1.5 py-0.5 rounded">-{{ $p->discount_percent }}%</span>
                   </div>
-                  <p class="text-lg font-black text-primary">${{ number_format($p->effectivePrice(), 0, ',', '.') }} <span class="text-[10px] font-bold text-slate-400">COP</span></p>
+                  <p class="text-lg font-black text-primary">@if($p->variants)<span class="text-[10px] text-slate-500">Desde</span> @endif${{ number_format($p->startingPrice(), 0, ',', '.') }} <span class="text-[10px] font-bold text-slate-400">COP</span></p>
                 @else
-                  <p class="text-lg font-black text-primary">${{ number_format($p->effectivePrice(), 0, ',', '.') }} <span class="text-[10px] font-bold text-slate-400">COP</span></p>
+                  <p class="text-lg font-black text-primary">@if($p->variants)<span class="text-[10px] text-slate-500">Desde</span> @endif${{ number_format($p->startingPrice(), 0, ',', '.') }} <span class="text-[10px] font-bold text-slate-400">COP</span></p>
                 @endif
               </div>
             </a>
@@ -271,6 +271,14 @@
                 <span class="material-symbols-outlined text-primary text-[16px]">phone</span>
               </div>
               <span class="text-on-surface-variant">{{ $profile->phone }}</span>
+            </div>
+          @endif
+          @if($profile->user?->email)
+            <div class="flex items-center gap-3 text-sm min-w-0">
+              <div class="w-8 h-8 bg-surface-container-low rounded-lg flex items-center justify-center shrink-0">
+                <span class="material-symbols-outlined text-primary text-[16px]">mail</span>
+              </div>
+              <a href="mailto:{{ $profile->user->email }}" class="text-primary hover:underline break-all">{{ $profile->user->email }}</a>
             </div>
           @endif
           @if($profile->address)

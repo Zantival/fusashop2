@@ -1,0 +1,603 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1480 980" width="1480" height="980">
+  <defs>
+    <marker id="dot" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6">
+      <circle cx="5" cy="5" r="3" fill="#0F172A" />
+    </marker>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1.5 L 8 5 L 0 8.5" fill="none" stroke="#0F172A" stroke-width="1.6" />
+    </marker>
+  </defs>
+
+  <style>
+    .diag-title { font-family: 'Segoe UI', Arial, sans-serif; font-size: 18px; font-weight: 800; fill: #0F172A; letter-spacing: 1.5px; text-anchor: middle; }
+    .diag-subtitle { font-family: 'Segoe UI', Arial, sans-serif; font-size: 11px; font-weight: 500; fill: #64748B; text-anchor: middle; }
+    .rel-line { fill: none; stroke: #334155; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+    .card-text { font-family: 'Segoe UI', Arial, sans-serif; font-size: 9.5px; font-weight: 800; fill: #0F172A; text-anchor: middle; dominant-baseline: central; }
+    .card-bg { fill: #FFFFFF; stroke: #94A3B8; stroke-width: 0.9; rx: 3; ry: 3; }
+  </style>
+
+  <rect width="1480" height="980" fill="#FFFFFF" />
+
+  <!-- HEADER TITLE -->
+  <text x="740" y="38" class="diag-title">MODELO RELACIONAL DE BASE DE DATOS (FUSASHOP)</text>
+  <text x="740" y="56" class="diag-subtitle">[PK] Clave Primaria  |  [FK] Clave Foránea  |  Relaciones Referenciales 1:N y 1:1  |  Motor: SQLite / MySQL / PostgreSQL</text>
+
+  <!-- RELATIONSHIPS -->
+  <g id="relationships">
+    <path d="M 160 370 L 160 298" class="rel-line" marker-start="url(#dot)" />
+    <rect x="163" y="343.5" width="18" height="13" class="card-bg" />
+    <text x="172" y="350" class="card-text">1</text>
+    <rect x="166" y="308.5" width="24" height="13" class="card-bg" />
+    <text x="178" y="315" class="card-text">0..1</text>
+    <path d="M 160 596 L 160 700" class="rel-line" marker-start="url(#dot)" />
+    <rect x="163" y="611.5" width="18" height="13" class="card-bg" />
+    <text x="172" y="618" class="card-text">1</text>
+    <rect x="163.5" y="678.5" width="17" height="13" class="card-bg" />
+    <text x="172" y="685" class="card-text">N</text>
+    <path d="M 330 400 L 365 400 L 365 126 L 410 126" class="rel-line" marker-start="url(#dot)" />
+    <rect x="336" y="385.5" width="18" height="13" class="card-bg" />
+    <text x="345" y="392" class="card-text">1</text>
+    <rect x="386.5" y="111.5" width="17" height="13" class="card-bg" />
+    <text x="395" y="118" class="card-text">N</text>
+    <path d="M 330 440 L 372 440 L 372 395 L 410 395" class="rel-line" marker-start="url(#dot)" />
+    <rect x="336" y="425.5" width="18" height="13" class="card-bg" />
+    <text x="345" y="432" class="card-text">1</text>
+    <rect x="386.5" y="380.5" width="17" height="13" class="card-bg" />
+    <text x="395" y="387" class="card-text">N</text>
+    <path d="M 330 480 L 378 480 L 378 625 L 410 625" class="rel-line" marker-start="url(#dot)" />
+    <rect x="336" y="465.5" width="18" height="13" class="card-bg" />
+    <text x="345" y="472" class="card-text">1</text>
+    <rect x="386.5" y="610.5" width="17" height="13" class="card-bg" />
+    <text x="395" y="617" class="card-text">N</text>
+    <path d="M 330 385 L 358 385 L 358 290 L 700 290 L 700 126 L 740 126" class="rel-line" marker-start="url(#dot)" />
+    <rect x="336" y="368.5" width="18" height="13" class="card-bg" />
+    <text x="345" y="375" class="card-text">1</text>
+    <rect x="716.5" y="111.5" width="17" height="13" class="card-bg" />
+    <text x="725" y="118" class="card-text">N</text>
+    <path d="M 330 540 L 385 540 L 385 780 L 700 780 L 700 676 L 740 676" class="rel-line" marker-start="url(#dot)" />
+    <rect x="336" y="525.5" width="18" height="13" class="card-bg" />
+    <text x="345" y="532" class="card-text">1</text>
+    <rect x="716.5" y="661.5" width="17" height="13" class="card-bg" />
+    <text x="725" y="668" class="card-text">1</text>
+    <path d="M 330 420 L 350 420 L 350 328 L 1055 328 L 1055 144 L 1090 144" class="rel-line" marker-start="url(#dot)" />
+    <rect x="331" y="405.5" width="18" height="13" class="card-bg" />
+    <text x="340" y="412" class="card-text">1</text>
+    <rect x="1066.5" y="129.5" width="17" height="13" class="card-bg" />
+    <text x="1075" y="136" class="card-text">N</text>
+    <path d="M 1010 110 L 1040 110 L 1040 495 L 1090 495" class="rel-line" marker-start="url(#dot)" />
+    <rect x="1016" y="95.5" width="18" height="13" class="card-bg" />
+    <text x="1025" y="102" class="card-text">1</text>
+    <rect x="1066.5" y="480.5" width="17" height="13" class="card-bg" />
+    <text x="1075" y="487" class="card-text">N</text>
+    <path d="M 820 316 L 820 410" class="rel-line" marker-start="url(#dot)" />
+    <rect x="823" y="325.5" width="18" height="13" class="card-bg" />
+    <text x="832" y="332" class="card-text">1</text>
+    <rect x="823.5" y="388.5" width="17" height="13" class="card-bg" />
+    <text x="832" y="395" class="card-text">N</text>
+    <path d="M 860 640 L 860 546" class="rel-line" marker-start="url(#dot)" />
+    <rect x="863" y="618.5" width="18" height="13" class="card-bg" />
+    <text x="872" y="625" class="card-text">1</text>
+    <rect x="863.5" y="558.5" width="17" height="13" class="card-bg" />
+    <text x="872" y="565" class="card-text">N</text>
+    <path d="M 740 145 L 708 145 L 708 375 L 660 375" class="rel-line" marker-start="url(#dot)" />
+    <rect x="716" y="130.5" width="18" height="13" class="card-bg" />
+    <text x="725" y="137" class="card-text">1</text>
+    <rect x="666.5" y="360.5" width="17" height="13" class="card-bg" />
+    <text x="675" y="367" class="card-text">N</text>
+    <path d="M 740 165 L 690 165 L 690 660 L 660 660" class="rel-line" marker-start="url(#dot)" />
+    <rect x="716" y="150.5" width="18" height="13" class="card-bg" />
+    <text x="725" y="157" class="card-text">1</text>
+    <rect x="666.5" y="645.5" width="17" height="13" class="card-bg" />
+    <text x="675" y="652" class="card-text">N</text>
+    <path d="M 1180 352 L 1180 440" class="rel-line" marker-start="url(#dot)" />
+    <rect x="1183" y="363.5" width="18" height="13" class="card-bg" />
+    <text x="1192" y="370" class="card-text">1</text>
+    <rect x="1183.5" y="418.5" width="17" height="13" class="card-bg" />
+    <text x="1192" y="425" class="card-text">N</text>
+    <path d="M 1380 110 L 1415 110 L 1415 706 L 1360 706" class="rel-line" marker-start="url(#dot)" />
+    <rect x="1386" y="95.5" width="18" height="13" class="card-bg" />
+    <text x="1395" y="102" class="card-text">1</text>
+    <rect x="1366.5" y="691.5" width="17" height="13" class="card-bg" />
+    <text x="1375" y="698" class="card-text">N</text>
+    <path d="M 160 908 L 160 940 L 1068 940 L 1068 180 L 1090 180" class="rel-line" marker-start="url(#dot)" />
+    <rect x="163" y="918.5" width="18" height="13" class="card-bg" />
+    <text x="172" y="925" class="card-text">1</text>
+    <rect x="1069.5" y="165.5" width="17" height="13" class="card-bg" />
+    <text x="1078" y="172" class="card-text">N</text>
+  </g>
+
+  <!-- TABLES -->
+  <g id="tables">
+<!-- Table: users -->
+<g id="table-users">
+  <rect x="60" y="370" width="270" height="226" rx="5" ry="5" fill="#FFFFFF" stroke="#000000" stroke-width="1.8" />
+  <path d="M 60 375 Q 60 370 65 370 L 325 370 Q 330 370 330 375 L 330 398 L 60 398 Z" fill="#0F172A" />
+  <text x="195" y="388" font-family="'Segoe UI', Arial, sans-serif" font-size="12" font-weight="700" fill="#FFFFFF" text-anchor="middle">users</text>
+  <line x1="60" y1="398" x2="330" y2="398" stroke="#E2E8F0" stroke-width="1" />
+  <rect x="66" y="401" width="20" height="12" rx="2" fill="#0F172A" />
+  <text x="76" y="410" font-family="'Segoe UI', Arial, sans-serif" font-size="8.5" font-weight="800" fill="#FFFFFF" text-anchor="middle">PK</text>
+  <text x="92" y="411" font-family="'Segoe UI', Arial, sans-serif" font-size="10.5" font-weight="700" fill="#0F172A">id</text>
+  <text x="322" y="411" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#64748B" text-anchor="end">INTEGER</text>
+  <rect x="61" y="416" width="268" height="18" fill="#F8FAFC" />
+  <line x1="60" y1="416" x2="330" y2="416" stroke="#E2E8F0" stroke-width="1" />
+  <text x="70" y="429" font-family="'Segoe UI', Arial, sans-serif" font-size="10.5" font-weight="500" fill="#334155">name</text>
+  <text x="322" y="429" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#64748B" text-anchor="end">VARCHAR(255)</text>
+  <line x1="60" y1="434" x2="330" y2="434" stroke="#E2E8F0" stroke-width="1" />
+  <text x="70" y="447" font-family="'Segoe UI', Arial, sans-serif" font-size="10.5" font-weight="500" fill="#334155">email</text>
+  <text x="322" y="447" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#64748B" text-anchor="end">VARCHAR(255)</text>
+  <rect x="61" y="452" width="268" height="18" fill="#F8FAFC" />
+  <line x1="60" y1="452" x2="330" y2="452" stroke="#E2E8F0" stroke-width="1" />
+  <text x="70" y="465" font-family="'Segoe UI', Arial, sans-serif" font-size="10.5" font-weight="500" fill="#334155">password</text>
+  <text x="322" y="465" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#64748B" text-anchor="end">VARCHAR(255)</text>
+  <line x1="60" y1="470" x2="330" y2="470" stroke="#E2E8F0" stroke-width="1" />
+  <text x="70" y="483" font-family="'Segoe UI', Arial, sans-serif" font-size="10.5" font-weight="500" fill="#334155">role</text>
+  <text x="322" y="483" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#64748B" text-anchor="end">VARCHAR(50)</text>
+  <rect x="61" y="488" width="268" height="18" fill="#F8FAFC" />
+  <line x1="60" y1="488" x2="330" y2="488" stroke="#E2E8F0" stroke-width="1" />
+  <text x="70" y="501" font-family="'Segoe UI', Arial, sans-serif" font-size="10.5" font-weight="500" fill="#334155">phone</text>
+  <text x="322" y="501" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#64748B" text-anchor="end">VARCHAR(30)</text>
+  <line x1="60" y1="506" x2="330" y2="506" stroke="#E2E8F0" stroke-width="1" />
+  <text x="70" y="519" font-family="'Segoe UI', Arial, sans-serif" font-size="10.5" font-weight="500" fill="#334155">address</text>
+  <text x="322" y="519" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#64748B" text-anchor="end">TEXT</text>
+  <rect x="61" y="524" width="268" height="18" fill="#F8FAFC" />
+  <line x1="60" y1="524" x2="330" y2="524" stroke="#E2E8F0" stroke-width="1" />
+  <text x="70" y="537" font-family="'Segoe UI', Arial, sans-serif" font-size="10.5" font-weight="500" fill="#334155">points</text>
+  <text x="322" y="537" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#64748B" text-anchor="end">NUMERIC(10,2)</text>
+  <line x1="60" y1="542" x2="330" y2="542" stroke="#E2E8F0" stroke-width="1" />
+  <text x="70" y="555" font-family="'Segoe UI', Arial, sans-serif" font-size="10.5" font-weight="500" fill="#334155">loyalty_points</text>
+  <text x="322" y="555" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#64748B" text-anchor="end">INTEGER</text>
+  <rect x="61" y="560" width="268" height="18" fill="#F8FAFC" />
+  <line x1="60" y1="560" x2="330" y2="560" stroke="#E2E8F0" stroke-width="1" />
+  <text x="70" y="573" font-family="'Segoe UI', Arial, sans-serif" font-size="10.5" font-weight="500" fill="#334155">is_blocked</text>
+  <text x="322" y="573" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#64748B" text-anchor="end">BOOLEAN</text>
+  <line x1="60" y1="578" x2="330" y2="578" stroke="#E2E8F0" stroke-width="1" />
+  <text x="70" y="591" font-family="'Segoe UI', Arial, sans-serif" font-size="10.5" font-weight="500" fill="#334155">created_at</text>
+  <text x="322" y="591" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#64748B" text-anchor="end">TIMESTAMP</text>
+</g>
+<!-- Table: company_profiles -->
+<g id="table-company_profiles">
+  <rect x="60" y="90" width="270" height="208" rx="5" ry="5" fill="#FFFFFF" stroke="#000000" stroke-width="1.8" />
+  <path d="M 60 95 Q 60 90 65 90 L 325 90 Q 330 90 330 95 L 330 118 L 60 118 Z" fill="#0F172A" />
+  <text x="195" y="108" font-family="'Segoe UI', Arial, sans-serif" font-size="12" font-weight="700" fill="#FFFFFF" text-anchor="middle">company_profiles</text>
+  <line x1="60" y1="118" x2="330" y2="118" stroke="#E2E8F0" stroke-width="1" />
+  <rect x="66" y="121" width="20" height="12" rx="2" fill="#0F172A" />
+  <text x="76" y="130" font-family="'Segoe UI', Arial, sans-serif" font-size="8.5" font-weight="800" fill="#FFFFFF" text-anchor="middle">PK</text>
+  <text x="92" y="131" font-family="'Segoe UI', Arial, sans-serif" font-size="10.5" font-weight="700" fill="#0F172A">id</text>
+  <text x="322" y="131" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#64748B" text-anchor="end">INTEGER</text>
+  <rect x="61" y="136" width="268" height="18" fill="#F8FAFC" />
+  <line x1="60" y1="136" x2="330" y2="136" stroke="#E2E8F0" stroke-width="1" />
+  <rect x="66" y="139" width="20" height="12" rx="2" fill="#E2E8F0" stroke="#94A3B8" stroke-width="0.8" />
+  <text x="76" y="148" font-family="'Segoe UI', Arial, sans-serif" font-size="8.5" font-weight="700" fill="#0F172A" text-anchor="middle">FK</text>
+  <text x="92" y="149" font-family="'Segoe UI', Arial, sans-serif" font-size="10.5" font-weight="600" fill="#334155">merchant_id</text>
+  <text x="322" y="149" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#64748B" text-anchor="end">INTEGER</text>
+  <line x1="60" y1="154" x2="330" y2="154" stroke="#E2E8F0" stroke-width="1" />
+  <text x="70" y="167" font-family="'Segoe UI', Arial, sans-serif" font-size="10.5" font-weight="500" fill="#334155">company_name</text>
+  <text x="322" y="167" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#64748B" text-anchor="end">VARCHAR(255)</text>
+  <rect x="61" y="172" width="268" height="18" fill="#F8FAFC" />
+  <line x1="60" y1="172" x2="330" y2="172" stroke="#E2E8F0" stroke-width="1" />
+  <text x="70" y="185" font-family="'Segoe UI', Arial, sans-serif" font-size="10.5" font-weight="500" fill="#334155">phone</text>
+  <text x="322" y="185" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#64748B" text-anchor="end">VARCHAR(30)</text>
+  <line x1="60" y1="190" x2="330" y2="190" stroke="#E2E8F0" stroke-width="1" />
+  <text x="70" y="203" font-family="'Segoe UI', Arial, sans-serif" font-size="10.5" font-weight="500" fill="#334155">rut_path</text>
+  <text x="322" y="203" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#64748B" text-anchor="end">VARCHAR(255)</text>
+  <rect x="61" y="208" width="268" height="18" fill="#F8FAFC" />
+  <line x1="60" y1="208" x2="330" y2="208" stroke="#E2E8F0" stroke-width="1" />
+  <text x="70" y="221" font-family="'Segoe UI', Arial, sans-serif" font-size="10.5" font-weight="500" fill="#334155">kyc_status</text>
+  <text x="322" y="221" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#64748B" text-anchor="end">VARCHAR(50)</text>
+  <line x1="60" y1="226" x2="330" y2="226" stroke="#E2E8F0" stroke-width="1" />
+  <text x="70" y="239" font-family="'Segoe UI', Arial, sans-serif" font-size="10.5" font-weight="500" fill="#334155">address</text>
+  <text x="322" y="239" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#64748B" text-anchor="end">VARCHAR(255)</text>
+  <rect x="61" y="244" width="268" height="18" fill="#F8FAFC" />
+  <line x1="60" y1="244" x2="330" y2="244" stroke="#E2E8F0" stroke-width="1" />
+  <text x="70" y="257" font-family="'Segoe UI', Arial, sans-serif" font-size="10.5" font-weight="500" fill="#334155">business_type</text>
+  <text x="322" y="257" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#64748B" text-anchor="end">VARCHAR(100)</text>
+  <line x1="60" y1="262" x2="330" y2="262" stroke="#E2E8F0" stroke-width="1" />
+  <text x="70" y="275" font-family="'Segoe UI', Arial, sans-serif" font-size="10.5" font-weight="500" fill="#334155">wompi_public_key</text>
+  <text x="322" y="275" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#64748B" text-anchor="end">VARCHAR(255)</text>
+  <rect x="61" y="280" width="268" height="18" fill="#F8FAFC" />
+  <line x1="60" y1="280" x2="330" y2="280" stroke="#E2E8F0" stroke-width="1" />
+  <text x="70" y="293" font-family="'Segoe UI', Arial, sans-serif" font-size="10.5" font-weight="500" fill="#334155">created_at</text>
+  <text x="322" y="293" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#64748B" text-anchor="end">TIMESTAMP</text>
+</g>
+<!-- Table: shipping_addresses -->
+<g id="table-shipping_addresses">
+  <rect x="60" y="700" width="270" height="208" rx="5" ry="5" fill="#FFFFFF" stroke="#000000" stroke-width="1.8" />
+  <path d="M 60 705 Q 60 700 65 700 L 325 700 Q 330 700 330 705 L 330 728 L 60 728 Z" fill="#0F172A" />
+  <text x="195" y="718" font-family="'Segoe UI', Arial, sans-serif" font-size="12" font-weight="700" fill="#FFFFFF" text-anchor="middle">shipping_addresses</text>
+  <line x1="60" y1="728" x2="330" y2="728" stroke="#E2E8F0" stroke-width="1" />
+  <rect x="66" y="731" width="20" height="12" rx="2" fill="#0F172A" />
+  <text x="76" y="740" font-family="'Segoe UI', Arial, sans-serif" font-size="8.5" font-weight="800" fill="#FFFFFF" text-anchor="middle">PK</text>
+  <text x="92" y="741" font-family="'Segoe UI', Arial, sans-serif" font-size="10.5" font-weight="700" fill="#0F172A">id</text>
+  <text x="322" y="741" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#64748B" text-anchor="end">INTEGER</text>
+  <rect x="61" y="746" width="268" height="18" fill="#F8FAFC" />
+  <line x1="60" y1="746" x2="330" y2="746" stroke="#E2E8F0" stroke-width="1" />
+  <rect x="66" y="749" width="20" height="12" rx="2" fill="#E2E8F0" stroke="#94A3B8" stroke-width="0.8" />
+  <text x="76" y="758" font-family="'Segoe UI', Arial, sans-serif" font-size="8.5" font-weight="700" fill="#0F172A" text-anchor="middle">FK</text>
+  <text x="92" y="759" font-family="'Segoe UI', Arial, sans-serif" font-size="10.5" font-weight="600" fill="#334155">user_id</text>
+  <text x="322" y="759" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#64748B" text-anchor="end">INTEGER</text>
+  <line x1="60" y1="764" x2="330" y2="764" stroke="#E2E8F0" stroke-width="1" />
+  <text x="70" y="777" font-family="'Segoe UI', Arial, sans-serif" font-size="10.5" font-weight="500" fill="#334155">recipient</text>
+  <text x="322" y="777" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#64748B" text-anchor="end">VARCHAR(255)</text>
+  <rect x="61" y="782" width="268" height="18" fill="#F8FAFC" />
+  <line x1="60" y1="782" x2="330" y2="782" stroke="#E2E8F0" stroke-width="1" />
+  <text x="70" y="795" font-family="'Segoe UI', Arial, sans-serif" font-size="10.5" font-weight="500" fill="#334155">phone</text>
+  <text x="322" y="795" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#64748B" text-anchor="end">VARCHAR(30)</text>
+  <line x1="60" y1="800" x2="330" y2="800" stroke="#E2E8F0" stroke-width="1" />
+  <text x="70" y="813" font-family="'Segoe UI', Arial, sans-serif" font-size="10.5" font-weight="500" fill="#334155">street</text>
+  <text x="322" y="813" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#64748B" text-anchor="end">VARCHAR(255)</text>
+  <rect x="61" y="818" width="268" height="18" fill="#F8FAFC" />
+  <line x1="60" y1="818" x2="330" y2="818" stroke="#E2E8F0" stroke-width="1" />
+  <text x="70" y="831" font-family="'Segoe UI', Arial, sans-serif" font-size="10.5" font-weight="500" fill="#334155">city</text>
+  <text x="322" y="831" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#64748B" text-anchor="end">VARCHAR(100)</text>
+  <line x1="60" y1="836" x2="330" y2="836" stroke="#E2E8F0" stroke-width="1" />
+  <text x="70" y="849" font-family="'Segoe UI', Arial, sans-serif" font-size="10.5" font-weight="500" fill="#334155">state</text>
+  <text x="322" y="849" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#64748B" text-anchor="end">VARCHAR(100)</text>
+  <rect x="61" y="854" width="268" height="18" fill="#F8FAFC" />
+  <line x1="60" y1="854" x2="330" y2="854" stroke="#E2E8F0" stroke-width="1" />
+  <text x="70" y="867" font-family="'Segoe UI', Arial, sans-serif" font-size="10.5" font-weight="500" fill="#334155">postal_code</text>
+  <text x="322" y="867" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#64748B" text-anchor="end">VARCHAR(20)</text>
+  <line x1="60" y1="872" x2="330" y2="872" stroke="#E2E8F0" stroke-width="1" />
+  <text x="70" y="885" font-family="'Segoe UI', Arial, sans-serif" font-size="10.5" font-weight="500" fill="#334155">is_default</text>
+  <text x="322" y="885" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#64748B" text-anchor="end">BOOLEAN</text>
+  <rect x="61" y="890" width="268" height="18" fill="#F8FAFC" />
+  <line x1="60" y1="890" x2="330" y2="890" stroke="#E2E8F0" stroke-width="1" />
+  <text x="70" y="903" font-family="'Segoe UI', Arial, sans-serif" font-size="10.5" font-weight="500" fill="#334155">created_at</text>
+  <text x="322" y="903" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#64748B" text-anchor="end">TIMESTAMP</text>
+</g>
+<!-- Table: coupons -->
+<g id="table-coupons">
+  <rect x="410" y="90" width="250" height="172" rx="5" ry="5" fill="#FFFFFF" stroke="#000000" stroke-width="1.8" />
+  <path d="M 410 95 Q 410 90 415 90 L 655 90 Q 660 90 660 95 L 660 118 L 410 118 Z" fill="#0F172A" />
+  <text x="535" y="108" font-family="'Segoe UI', Arial, sans-serif" font-size="12" font-weight="700" fill="#FFFFFF" text-anchor="middle">coupons</text>
+  <line x1="410" y1="118" x2="660" y2="118" stroke="#E2E8F0" stroke-width="1" />
+  <rect x="416" y="121" width="20" height="12" rx="2" fill="#0F172A" />
+  <text x="426" y="130" font-family="'Segoe UI', Arial, sans-serif" font-size="8.5" font-weight="800" fill="#FFFFFF" text-anchor="middle">PK</text>
+  <text x="442" y="131" font-family="'Segoe UI', Arial, sans-serif" font-size="10.5" font-weight="700" fill="#0F172A">id</text>
+  <text x="652" y="131" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#64748B" text-anchor="end">INTEGER</text>
+  <rect x="411" y="136" width="248" height="18" fill="#F8FAFC" />
+  <line x1="410" y1="136" x2="660" y2="136" stroke="#E2E8F0" stroke-width="1" />
+  <rect x="416" y="139" width="20" height="12" rx="2" fill="#E2E8F0" stroke="#94A3B8" stroke-width="0.8" />
+  <text x="426" y="148" font-family="'Segoe UI', Arial, sans-serif" font-size="8.5" font-weight="700" fill="#0F172A" text-anchor="middle">FK</text>
+  <text x="442" y="149" font-family="'Segoe UI', Arial, sans-serif" font-size="10.5" font-weight="600" fill="#334155">merchant_id</text>
+  <text x="652" y="149" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#64748B" text-anchor="end">INTEGER</text>
+  <line x1="410" y1="154" x2="660" y2="154" stroke="#E2E8F0" stroke-width="1" />
+  <text x="420" y="167" font-family="'Segoe UI', Arial, sans-serif" font-size="10.5" font-weight="500" fill="#334155">code</text>
+  <text x="652" y="167" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#64748B" text-anchor="end">VARCHAR(50)</text>
+  <rect x="411" y="172" width="248" height="18" fill="#F8FAFC" />
+  <line x1="410" y1="172" x2="660" y2="172" stroke="#E2E8F0" stroke-width="1" />
+  <text x="420" y="185" font-family="'Segoe UI', Arial, sans-serif" font-size="10.5" font-weight="500" fill="#334155">type</text>
+  <text x="652" y="185" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#64748B" text-anchor="end">VARCHAR(20)</text>
+  <line x1="410" y1="190" x2="660" y2="190" stroke="#E2E8F0" stroke-width="1" />
+  <text x="420" y="203" font-family="'Segoe UI', Arial, sans-serif" font-size="10.5" font-weight="500" fill="#334155">value</text>
+  <text x="652" y="203" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#64748B" text-anchor="end">NUMERIC(10,2)</text>
+  <rect x="411" y="208" width="248" height="18" fill="#F8FAFC" />
+  <line x1="410" y1="208" x2="660" y2="208" stroke="#E2E8F0" stroke-width="1" />
+  <text x="420" y="221" font-family="'Segoe UI', Arial, sans-serif" font-size="10.5" font-weight="500" fill="#334155">min_order_amount</text>
+  <text x="652" y="221" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#64748B" text-anchor="end">NUMERIC</text>
+  <line x1="410" y1="226" x2="660" y2="226" stroke="#E2E8F0" stroke-width="1" />
+  <text x="420" y="239" font-family="'Segoe UI', Arial, sans-serif" font-size="10.5" font-weight="500" fill="#334155">is_active</text>
+  <text x="652" y="239" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#64748B" text-anchor="end">BOOLEAN</text>
+  <rect x="411" y="244" width="248" height="18" fill="#F8FAFC" />
+  <line x1="410" y1="244" x2="660" y2="244" stroke="#E2E8F0" stroke-width="1" />
+  <text x="420" y="257" font-family="'Segoe UI', Arial, sans-serif" font-size="10.5" font-weight="500" fill="#334155">expires_at</text>
+  <text x="652" y="257" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#64748B" text-anchor="end">TIMESTAMP</text>
+</g>
+<!-- Table: reviews -->
+<g id="table-reviews">
+  <rect x="410" y="340" width="250" height="154" rx="5" ry="5" fill="#FFFFFF" stroke="#000000" stroke-width="1.8" />
+  <path d="M 410 345 Q 410 340 415 340 L 655 340 Q 660 340 660 345 L 660 368 L 410 368 Z" fill="#0F172A" />
+  <text x="535" y="358" font-family="'Segoe UI', Arial, sans-serif" font-size="12" font-weight="700" fill="#FFFFFF" text-anchor="middle">reviews</text>
+  <line x1="410" y1="368" x2="660" y2="368" stroke="#E2E8F0" stroke-width="1" />
+  <rect x="416" y="371" width="20" height="12" rx="2" fill="#0F172A" />
+  <text x="426" y="380" font-family="'Segoe UI', Arial, sans-serif" font-size="8.5" font-weight="800" fill="#FFFFFF" text-anchor="middle">PK</text>
+  <text x="442" y="381" font-family="'Segoe UI', Arial, sans-serif" font-size="10.5" font-weight="700" fill="#0F172A">id</text>
+  <text x="652" y="381" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#64748B" text-anchor="end">INTEGER</text>
+  <rect x="411" y="386" width="248" height="18" fill="#F8FAFC" />
+  <line x1="410" y1="386" x2="660" y2="386" stroke="#E2E8F0" stroke-width="1" />
+  <rect x="416" y="389" width="20" height="12" rx="2" fill="#E2E8F0" stroke="#94A3B8" stroke-width="0.8" />
+  <text x="426" y="398" font-family="'Segoe UI', Arial, sans-serif" font-size="8.5" font-weight="700" fill="#0F172A" text-anchor="middle">FK</text>
+  <text x="442" y="399" font-family="'Segoe UI', Arial, sans-serif" font-size="10.5" font-weight="600" fill="#334155">product_id</text>
+  <text x="652" y="399" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#64748B" text-anchor="end">INTEGER</text>
+  <line x1="410" y1="404" x2="660" y2="404" stroke="#E2E8F0" stroke-width="1" />
+  <rect x="416" y="407" width="20" height="12" rx="2" fill="#E2E8F0" stroke="#94A3B8" stroke-width="0.8" />
+  <text x="426" y="416" font-family="'Segoe UI', Arial, sans-serif" font-size="8.5" font-weight="700" fill="#0F172A" text-anchor="middle">FK</text>
+  <text x="442" y="417" font-family="'Segoe UI', Arial, sans-serif" font-size="10.5" font-weight="600" fill="#334155">user_id</text>
+  <text x="652" y="417" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#64748B" text-anchor="end">INTEGER</text>
+  <rect x="411" y="422" width="248" height="18" fill="#F8FAFC" />
+  <line x1="410" y1="422" x2="660" y2="422" stroke="#E2E8F0" stroke-width="1" />
+  <text x="420" y="435" font-family="'Segoe UI', Arial, sans-serif" font-size="10.5" font-weight="500" fill="#334155">rating</text>
+  <text x="652" y="435" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#64748B" text-anchor="end">INTEGER</text>
+  <line x1="410" y1="440" x2="660" y2="440" stroke="#E2E8F0" stroke-width="1" />
+  <text x="420" y="453" font-family="'Segoe UI', Arial, sans-serif" font-size="10.5" font-weight="500" fill="#334155">comment</text>
+  <text x="652" y="453" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#64748B" text-anchor="end">TEXT</text>
+  <rect x="411" y="458" width="248" height="18" fill="#F8FAFC" />
+  <line x1="410" y1="458" x2="660" y2="458" stroke="#E2E8F0" stroke-width="1" />
+  <text x="420" y="471" font-family="'Segoe UI', Arial, sans-serif" font-size="10.5" font-weight="500" fill="#334155">merchant_reply</text>
+  <text x="652" y="471" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#64748B" text-anchor="end">TEXT</text>
+  <line x1="410" y1="476" x2="660" y2="476" stroke="#E2E8F0" stroke-width="1" />
+  <text x="420" y="489" font-family="'Segoe UI', Arial, sans-serif" font-size="10.5" font-weight="500" fill="#334155">created_at</text>
+  <text x="652" y="489" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#64748B" text-anchor="end">TIMESTAMP</text>
+</g>
+<!-- Table: reservations -->
+<g id="table-reservations">
+  <rect x="410" y="570" width="250" height="190" rx="5" ry="5" fill="#FFFFFF" stroke="#000000" stroke-width="1.8" />
+  <path d="M 410 575 Q 410 570 415 570 L 655 570 Q 660 570 660 575 L 660 598 L 410 598 Z" fill="#0F172A" />
+  <text x="535" y="588" font-family="'Segoe UI', Arial, sans-serif" font-size="12" font-weight="700" fill="#FFFFFF" text-anchor="middle">reservations</text>
+  <line x1="410" y1="598" x2="660" y2="598" stroke="#E2E8F0" stroke-width="1" />
+  <rect x="416" y="601" width="20" height="12" rx="2" fill="#0F172A" />
+  <text x="426" y="610" font-family="'Segoe UI', Arial, sans-serif" font-size="8.5" font-weight="800" fill="#FFFFFF" text-anchor="middle">PK</text>
+  <text x="442" y="611" font-family="'Segoe UI', Arial, sans-serif" font-size="10.5" font-weight="700" fill="#0F172A">id</text>
+  <text x="652" y="611" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#64748B" text-anchor="end">INTEGER</text>
+  <rect x="411" y="616" width="248" height="18" fill="#F8FAFC" />
+  <line x1="410" y1="616" x2="660" y2="616" stroke="#E2E8F0" stroke-width="1" />
+  <text x="420" y="629" font-family="'Segoe UI', Arial, sans-serif" font-size="10.5" font-weight="500" fill="#334155">reference</text>
+  <text x="652" y="629" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#64748B" text-anchor="end">VARCHAR(100)</text>
+  <line x1="410" y1="634" x2="660" y2="634" stroke="#E2E8F0" stroke-width="1" />
+  <rect x="416" y="637" width="20" height="12" rx="2" fill="#E2E8F0" stroke="#94A3B8" stroke-width="0.8" />
+  <text x="426" y="646" font-family="'Segoe UI', Arial, sans-serif" font-size="8.5" font-weight="700" fill="#0F172A" text-anchor="middle">FK</text>
+  <text x="442" y="647" font-family="'Segoe UI', Arial, sans-serif" font-size="10.5" font-weight="600" fill="#334155">user_id</text>
+  <text x="652" y="647" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#64748B" text-anchor="end">INTEGER</text>
+  <rect x="411" y="652" width="248" height="18" fill="#F8FAFC" />
+  <line x1="410" y1="652" x2="660" y2="652" stroke="#E2E8F0" stroke-width="1" />
+  <rect x="416" y="655" width="20" height="12" rx="2" fill="#E2E8F0" stroke="#94A3B8" stroke-width="0.8" />
+  <text x="426" y="664" font-family="'Segoe UI', Arial, sans-serif" font-size="8.5" font-weight="700" fill="#0F172A" text-anchor="middle">FK</text>
+  <text x="442" y="665" font-family="'Segoe UI', Arial, sans-serif" font-size="10.5" font-weight="600" fill="#334155">merchant_id</text>
+  <text x="652" y="665" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#64748B" text-anchor="end">INTEGER</text>
+  <line x1="410" y1="670" x2="660" y2="670" stroke="#E2E8F0" stroke-width="1" />
+  <rect x="416" y="673" width="20" height="12" rx="2" fill="#E2E8F0" stroke="#94A3B8" stroke-width="0.8" />
+  <text x="426" y="682" font-family="'Segoe UI', Arial, sans-serif" font-size="8.5" font-weight="700" fill="#0F172A" text-anchor="middle">FK</text>
+  <text x="442" y="683" font-family="'Segoe UI', Arial, sans-serif" font-size="10.5" font-weight="600" fill="#334155">product_id</text>
+  <text x="652" y="683" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#64748B" text-anchor="end">INTEGER</text>
+  <rect x="411" y="688" width="248" height="18" fill="#F8FAFC" />
+  <line x1="410" y1="688" x2="660" y2="688" stroke="#E2E8F0" stroke-width="1" />
+  <text x="420" y="701" font-family="'Segoe UI', Arial, sans-serif" font-size="10.5" font-weight="500" fill="#334155">quantity</text>
+  <text x="652" y="701" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#64748B" text-anchor="end">INTEGER</text>
+  <line x1="410" y1="706" x2="660" y2="706" stroke="#E2E8F0" stroke-width="1" />
+  <text x="420" y="719" font-family="'Segoe UI', Arial, sans-serif" font-size="10.5" font-weight="500" fill="#334155">preferred_date</text>
+  <text x="652" y="719" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#64748B" text-anchor="end">DATE</text>
+  <rect x="411" y="724" width="248" height="18" fill="#F8FAFC" />
+  <line x1="410" y1="724" x2="660" y2="724" stroke="#E2E8F0" stroke-width="1" />
+  <text x="420" y="737" font-family="'Segoe UI', Arial, sans-serif" font-size="10.5" font-weight="500" fill="#334155">status</text>
+  <text x="652" y="737" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#64748B" text-anchor="end">VARCHAR(50)</text>
+  <line x1="410" y1="742" x2="660" y2="742" stroke="#E2E8F0" stroke-width="1" />
+  <text x="420" y="755" font-family="'Segoe UI', Arial, sans-serif" font-size="10.5" font-weight="500" fill="#334155">created_at</text>
+  <text x="652" y="755" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#64748B" text-anchor="end">TIMESTAMP</text>
+</g>
+<!-- Table: products -->
+<g id="table-products">
+  <rect x="740" y="90" width="270" height="226" rx="5" ry="5" fill="#FFFFFF" stroke="#000000" stroke-width="1.8" />
+  <path d="M 740 95 Q 740 90 745 90 L 1005 90 Q 1010 90 1010 95 L 1010 118 L 740 118 Z" fill="#0F172A" />
+  <text x="875" y="108" font-family="'Segoe UI', Arial, sans-serif" font-size="12" font-weight="700" fill="#FFFFFF" text-anchor="middle">products</text>
+  <line x1="740" y1="118" x2="1010" y2="118" stroke="#E2E8F0" stroke-width="1" />
+  <rect x="746" y="121" width="20" height="12" rx="2" fill="#0F172A" />
+  <text x="756" y="130" font-family="'Segoe UI', Arial, sans-serif" font-size="8.5" font-weight="800" fill="#FFFFFF" text-anchor="middle">PK</text>
+  <text x="772" y="131" font-family="'Segoe UI', Arial, sans-serif" font-size="10.5" font-weight="700" fill="#0F172A">id</text>
+  <text x="1002" y="131" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#64748B" text-anchor="end">INTEGER</text>
+  <rect x="741" y="136" width="268" height="18" fill="#F8FAFC" />
+  <line x1="740" y1="136" x2="1010" y2="136" stroke="#E2E8F0" stroke-width="1" />
+  <rect x="746" y="139" width="20" height="12" rx="2" fill="#E2E8F0" stroke="#94A3B8" stroke-width="0.8" />
+  <text x="756" y="148" font-family="'Segoe UI', Arial, sans-serif" font-size="8.5" font-weight="700" fill="#0F172A" text-anchor="middle">FK</text>
+  <text x="772" y="149" font-family="'Segoe UI', Arial, sans-serif" font-size="10.5" font-weight="600" fill="#334155">merchant_id</text>
+  <text x="1002" y="149" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#64748B" text-anchor="end">INTEGER</text>
+  <line x1="740" y1="154" x2="1010" y2="154" stroke="#E2E8F0" stroke-width="1" />
+  <text x="750" y="167" font-family="'Segoe UI', Arial, sans-serif" font-size="10.5" font-weight="500" fill="#334155">name</text>
+  <text x="1002" y="167" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#64748B" text-anchor="end">VARCHAR(255)</text>
+  <rect x="741" y="172" width="268" height="18" fill="#F8FAFC" />
+  <line x1="740" y1="172" x2="1010" y2="172" stroke="#E2E8F0" stroke-width="1" />
+  <text x="750" y="185" font-family="'Segoe UI', Arial, sans-serif" font-size="10.5" font-weight="500" fill="#334155">slug</text>
+  <text x="1002" y="185" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#64748B" text-anchor="end">VARCHAR(255)</text>
+  <line x1="740" y1="190" x2="1010" y2="190" stroke="#E2E8F0" stroke-width="1" />
+  <text x="750" y="203" font-family="'Segoe UI', Arial, sans-serif" font-size="10.5" font-weight="500" fill="#334155">price</text>
+  <text x="1002" y="203" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#64748B" text-anchor="end">NUMERIC(12,2)</text>
+  <rect x="741" y="208" width="268" height="18" fill="#F8FAFC" />
+  <line x1="740" y1="208" x2="1010" y2="208" stroke="#E2E8F0" stroke-width="1" />
+  <text x="750" y="221" font-family="'Segoe UI', Arial, sans-serif" font-size="10.5" font-weight="500" fill="#334155">stock</text>
+  <text x="1002" y="221" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#64748B" text-anchor="end">INTEGER</text>
+  <line x1="740" y1="226" x2="1010" y2="226" stroke="#E2E8F0" stroke-width="1" />
+  <text x="750" y="239" font-family="'Segoe UI', Arial, sans-serif" font-size="10.5" font-weight="500" fill="#334155">category</text>
+  <text x="1002" y="239" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#64748B" text-anchor="end">VARCHAR(100)</text>
+  <rect x="741" y="244" width="268" height="18" fill="#F8FAFC" />
+  <line x1="740" y1="244" x2="1010" y2="244" stroke="#E2E8F0" stroke-width="1" />
+  <text x="750" y="257" font-family="'Segoe UI', Arial, sans-serif" font-size="10.5" font-weight="500" fill="#334155">is_active</text>
+  <text x="1002" y="257" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#64748B" text-anchor="end">BOOLEAN</text>
+  <line x1="740" y1="262" x2="1010" y2="262" stroke="#E2E8F0" stroke-width="1" />
+  <text x="750" y="275" font-family="'Segoe UI', Arial, sans-serif" font-size="10.5" font-weight="500" fill="#334155">discount_percent</text>
+  <text x="1002" y="275" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#64748B" text-anchor="end">INTEGER</text>
+  <rect x="741" y="280" width="268" height="18" fill="#F8FAFC" />
+  <line x1="740" y1="280" x2="1010" y2="280" stroke="#E2E8F0" stroke-width="1" />
+  <text x="750" y="293" font-family="'Segoe UI', Arial, sans-serif" font-size="10.5" font-weight="500" fill="#334155">allows_points</text>
+  <text x="1002" y="293" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#64748B" text-anchor="end">BOOLEAN</text>
+  <line x1="740" y1="298" x2="1010" y2="298" stroke="#E2E8F0" stroke-width="1" />
+  <text x="750" y="311" font-family="'Segoe UI', Arial, sans-serif" font-size="10.5" font-weight="500" fill="#334155">created_at</text>
+  <text x="1002" y="311" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#64748B" text-anchor="end">TIMESTAMP</text>
+</g>
+<!-- Table: cart_items -->
+<g id="table-cart_items">
+  <rect x="740" y="410" width="250" height="136" rx="5" ry="5" fill="#FFFFFF" stroke="#000000" stroke-width="1.8" />
+  <path d="M 740 415 Q 740 410 745 410 L 985 410 Q 990 410 990 415 L 990 438 L 740 438 Z" fill="#0F172A" />
+  <text x="865" y="428" font-family="'Segoe UI', Arial, sans-serif" font-size="12" font-weight="700" fill="#FFFFFF" text-anchor="middle">cart_items</text>
+  <line x1="740" y1="438" x2="990" y2="438" stroke="#E2E8F0" stroke-width="1" />
+  <rect x="746" y="441" width="20" height="12" rx="2" fill="#0F172A" />
+  <text x="756" y="450" font-family="'Segoe UI', Arial, sans-serif" font-size="8.5" font-weight="800" fill="#FFFFFF" text-anchor="middle">PK</text>
+  <text x="772" y="451" font-family="'Segoe UI', Arial, sans-serif" font-size="10.5" font-weight="700" fill="#0F172A">id</text>
+  <text x="982" y="451" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#64748B" text-anchor="end">INTEGER</text>
+  <rect x="741" y="456" width="248" height="18" fill="#F8FAFC" />
+  <line x1="740" y1="456" x2="990" y2="456" stroke="#E2E8F0" stroke-width="1" />
+  <rect x="746" y="459" width="20" height="12" rx="2" fill="#E2E8F0" stroke="#94A3B8" stroke-width="0.8" />
+  <text x="756" y="468" font-family="'Segoe UI', Arial, sans-serif" font-size="8.5" font-weight="700" fill="#0F172A" text-anchor="middle">FK</text>
+  <text x="772" y="469" font-family="'Segoe UI', Arial, sans-serif" font-size="10.5" font-weight="600" fill="#334155">cart_id</text>
+  <text x="982" y="469" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#64748B" text-anchor="end">INTEGER</text>
+  <line x1="740" y1="474" x2="990" y2="474" stroke="#E2E8F0" stroke-width="1" />
+  <rect x="746" y="477" width="20" height="12" rx="2" fill="#E2E8F0" stroke="#94A3B8" stroke-width="0.8" />
+  <text x="756" y="486" font-family="'Segoe UI', Arial, sans-serif" font-size="8.5" font-weight="700" fill="#0F172A" text-anchor="middle">FK</text>
+  <text x="772" y="487" font-family="'Segoe UI', Arial, sans-serif" font-size="10.5" font-weight="600" fill="#334155">product_id</text>
+  <text x="982" y="487" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#64748B" text-anchor="end">INTEGER</text>
+  <rect x="741" y="492" width="248" height="18" fill="#F8FAFC" />
+  <line x1="740" y1="492" x2="990" y2="492" stroke="#E2E8F0" stroke-width="1" />
+  <text x="750" y="505" font-family="'Segoe UI', Arial, sans-serif" font-size="10.5" font-weight="500" fill="#334155">quantity</text>
+  <text x="982" y="505" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#64748B" text-anchor="end">INTEGER</text>
+  <line x1="740" y1="510" x2="990" y2="510" stroke="#E2E8F0" stroke-width="1" />
+  <text x="750" y="523" font-family="'Segoe UI', Arial, sans-serif" font-size="10.5" font-weight="500" fill="#334155">selected_options</text>
+  <text x="982" y="523" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#64748B" text-anchor="end">TEXT</text>
+  <rect x="741" y="528" width="248" height="18" fill="#F8FAFC" />
+  <line x1="740" y1="528" x2="990" y2="528" stroke="#E2E8F0" stroke-width="1" />
+  <text x="750" y="541" font-family="'Segoe UI', Arial, sans-serif" font-size="10.5" font-weight="500" fill="#334155">created_at</text>
+  <text x="982" y="541" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#64748B" text-anchor="end">TIMESTAMP</text>
+</g>
+<!-- Table: carts -->
+<g id="table-carts">
+  <rect x="740" y="640" width="250" height="100" rx="5" ry="5" fill="#FFFFFF" stroke="#000000" stroke-width="1.8" />
+  <path d="M 740 645 Q 740 640 745 640 L 985 640 Q 990 640 990 645 L 990 668 L 740 668 Z" fill="#0F172A" />
+  <text x="865" y="658" font-family="'Segoe UI', Arial, sans-serif" font-size="12" font-weight="700" fill="#FFFFFF" text-anchor="middle">carts</text>
+  <line x1="740" y1="668" x2="990" y2="668" stroke="#E2E8F0" stroke-width="1" />
+  <rect x="746" y="671" width="20" height="12" rx="2" fill="#0F172A" />
+  <text x="756" y="680" font-family="'Segoe UI', Arial, sans-serif" font-size="8.5" font-weight="800" fill="#FFFFFF" text-anchor="middle">PK</text>
+  <text x="772" y="681" font-family="'Segoe UI', Arial, sans-serif" font-size="10.5" font-weight="700" fill="#0F172A">id</text>
+  <text x="982" y="681" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#64748B" text-anchor="end">INTEGER</text>
+  <rect x="741" y="686" width="248" height="18" fill="#F8FAFC" />
+  <line x1="740" y1="686" x2="990" y2="686" stroke="#E2E8F0" stroke-width="1" />
+  <rect x="746" y="689" width="20" height="12" rx="2" fill="#E2E8F0" stroke="#94A3B8" stroke-width="0.8" />
+  <text x="756" y="698" font-family="'Segoe UI', Arial, sans-serif" font-size="8.5" font-weight="700" fill="#0F172A" text-anchor="middle">FK</text>
+  <text x="772" y="699" font-family="'Segoe UI', Arial, sans-serif" font-size="10.5" font-weight="600" fill="#334155">user_id</text>
+  <text x="982" y="699" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#64748B" text-anchor="end">INTEGER</text>
+  <line x1="740" y1="704" x2="990" y2="704" stroke="#E2E8F0" stroke-width="1" />
+  <text x="750" y="717" font-family="'Segoe UI', Arial, sans-serif" font-size="10.5" font-weight="500" fill="#334155">created_at</text>
+  <text x="982" y="717" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#64748B" text-anchor="end">TIMESTAMP</text>
+  <rect x="741" y="722" width="248" height="18" fill="#F8FAFC" />
+  <line x1="740" y1="722" x2="990" y2="722" stroke="#E2E8F0" stroke-width="1" />
+  <text x="750" y="735" font-family="'Segoe UI', Arial, sans-serif" font-size="10.5" font-weight="500" fill="#334155">updated_at</text>
+  <text x="982" y="735" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#64748B" text-anchor="end">TIMESTAMP</text>
+</g>
+<!-- Table: orders -->
+<g id="table-orders">
+  <rect x="1090" y="90" width="290" height="262" rx="5" ry="5" fill="#FFFFFF" stroke="#000000" stroke-width="1.8" />
+  <path d="M 1090 95 Q 1090 90 1095 90 L 1375 90 Q 1380 90 1380 95 L 1380 118 L 1090 118 Z" fill="#0F172A" />
+  <text x="1235" y="108" font-family="'Segoe UI', Arial, sans-serif" font-size="12" font-weight="700" fill="#FFFFFF" text-anchor="middle">orders</text>
+  <line x1="1090" y1="118" x2="1380" y2="118" stroke="#E2E8F0" stroke-width="1" />
+  <rect x="1096" y="121" width="20" height="12" rx="2" fill="#0F172A" />
+  <text x="1106" y="130" font-family="'Segoe UI', Arial, sans-serif" font-size="8.5" font-weight="800" fill="#FFFFFF" text-anchor="middle">PK</text>
+  <text x="1122" y="131" font-family="'Segoe UI', Arial, sans-serif" font-size="10.5" font-weight="700" fill="#0F172A">id</text>
+  <text x="1372" y="131" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#64748B" text-anchor="end">INTEGER</text>
+  <rect x="1091" y="136" width="288" height="18" fill="#F8FAFC" />
+  <line x1="1090" y1="136" x2="1380" y2="136" stroke="#E2E8F0" stroke-width="1" />
+  <text x="1100" y="149" font-family="'Segoe UI', Arial, sans-serif" font-size="10.5" font-weight="500" fill="#334155">reference</text>
+  <text x="1372" y="149" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#64748B" text-anchor="end">VARCHAR(100)</text>
+  <line x1="1090" y1="154" x2="1380" y2="154" stroke="#E2E8F0" stroke-width="1" />
+  <rect x="1096" y="157" width="20" height="12" rx="2" fill="#E2E8F0" stroke="#94A3B8" stroke-width="0.8" />
+  <text x="1106" y="166" font-family="'Segoe UI', Arial, sans-serif" font-size="8.5" font-weight="700" fill="#0F172A" text-anchor="middle">FK</text>
+  <text x="1122" y="167" font-family="'Segoe UI', Arial, sans-serif" font-size="10.5" font-weight="600" fill="#334155">user_id</text>
+  <text x="1372" y="167" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#64748B" text-anchor="end">INTEGER</text>
+  <rect x="1091" y="172" width="288" height="18" fill="#F8FAFC" />
+  <line x1="1090" y1="172" x2="1380" y2="172" stroke="#E2E8F0" stroke-width="1" />
+  <rect x="1096" y="175" width="20" height="12" rx="2" fill="#E2E8F0" stroke="#94A3B8" stroke-width="0.8" />
+  <text x="1106" y="184" font-family="'Segoe UI', Arial, sans-serif" font-size="8.5" font-weight="700" fill="#0F172A" text-anchor="middle">FK</text>
+  <text x="1122" y="185" font-family="'Segoe UI', Arial, sans-serif" font-size="10.5" font-weight="600" fill="#334155">merchant_id</text>
+  <text x="1372" y="185" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#64748B" text-anchor="end">INTEGER</text>
+  <line x1="1090" y1="190" x2="1380" y2="190" stroke="#E2E8F0" stroke-width="1" />
+  <rect x="1096" y="193" width="20" height="12" rx="2" fill="#E2E8F0" stroke="#94A3B8" stroke-width="0.8" />
+  <text x="1106" y="202" font-family="'Segoe UI', Arial, sans-serif" font-size="8.5" font-weight="700" fill="#0F172A" text-anchor="middle">FK</text>
+  <text x="1122" y="203" font-family="'Segoe UI', Arial, sans-serif" font-size="10.5" font-weight="600" fill="#334155">shipping_address_id</text>
+  <text x="1372" y="203" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#64748B" text-anchor="end">INTEGER</text>
+  <rect x="1091" y="208" width="288" height="18" fill="#F8FAFC" />
+  <line x1="1090" y1="208" x2="1380" y2="208" stroke="#E2E8F0" stroke-width="1" />
+  <text x="1100" y="221" font-family="'Segoe UI', Arial, sans-serif" font-size="10.5" font-weight="500" fill="#334155">total</text>
+  <text x="1372" y="221" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#64748B" text-anchor="end">NUMERIC(12,2)</text>
+  <line x1="1090" y1="226" x2="1380" y2="226" stroke="#E2E8F0" stroke-width="1" />
+  <text x="1100" y="239" font-family="'Segoe UI', Arial, sans-serif" font-size="10.5" font-weight="500" fill="#334155">subtotal</text>
+  <text x="1372" y="239" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#64748B" text-anchor="end">NUMERIC(12,2)</text>
+  <rect x="1091" y="244" width="288" height="18" fill="#F8FAFC" />
+  <line x1="1090" y1="244" x2="1380" y2="244" stroke="#E2E8F0" stroke-width="1" />
+  <text x="1100" y="257" font-family="'Segoe UI', Arial, sans-serif" font-size="10.5" font-weight="500" fill="#334155">discount</text>
+  <text x="1372" y="257" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#64748B" text-anchor="end">NUMERIC(12,2)</text>
+  <line x1="1090" y1="262" x2="1380" y2="262" stroke="#E2E8F0" stroke-width="1" />
+  <text x="1100" y="275" font-family="'Segoe UI', Arial, sans-serif" font-size="10.5" font-weight="500" fill="#334155">status</text>
+  <text x="1372" y="275" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#64748B" text-anchor="end">VARCHAR(50)</text>
+  <rect x="1091" y="280" width="288" height="18" fill="#F8FAFC" />
+  <line x1="1090" y1="280" x2="1380" y2="280" stroke="#E2E8F0" stroke-width="1" />
+  <text x="1100" y="293" font-family="'Segoe UI', Arial, sans-serif" font-size="10.5" font-weight="500" fill="#334155">payment_method</text>
+  <text x="1372" y="293" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#64748B" text-anchor="end">VARCHAR(50)</text>
+  <line x1="1090" y1="298" x2="1380" y2="298" stroke="#E2E8F0" stroke-width="1" />
+  <text x="1100" y="311" font-family="'Segoe UI', Arial, sans-serif" font-size="10.5" font-weight="500" fill="#334155">payment_status</text>
+  <text x="1372" y="311" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#64748B" text-anchor="end">VARCHAR(50)</text>
+  <rect x="1091" y="316" width="288" height="18" fill="#F8FAFC" />
+  <line x1="1090" y1="316" x2="1380" y2="316" stroke="#E2E8F0" stroke-width="1" />
+  <text x="1100" y="329" font-family="'Segoe UI', Arial, sans-serif" font-size="10.5" font-weight="500" fill="#334155">tracking_number</text>
+  <text x="1372" y="329" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#64748B" text-anchor="end">VARCHAR(100)</text>
+  <line x1="1090" y1="334" x2="1380" y2="334" stroke="#E2E8F0" stroke-width="1" />
+  <text x="1100" y="347" font-family="'Segoe UI', Arial, sans-serif" font-size="10.5" font-weight="500" fill="#334155">created_at</text>
+  <text x="1372" y="347" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#64748B" text-anchor="end">TIMESTAMP</text>
+</g>
+<!-- Table: order_items -->
+<g id="table-order_items">
+  <rect x="1090" y="440" width="260" height="136" rx="5" ry="5" fill="#FFFFFF" stroke="#000000" stroke-width="1.8" />
+  <path d="M 1090 445 Q 1090 440 1095 440 L 1345 440 Q 1350 440 1350 445 L 1350 468 L 1090 468 Z" fill="#0F172A" />
+  <text x="1220" y="458" font-family="'Segoe UI', Arial, sans-serif" font-size="12" font-weight="700" fill="#FFFFFF" text-anchor="middle">order_items</text>
+  <line x1="1090" y1="468" x2="1350" y2="468" stroke="#E2E8F0" stroke-width="1" />
+  <rect x="1096" y="471" width="20" height="12" rx="2" fill="#0F172A" />
+  <text x="1106" y="480" font-family="'Segoe UI', Arial, sans-serif" font-size="8.5" font-weight="800" fill="#FFFFFF" text-anchor="middle">PK</text>
+  <text x="1122" y="481" font-family="'Segoe UI', Arial, sans-serif" font-size="10.5" font-weight="700" fill="#0F172A">id</text>
+  <text x="1342" y="481" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#64748B" text-anchor="end">INTEGER</text>
+  <rect x="1091" y="486" width="258" height="18" fill="#F8FAFC" />
+  <line x1="1090" y1="486" x2="1350" y2="486" stroke="#E2E8F0" stroke-width="1" />
+  <rect x="1096" y="489" width="20" height="12" rx="2" fill="#E2E8F0" stroke="#94A3B8" stroke-width="0.8" />
+  <text x="1106" y="498" font-family="'Segoe UI', Arial, sans-serif" font-size="8.5" font-weight="700" fill="#0F172A" text-anchor="middle">FK</text>
+  <text x="1122" y="499" font-family="'Segoe UI', Arial, sans-serif" font-size="10.5" font-weight="600" fill="#334155">order_id</text>
+  <text x="1342" y="499" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#64748B" text-anchor="end">INTEGER</text>
+  <line x1="1090" y1="504" x2="1350" y2="504" stroke="#E2E8F0" stroke-width="1" />
+  <rect x="1096" y="507" width="20" height="12" rx="2" fill="#E2E8F0" stroke="#94A3B8" stroke-width="0.8" />
+  <text x="1106" y="516" font-family="'Segoe UI', Arial, sans-serif" font-size="8.5" font-weight="700" fill="#0F172A" text-anchor="middle">FK</text>
+  <text x="1122" y="517" font-family="'Segoe UI', Arial, sans-serif" font-size="10.5" font-weight="600" fill="#334155">product_id</text>
+  <text x="1342" y="517" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#64748B" text-anchor="end">INTEGER</text>
+  <rect x="1091" y="522" width="258" height="18" fill="#F8FAFC" />
+  <line x1="1090" y1="522" x2="1350" y2="522" stroke="#E2E8F0" stroke-width="1" />
+  <text x="1100" y="535" font-family="'Segoe UI', Arial, sans-serif" font-size="10.5" font-weight="500" fill="#334155">quantity</text>
+  <text x="1342" y="535" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#64748B" text-anchor="end">INTEGER</text>
+  <line x1="1090" y1="540" x2="1350" y2="540" stroke="#E2E8F0" stroke-width="1" />
+  <text x="1100" y="553" font-family="'Segoe UI', Arial, sans-serif" font-size="10.5" font-weight="500" fill="#334155">price</text>
+  <text x="1342" y="553" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#64748B" text-anchor="end">NUMERIC(12,2)</text>
+  <rect x="1091" y="558" width="258" height="18" fill="#F8FAFC" />
+  <line x1="1090" y1="558" x2="1350" y2="558" stroke="#E2E8F0" stroke-width="1" />
+  <text x="1100" y="571" font-family="'Segoe UI', Arial, sans-serif" font-size="10.5" font-weight="500" fill="#334155">selected_options</text>
+  <text x="1342" y="571" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#64748B" text-anchor="end">TEXT</text>
+</g>
+<!-- Table: payment_transactions -->
+<g id="table-payment_transactions">
+  <rect x="1090" y="670" width="270" height="172" rx="5" ry="5" fill="#FFFFFF" stroke="#000000" stroke-width="1.8" />
+  <path d="M 1090 675 Q 1090 670 1095 670 L 1355 670 Q 1360 670 1360 675 L 1360 698 L 1090 698 Z" fill="#0F172A" />
+  <text x="1225" y="688" font-family="'Segoe UI', Arial, sans-serif" font-size="12" font-weight="700" fill="#FFFFFF" text-anchor="middle">payment_transactions</text>
+  <line x1="1090" y1="698" x2="1360" y2="698" stroke="#E2E8F0" stroke-width="1" />
+  <rect x="1096" y="701" width="20" height="12" rx="2" fill="#0F172A" />
+  <text x="1106" y="710" font-family="'Segoe UI', Arial, sans-serif" font-size="8.5" font-weight="800" fill="#FFFFFF" text-anchor="middle">PK</text>
+  <text x="1122" y="711" font-family="'Segoe UI', Arial, sans-serif" font-size="10.5" font-weight="700" fill="#0F172A">id</text>
+  <text x="1352" y="711" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#64748B" text-anchor="end">INTEGER</text>
+  <rect x="1091" y="716" width="268" height="18" fill="#F8FAFC" />
+  <line x1="1090" y1="716" x2="1360" y2="716" stroke="#E2E8F0" stroke-width="1" />
+  <rect x="1096" y="719" width="20" height="12" rx="2" fill="#E2E8F0" stroke="#94A3B8" stroke-width="0.8" />
+  <text x="1106" y="728" font-family="'Segoe UI', Arial, sans-serif" font-size="8.5" font-weight="700" fill="#0F172A" text-anchor="middle">FK</text>
+  <text x="1122" y="729" font-family="'Segoe UI', Arial, sans-serif" font-size="10.5" font-weight="600" fill="#334155">order_id</text>
+  <text x="1352" y="729" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#64748B" text-anchor="end">INTEGER</text>
+  <line x1="1090" y1="734" x2="1360" y2="734" stroke="#E2E8F0" stroke-width="1" />
+  <text x="1100" y="747" font-family="'Segoe UI', Arial, sans-serif" font-size="10.5" font-weight="500" fill="#334155">transaction_id</text>
+  <text x="1352" y="747" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#64748B" text-anchor="end">VARCHAR(255)</text>
+  <rect x="1091" y="752" width="268" height="18" fill="#F8FAFC" />
+  <line x1="1090" y1="752" x2="1360" y2="752" stroke="#E2E8F0" stroke-width="1" />
+  <text x="1100" y="765" font-family="'Segoe UI', Arial, sans-serif" font-size="10.5" font-weight="500" fill="#334155">reference</text>
+  <text x="1352" y="765" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#64748B" text-anchor="end">VARCHAR(100)</text>
+  <line x1="1090" y1="770" x2="1360" y2="770" stroke="#E2E8F0" stroke-width="1" />
+  <text x="1100" y="783" font-family="'Segoe UI', Arial, sans-serif" font-size="10.5" font-weight="500" fill="#334155">status</text>
+  <text x="1352" y="783" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#64748B" text-anchor="end">VARCHAR(50)</text>
+  <rect x="1091" y="788" width="268" height="18" fill="#F8FAFC" />
+  <line x1="1090" y1="788" x2="1360" y2="788" stroke="#E2E8F0" stroke-width="1" />
+  <text x="1100" y="801" font-family="'Segoe UI', Arial, sans-serif" font-size="10.5" font-weight="500" fill="#334155">amount_in_cents</text>
+  <text x="1352" y="801" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#64748B" text-anchor="end">INTEGER</text>
+  <line x1="1090" y1="806" x2="1360" y2="806" stroke="#E2E8F0" stroke-width="1" />
+  <text x="1100" y="819" font-family="'Segoe UI', Arial, sans-serif" font-size="10.5" font-weight="500" fill="#334155">currency</text>
+  <text x="1352" y="819" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#64748B" text-anchor="end">VARCHAR(10)</text>
+  <rect x="1091" y="824" width="268" height="18" fill="#F8FAFC" />
+  <line x1="1090" y1="824" x2="1360" y2="824" stroke="#E2E8F0" stroke-width="1" />
+  <text x="1100" y="837" font-family="'Segoe UI', Arial, sans-serif" font-size="10.5" font-weight="500" fill="#334155">processed_at</text>
+  <text x="1352" y="837" font-family="'Segoe UI', Arial, sans-serif" font-size="9.5" font-weight="400" fill="#64748B" text-anchor="end">TIMESTAMP</text>
+</g>
+  </g>
+</svg>
