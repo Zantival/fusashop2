@@ -895,7 +895,11 @@
                 <span class="material-symbols-outlined text-xs">visibility</span> Vista Previa del Video de Compradores:
               </span>
               <div class="aspect-video max-w-sm rounded-lg overflow-hidden bg-black shadow-sm">
-                <iframe src="{{ $previewBuyerEmbed }}" title="Preview Comprador" class="w-full h-full" frameborder="0" allowfullscreen></iframe>
+                @if(\App\Models\Setting::isDirectVideoUrl($previewBuyerEmbed))
+                  <video src="{{ $previewBuyerEmbed }}" title="Preview Comprador" class="w-full h-full" controls playsinline preload="metadata"></video>
+                @else
+                  <iframe src="{{ $previewBuyerEmbed }}" title="Preview Comprador" class="w-full h-full" frameborder="0" allowfullscreen></iframe>
+                @endif
               </div>
             </div>
           @endif
@@ -935,7 +939,11 @@
                 <span class="material-symbols-outlined text-xs">visibility</span> Vista Previa del Video de Vendedores:
               </span>
               <div class="aspect-video max-w-sm rounded-lg overflow-hidden bg-black shadow-sm">
-                <iframe src="{{ $previewSellerEmbed }}" title="Preview Vendedor" class="w-full h-full" frameborder="0" allowfullscreen></iframe>
+                @if(\App\Models\Setting::isDirectVideoUrl($previewSellerEmbed))
+                  <video src="{{ $previewSellerEmbed }}" title="Preview Vendedor" class="w-full h-full" controls playsinline preload="metadata"></video>
+                @else
+                  <iframe src="{{ $previewSellerEmbed }}" title="Preview Vendedor" class="w-full h-full" frameborder="0" allowfullscreen></iframe>
+                @endif
               </div>
             </div>
           @endif

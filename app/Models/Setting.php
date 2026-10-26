@@ -186,8 +186,8 @@ class Setting extends Model
                 return array_replace($decoded, [
                     'card_subtitle' => 'Elige si quieres comprar en el catálogo o registrar tu tienda y conoce los pasos desde la plataforma.',
                     'buyer_description' => 'Explora comercios de Fusagasugá, revisa las condiciones de compra y consulta el estado de tu pedido desde tu cuenta.',
-                    'buyer_video_url' => '',
-                    'seller_video_url' => '',
+                    'buyer_video_url' => $decoded['buyer_video_url'] ?? '',
+                    'seller_video_url' => $decoded['seller_video_url'] ?? '',
                     'buyer_steps' => "1. Crea tu cuenta y confirma el correo con el código recibido.\n2. Explora productos y revisa precio, disponibilidad y condiciones.\n3. Confirma el pedido y consulta su estado desde tu cuenta.",
                     'seller_why_verify' => 'La revisión de documentos ayuda a validar la información de tu tienda y puede habilitar funciones que requieren verificación. El resultado y los requisitos se informan en tu panel; la revisión no garantiza ventas ni elimina obligaciones legales o tributarias.',
                     'seller_description' => 'Conoce los requisitos para registrar tu tienda y solicitar una revisión de documentos desde tu cuenta.',
@@ -230,5 +230,12 @@ class Setting extends Model
             return 'https://player.vimeo.com/video/' . $matches[3];
         }
         return $url;
+    }
+
+    public static function isDirectVideoUrl(?string $url): bool
+    {
+        if (!$url) return false;
+        $path = parse_url(trim($url), PHP_URL_PATH);
+        return is_string($path) && (bool) preg_match('/\.(mp4|webm|ogg|ogv|mov)$/i', $path);
     }
 }

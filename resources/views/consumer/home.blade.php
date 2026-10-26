@@ -237,7 +237,11 @@
 
             @if(!empty($buyerVideoEmbed))
               <div class="rounded-2xl overflow-hidden border-2 border-emerald-500/40 bg-black aspect-video w-full shadow-2xl relative">
-                <iframe src="{{ $buyerVideoEmbed }}" title="Video Tutorial Comprador" class="w-full h-full" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                @if(\App\Models\Setting::isDirectVideoUrl($buyerVideoEmbed))
+                  <video src="{{ $buyerVideoEmbed }}" title="Video Tutorial Comprador" class="w-full h-full" controls playsinline preload="metadata"></video>
+                @else
+                  <iframe src="{{ $buyerVideoEmbed }}" title="Video Tutorial Comprador" class="w-full h-full" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                @endif
               </div>
             @else
               <div class="rounded-2xl border-2 border-dashed border-emerald-500/40 bg-slate-950/90 p-8 text-center flex flex-col items-center justify-center gap-3">
@@ -305,7 +309,11 @@
 
             @if(!empty($sellerVideoEmbed))
               <div class="rounded-2xl overflow-hidden border-2 border-orange-500/40 bg-black aspect-video w-full shadow-2xl relative">
-                <iframe src="{{ $sellerVideoEmbed }}" title="Video Tutorial Comerciante" class="w-full h-full" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                @if(\App\Models\Setting::isDirectVideoUrl($sellerVideoEmbed))
+                  <video src="{{ $sellerVideoEmbed }}" title="Video Tutorial Comerciante" class="w-full h-full" controls playsinline preload="metadata"></video>
+                @else
+                  <iframe src="{{ $sellerVideoEmbed }}" title="Video Tutorial Comerciante" class="w-full h-full" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                @endif
               </div>
             @else
               <div class="rounded-2xl border-2 border-dashed border-orange-500/40 bg-slate-950/90 p-8 text-center flex flex-col items-center justify-center gap-3">
