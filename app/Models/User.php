@@ -108,18 +108,16 @@ class User extends Authenticatable implements MustVerifyEmail
         return ! is_null($this->email_verified_at);
     }
 
-    public function avatarUrl(): ?string
+    public function avatarStoragePath(): ?string
     {
         if (!$this->avatar) {
             return null;
         }
         $avatar = trim($this->avatar);
         if (preg_match('#^https?://#i', $avatar)) {
-            return $avatar;
+            return null;
         }
 
-        // Hostinger may disable symlink creation, so serve local avatars through
-        // the guarded Laravel file route instead of depending on public/storage.
         $path = ltrim(str_replace('\\', '/', $avatar), '/');
         foreach (['public/storage/', 'storage/app/public/', 'storage/', 'public/'] as $prefix) {
             if (str_starts_with($path, $prefix)) {
@@ -128,7 +126,25 @@ class User extends Authenticatable implements MustVerifyEmail
             }
         }
 
-        return route('files.serve', ['disk' => 'public', 'path' => $path]);
+        if ($path === '' || str_contains($path, '..') || str_contains($path, "\0")) {
+            return null;
+        }
+
+        return $path;
+    }
+
+    public function avatarUrl(): ?string
+    {
+        if (!$this->avatar) {
+            return null;
+        }
+
+        $avatar = trim($this->avatar);
+        if (preg_match('#^https?://#i', $avatar)) {
+            return $avatar;
+        }
+
+        return route('users.avatar', ['user' => $this->getKey(), 'v' => $this->updated_at?->timestamp ?? 0]);
     }
 
     public function products() { return $this->hasMany(Product::class, 'merchant_id'); }

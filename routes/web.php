@@ -422,3 +422,16 @@ Route::get('/files/{disk}/{path}', function (string $disk, string $path) use ($s
 
 Route::get('/storage/{path}', fn (string $path) => $servePublicFile($path))
     ->where('path', '.*')->name('storage.serve');
+
+// Fotos de perfil desde el disco público, sin depender de public/storage (symlink).
+Route::get('/user-avatars/{user}', function (\App\Models\User $user) {
+    $path = $user->avatarStoragePath();
+    abort_unless($path, 404);
+
+    $disk = \Illuminate\Support\Facades\Storage::disk('public');
+    abort_unless($disk->exists($path), 404);
+
+    return response()->file($disk->path($path), [
+        'Cache-Control' => 'public, max-age=3600, must-revalidate',
+    ]);
+})->whereNumber('user')->name('users.avatar');

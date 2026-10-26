@@ -1058,3 +1058,21 @@ h3 {
     flex-basis: 100%;
   }
 }
+
+/* Acceso persistente al asistente en móviles, separado del logotipo y del menú inferior. */
+@media (max-width: 767.98px) {
+  #main-header #fusabot-launcher {
+    position: fixed !important;
+    right: 1rem !important;
+    bottom: calc(5rem + env(safe-area-inset-bottom, 0px)) !important;
+    z-index: 60 !important;
+    display: flex !important;
+    width: 3.25rem !important;
+    height: 3.25rem !important;
+    padding: 0.15rem !important;
+    border: 2px solid rgba(16, 185, 129, 0.75) !important;
+    border-radius: 9999px !important;
+    background: #fff !important;
+    box-shadow: 0 8px 22px rgba(0, 80, 55, 0.28) !important;
+  }
+}

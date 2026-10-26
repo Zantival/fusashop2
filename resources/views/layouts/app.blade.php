@@ -327,7 +327,7 @@ document.addEventListener('click', function(e) {
 
         <!-- Botón Fusabot con Ilustración Oficial (al lado de la Campana) -->
         <button id="fusabot-launcher" type="button" aria-label="Abrir Asistente FusaBot" aria-haspopup="dialog" aria-controls="fusabot-modal"
-                class="fusabot-launcher-btn group relative hidden sm:flex items-center justify-center p-0.5 rounded-full hover:scale-110 active:scale-95 transition-all duration-300 cursor-pointer select-none focus:outline-none w-9 h-9 sm:w-11 sm:h-11 shrink-0 bg-transparent border-0 shadow-none"
+                class="fusabot-launcher-btn group relative flex items-center justify-center p-0.5 rounded-full hover:scale-110 active:scale-95 transition-all duration-300 cursor-pointer select-none focus:outline-none w-9 h-9 sm:w-11 sm:h-11 shrink-0 bg-transparent border-0 shadow-none"
                 title="Abrir Asistente FusaBot IA">
           <div class="relative w-full h-full rounded-full overflow-hidden shadow-md group-hover:shadow-xl transition-all duration-300 ring-2 ring-emerald-400/50 group-hover:ring-emerald-500 bg-white">
             <img loading="lazy" decoding="async" src="{{ asset('fusabot.png') }}" alt="Fusabot IA" class="w-full h-full object-cover pointer-events-none select-none">
