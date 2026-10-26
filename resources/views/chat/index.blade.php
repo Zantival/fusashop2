@@ -13,10 +13,12 @@
         <span class="material-symbols-outlined text-3xl text-on-surface-variant/40">forum</span>
       </div>
       <h2 class="font-bold text-on-surface mb-2">Sin conversaciones aún</h2>
-      <p class="text-sm text-on-surface-variant max-w-xs mx-auto">Inicia un chat desde la página de un producto para hablar con un comerciante.</p>
-      <a href="{{ route('consumer.catalog') }}" class="mt-6 inline-flex items-center gap-2 px-5 py-2.5 bg-greenhouse-gradient text-white text-sm font-bold rounded-xl shadow-sm">
-        <span class="material-symbols-outlined text-[18px]">explore</span> Explorar productos
-      </a>
+      <p class="text-sm text-on-surface-variant max-w-xs mx-auto">{{ auth()->user()->isAnalyst() ? 'Aquí aparecerán los mensajes de compradores y comerciantes que contacten al equipo.' : 'Inicia un chat desde la página de un producto para hablar con un comerciante.' }}</p>
+      @unless(auth()->user()->isAnalyst())
+        <a href="{{ route('consumer.catalog') }}" class="mt-6 inline-flex items-center gap-2 px-5 py-2.5 bg-greenhouse-gradient text-white text-sm font-bold rounded-xl shadow-sm">
+          <span class="material-symbols-outlined text-[18px]">explore</span> Explorar productos
+        </a>
+      @endunless
     </div>
   @else
     <div id="conversation-list" class="space-y-2">
@@ -30,13 +32,7 @@
            class="flex items-center gap-4 p-4 bg-white rounded-2xl border border-surface-container hover:border-primary/30 hover:shadow-md transition-all group">
           <!-- Avatar -->
           <div class="conversation-avatar relative shrink-0">
-            @if($otherUser->avatar)
-              <img loading="lazy" decoding="async" src="{{ $otherUser->avatarUrl() }}" alt="{{ $otherUser->name }}" class="w-12 h-12 rounded-full object-cover">
-            @else
-              <div class="w-12 h-12 bg-greenhouse-gradient rounded-full flex items-center justify-center text-white font-bold text-lg">
-                {{ strtoupper(substr($otherUser->name, 0, 1)) }}
-              </div>
-            @endif
+            <x-user-avatar :user="$otherUser" size="w-12 h-12" text-size="text-lg" />
             @if($unread > 0)
               <span class="absolute -top-1 -right-1 w-5 h-5 bg-[#ba1a1a] text-white text-[9px] font-black rounded-full flex items-center justify-center border-2 border-white">{{ $unread }}</span>
             @endif
@@ -95,6 +91,7 @@ function getOrCreateConversationRow(message) {
     img.src = message.partner_avatar;
     img.alt = message.partner_name || 'Usuario';
     img.className = 'w-12 h-12 rounded-full object-cover';
+    img.onerror = function () { avatar.textContent = (message.partner_name || '?').trim().charAt(0).toUpperCase(); };
     avatar.appendChild(img);
   } else {
     avatar.textContent = (message.partner_name || '?').trim().charAt(0).toUpperCase();
@@ -125,7 +122,7 @@ function getOrCreateConversationRow(message) {
 
 async function pollConversationInbox() {
   try {
-    const response = await fetch(`${chatInboxPollUrl}?after=${window.chatInboxAfterId}`, { headers: { Accept: 'application/json' } });
+    const response = await fetch(`${chatInboxPollUrl}?after=${window.chatInboxAfterId}`, { cache: 'no-store', headers: { Accept: 'application/json' } });
     if (!response.ok) return;
     const data = await response.json();
     (data.messages || []).forEach(function (message) {
@@ -155,6 +152,6 @@ async function pollConversationInbox() {
 }
 
 pollConversationInbox();
-setInterval(pollConversationInbox, 2500);
+setInterval(pollConversationInbox, 1000);
 </script>
 @endpush

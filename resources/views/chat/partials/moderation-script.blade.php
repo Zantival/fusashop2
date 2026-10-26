@@ -90,6 +90,9 @@ window.attachChatSenderAvatar = function (messageRow, message) {
     image.src = message.sender_avatar;
     image.alt = message.sender_name || 'Usuario';
     image.className = 'w-full h-full object-cover';
+    image.onerror = function () {
+      avatar.textContent = (message.sender_name || '?').trim().charAt(0).toUpperCase();
+    };
     avatar.appendChild(image);
   } else {
     avatar.textContent = (message.sender_name || '?').trim().charAt(0).toUpperCase();

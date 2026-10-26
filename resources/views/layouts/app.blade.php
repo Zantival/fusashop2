@@ -2174,6 +2174,15 @@ document.addEventListener('submit', (event) => {
       return false;
     }
 
+    // Las vistas que traen JavaScript propio deben inicializarse con una carga completa.
+    // Reinsertar scripts en el mismo documento conserva const/let globales de páginas previas,
+    // provoca errores de redeclaración y deja módulos (incluido el chat) sin inicializar.
+    const newScriptsStack = doc.getElementById('dynamic-page-scripts');
+    if (newMain.querySelector('script') || newScriptsStack?.querySelector('script')) {
+      window.location.assign(finalUrl);
+      return false;
+    }
+
     // Actualizar título del documento
     if (doc.title) {
       window.fusaShopPageTitle = doc.title;
@@ -2191,7 +2200,6 @@ document.addEventListener('submit', (event) => {
     currentMain.innerHTML = newMain.innerHTML;
 
     // Actualizar scripts dinamicos de pagina si existen
-    const newScriptsStack = doc.getElementById('dynamic-page-scripts');
     const currentScriptsStack = document.getElementById('dynamic-page-scripts');
     if (newScriptsStack && currentScriptsStack) {
       currentScriptsStack.innerHTML = newScriptsStack.innerHTML;

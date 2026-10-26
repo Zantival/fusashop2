@@ -9,13 +9,7 @@
     <a href="{{ route('chat.index') }}" class="p-2 hover:bg-surface-container rounded-full transition-colors text-on-surface-variant">
       <span class="material-symbols-outlined">arrow_back</span>
     </a>
-    @if($otherUser->avatar)
-      <img loading="lazy" decoding="async" src="{{ $otherUser->avatarUrl() }}" alt="{{ $otherUser->name }}" class="w-10 h-10 rounded-full object-cover">
-    @else
-      <div class="w-10 h-10 bg-greenhouse-gradient rounded-full flex items-center justify-center text-white font-bold shrink-0">
-        {{ strtoupper(substr($otherUser->name, 0, 1)) }}
-      </div>
-    @endif
+    <x-user-avatar :user="$otherUser" size="w-10 h-10" />
     <div class="flex-1 min-w-0">
       <h1 class="font-black text-on-surface leading-tight truncate">{{ e($otherUser->name) }}</h1>
       <p class="text-[10px] text-primary font-bold uppercase tracking-wider">{{ ucfirst($otherUser->role) }}</p>
@@ -36,11 +30,7 @@
       @php $mine = $msg->sender_id == auth()->id(); @endphp
       <div class="flex {{ $mine ? 'justify-end' : 'justify-start' }}" data-msg-id="{{ $msg->id }}">
         @if(!$mine)
-          @if($msg->sender?->avatar)
-            <img src="{{ $msg->sender->avatarUrl() }}" alt="{{ $msg->sender->name }}" class="w-8 h-8 rounded-full object-cover self-end mr-2">
-          @else
-            <div class="w-8 h-8 rounded-full bg-greenhouse-gradient text-white text-xs font-bold flex items-center justify-center self-end mr-2">{{ strtoupper(substr($msg->sender?->name ?? '?', 0, 1)) }}</div>
-          @endif
+          <x-user-avatar :user="$msg->sender" size="w-8 h-8" text-size="text-xs" class="self-end mr-2" />
         @endif
         <div class="max-w-[78%]">
           @if($msg->product_id && $msg->product)
@@ -226,6 +216,7 @@ async function handleSendMessage() {
 async function poll() {
     try {
         const res = await fetch(`${pollUrl}?after=${window.chatLastId}`, {
+            cache: 'no-store',
             headers: { 'Accept': 'application/json' }
         });
         const data = await res.json();
@@ -247,7 +238,7 @@ inputField.addEventListener('keydown', (e) => {
 
 // Initial scroll and start polling
 scrollToBottom();
-setInterval(poll, 1500);
+setInterval(poll, 800);
 </script>
 @endpush
 @endsection

@@ -114,13 +114,7 @@
                 <div class="flex items-start gap-3">
                   <!-- Avatar -->
                   <div class="conversation-avatar relative shrink-0">
-                    @if($client->avatar)
-                      <img loading="lazy" decoding="async" src="{{ $client->avatarUrl() }}" alt="{{ $client->name }}" class="w-11 h-11 rounded-full object-cover border-2 {{ $isActive ? 'border-emerald-500' : 'border-white' }} shadow-2xs">
-                    @else
-                      <div class="w-11 h-11 rounded-full bg-gradient-to-tr from-emerald-600 to-teal-500 text-white font-black text-sm flex items-center justify-center shadow-2xs">
-                        {{ strtoupper(substr($client->name, 0, 1)) }}
-                      </div>
-                    @endif
+                    <x-user-avatar :user="$client" size="w-11 h-11" text-size="text-sm" class="border-2 {{ $isActive ? 'border-emerald-500' : 'border-white' }} shadow-2xs" />
                     @if($unreadThisChat > 0)
                       <span class="conversation-unread absolute -top-1 -right-1 w-5 h-5 bg-rose-600 text-white text-[9px] font-black rounded-full flex items-center justify-center border-2 border-white animate-pulse">
                         {{ $unreadThisChat }}
@@ -167,13 +161,7 @@
           <div class="p-4 border-b border-slate-200/80 flex items-center justify-between bg-white shadow-2xs shrink-0">
             <div class="flex items-center gap-3 min-w-0">
               <div class="relative shrink-0">
-                @if($activeUser->avatarUrl())
-                  <img loading="lazy" decoding="async" src="{{ $activeUser->avatarUrl() }}" alt="{{ $activeUser->name }}" class="w-10 h-10 rounded-full object-cover border border-slate-200">
-                @else
-                  <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-emerald-600 to-teal-500 text-white font-black text-sm flex items-center justify-center">
-                    {{ strtoupper(substr($activeUser->name, 0, 1)) }}
-                  </div>
-                @endif
+                <x-user-avatar :user="$activeUser" size="w-10 h-10" text-size="text-sm" class="border border-slate-200" />
                 <span class="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-500 border-2 border-white"></span>
               </div>
 
@@ -240,11 +228,7 @@
               @php $mine = $msg->sender_id == auth()->id(); @endphp
               <div class="flex {{ $mine ? 'justify-end' : 'justify-start' }}" data-msg-id="{{ $msg->id }}">
                 @if(!$mine)
-                  @if($msg->sender?->avatar)
-                    <img src="{{ $msg->sender->avatarUrl() }}" alt="{{ $msg->sender->name }}" class="w-8 h-8 rounded-full object-cover self-end mr-2">
-                  @else
-                    <div class="w-8 h-8 rounded-full bg-emerald-600 text-white text-xs font-bold flex items-center justify-center self-end mr-2">{{ strtoupper(substr($msg->sender?->name ?? '?', 0, 1)) }}</div>
-                  @endif
+                <x-user-avatar :user="$msg->sender" size="w-8 h-8" text-size="text-xs" class="self-end mr-2" />
                 @endif
                 <div class="max-w-[80%] md:max-w-[70%]">
                   <!-- Producto embebido si vino con el mensaje -->
@@ -467,6 +451,7 @@
   async function poll() {
       try {
           const res = await fetch(`${pollUrl}?after=${window.chatLastId}`, {
+              cache: 'no-store',
               headers: { 'Accept': 'application/json' }
           });
           const data = await res.json();
@@ -494,6 +479,7 @@
               img.src = message.partner_avatar;
               img.alt = message.partner_name || 'Usuario';
               img.className = 'w-11 h-11 rounded-full object-cover';
+              img.onerror = function () { avatar.textContent = (message.partner_name || '?').trim().charAt(0).toUpperCase(); };
               avatar.appendChild(img);
           } else avatar.textContent = (message.partner_name || '?').trim().charAt(0).toUpperCase();
           const body = document.createElement('div');
@@ -531,7 +517,7 @@
 
   async function pollMerchantInbox() {
       try {
-          const response = await fetch(`${inboxPollUrl}?after=${window.merchantInboxAfterId}`, { headers: { Accept: 'application/json' } });
+          const response = await fetch(`${inboxPollUrl}?after=${window.merchantInboxAfterId}`, { cache: 'no-store', headers: { Accept: 'application/json' } });
           if (!response.ok) return;
           const data = await response.json();
           (data.messages || []).forEach(function (message) {
@@ -551,8 +537,8 @@
   }
 
   scrollToBottom();
-  setInterval(poll, 1500);
-  setInterval(pollMerchantInbox, 2500);
+  setInterval(poll, 800);
+  setInterval(pollMerchantInbox, 1000);
   </script>
   @endpush
 @endif
@@ -563,7 +549,7 @@
     let emptyMerchantInboxAfter = 0;
     setInterval(async function () {
       try {
-        const response = await fetch(`${emptyMerchantInboxUrl}?after=${emptyMerchantInboxAfter}`, { headers: { Accept: 'application/json' } });
+        const response = await fetch(`${emptyMerchantInboxUrl}?after=${emptyMerchantInboxAfter}`, { cache: 'no-store', headers: { Accept: 'application/json' } });
         if (!response.ok) return;
         const data = await response.json();
         if (data.messages?.length) {

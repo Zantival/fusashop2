@@ -5,6 +5,7 @@
   $openPqrsCount = \App\Models\PQRS::whereIn('status', ['pending', 'in_review'])->count();
   $pendingBannersCount = \App\Models\BannerRequest::where('status', 'pending')->count();
   $unreadDbNotifs = $adminUser ? $adminUser->unreadNotifications()->count() : 0;
+  $unreadChatMessages = $adminUser ? \App\Models\Message::where('receiver_id', $adminUser->id)->where('is_read', false)->count() : 0;
   // El globo de la campana cuenta solo notificaciones sin leer.
   // KYC, PQRS e integraciones siguen siendo alertas operativas hasta resolverse.
   $totalAlertsCount = $unreadDbNotifs;
@@ -262,6 +263,16 @@
            class="px-3 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2.5 {{ request()->routeIs('analyst.dashboard') ? 'bg-emerald-100 text-[#006c47] font-extrabold shadow-2xs' : 'text-slate-600 hover:text-[#006c47] hover:bg-slate-100' }}">
           <span class="material-symbols-outlined text-[18px]">dashboard</span>
           <span>Dashboard</span>
+        </a>
+        <a href="{{ route('chat.index') }}" data-no-ajax
+           class="px-3 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-between {{ request()->routeIs('chat.*') ? 'bg-emerald-100 text-[#006c47] font-extrabold shadow-2xs' : 'text-slate-600 hover:text-[#006c47] hover:bg-slate-100' }}">
+          <span class="flex items-center gap-2.5">
+            <span class="material-symbols-outlined text-[18px]">forum</span>
+            <span>Mensajes</span>
+          </span>
+          @if($unreadChatMessages > 0)
+            <span id="analyst-unread-chat-count" class="px-1.5 py-0.5 rounded-full text-[10px] font-black bg-rose-100 text-rose-800">{{ $unreadChatMessages }}</span>
+          @endif
         </a>
         <a href="{{ route('analyst.users') }}" 
            class="px-3 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-between {{ request()->routeIs('analyst.users*') ? 'bg-emerald-100 text-[#006c47] font-extrabold shadow-2xs' : 'text-slate-600 hover:text-[#006c47] hover:bg-slate-100' }}">

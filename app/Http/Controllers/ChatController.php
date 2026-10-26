@@ -108,7 +108,8 @@ class ChatController extends Controller
             ->filter(fn($n) => ($n->data['sender_id'] ?? null) == $otherUserId)
             ->each->markAsRead();
 
-        return response()->json(['messages' => $messages, 'last_message_id' => (int) ($messages->max('id') ?? $afterId)]);
+        return response()->json(['messages' => $messages, 'last_message_id' => (int) ($messages->max('id') ?? $afterId)])
+            ->header('Cache-Control', 'private, no-store, max-age=0');
     }
 
     public function inboxPoll(Request $request)
@@ -151,7 +152,7 @@ class ChatController extends Controller
         return response()->json([
             'messages' => $messages,
             'last_message_id' => (int) ($messages->max('id') ?? $afterId),
-        ]);
+        ])->header('Cache-Control', 'private, no-store, max-age=0');
     }
 
     public function store(Request $request, ChatMessageModeration $moderator)

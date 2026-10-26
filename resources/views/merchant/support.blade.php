@@ -69,13 +69,7 @@
             <a href="{{ route('merchant.support.contact', ['analyst' => $analystItem->id]) }}"
                class="flex items-center gap-3 p-3 rounded-xl transition-all border {{ $isSelected ? 'bg-emerald-50/90 border-emerald-300 shadow-2xs' : 'bg-slate-50/60 hover:bg-white border-slate-200/70' }}">
               <div class="relative shrink-0">
-                @if($analystItem->avatar)
-                  <img loading="lazy" decoding="async" src="{{ Storage::url($analystItem->avatar) }}" alt="{{ $analystItem->name }}" class="w-10 h-10 rounded-full object-cover border-2 border-emerald-500">
-                @else
-                  <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-[#006c47] to-[#10B981] text-white font-black text-sm flex items-center justify-center">
-                    {{ strtoupper(substr($analystItem->name, 0, 1)) }}
-                  </div>
-                @endif
+                <x-user-avatar :user="$analystItem" size="w-10 h-10" text-size="text-sm" class="border-2 border-emerald-500" />
                 <span class="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-500 border-2 border-white"></span>
               </div>
               <div class="min-w-0 flex-1">
@@ -135,13 +129,7 @@
       <!-- ENCABEZADO DEL ANALISTA -->
       <div class="p-4 border-b border-slate-200/80 bg-gradient-to-r from-slate-900 to-emerald-950 text-white flex items-center justify-between">
         <div class="flex items-center gap-3 min-w-0">
-          @if($admin->avatar)
-            <img src="{{ $admin->avatarUrl() }}" alt="{{ $admin->name }}" class="w-10 h-10 rounded-full object-cover border border-emerald-400/40 shrink-0">
-          @else
-            <div class="w-10 h-10 rounded-full bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 font-black text-sm flex items-center justify-center shrink-0">
-              {{ strtoupper(substr($admin->name, 0, 1)) }}
-            </div>
-          @endif
+          <x-user-avatar :user="$admin" size="w-10 h-10" text-size="text-sm" class="border border-emerald-400/40" />
           <div class="min-w-0">
             <div class="flex items-center gap-2">
               <h2 class="font-extrabold text-sm truncate">{{ $admin->name }}</h2>
@@ -180,11 +168,7 @@
           @php $mine = $msg->sender_id == auth()->id(); @endphp
           <div class="flex {{ $mine ? 'justify-end' : 'justify-start' }}" data-msg-id="{{ $msg->id }}">
             @if(!$mine)
-              @if($msg->sender?->avatar)
-                <img src="{{ $msg->sender->avatarUrl() }}" alt="{{ $msg->sender->name }}" class="w-8 h-8 rounded-full object-cover self-end mr-2">
-              @else
-                <div class="w-8 h-8 rounded-full bg-emerald-600 text-white text-xs font-bold flex items-center justify-center self-end mr-2">{{ strtoupper(substr($msg->sender?->name ?? '?', 0, 1)) }}</div>
-              @endif
+              <x-user-avatar :user="$msg->sender" size="w-8 h-8" text-size="text-xs" class="self-end mr-2" />
             @endif
             <div class="max-w-[80%] md:max-w-[70%]">
               <div class="p-3.5 rounded-2xl shadow-2xs relative {{ $mine ? 'bg-gradient-to-r from-[#006c47] to-[#10B981] text-white rounded-tr-xs' : 'bg-white border border-slate-200 text-slate-800 rounded-tl-xs' }}">
@@ -336,6 +320,7 @@ async function handleSendMessage() {
 async function poll() {
     try {
         const res = await fetch(`${pollUrl}?after=${window.chatLastId}`, {
+            cache: 'no-store',
             headers: { 'Accept': 'application/json' }
         });
         const data = await res.json();
@@ -357,7 +342,7 @@ if (inputField) {
 }
 
 scrollToBottom();
-setInterval(poll, 1500);
+setInterval(poll, 800);
 </script>
 @endpush
 @endsection
