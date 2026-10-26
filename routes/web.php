@@ -236,6 +236,7 @@ Route::middleware('auth')->group(function () {
 
     // Chat
     Route::get('/chat', [\App\Http\Controllers\ChatController::class, 'index'])->name('chat.index');
+    Route::get('/chat/inbox/poll', [\App\Http\Controllers\ChatController::class, 'inboxPoll'])->name('chat.inbox.poll');
     Route::get('/chat/{user}', [\App\Http\Controllers\ChatController::class, 'show'])->name('chat.show');
     Route::get('/chat/{user}/poll', [\App\Http\Controllers\ChatController::class, 'poll'])->name('chat.poll');
     Route::post('/chat', [\App\Http\Controllers\ChatController::class, 'store'])->name('chat.store');

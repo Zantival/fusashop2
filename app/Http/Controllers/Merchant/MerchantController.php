@@ -1269,7 +1269,7 @@ class MerchantController extends Controller
         })->orWhere(function ($q) use ($merchantId, $admin) {
             $q->where('sender_id', $admin->id)->where('receiver_id', $merchantId);
         })
-        ->with('product')
+        ->with(['product', 'sender'])
         ->orderBy('created_at', 'asc')
         ->get();
 
@@ -1338,7 +1338,7 @@ class MerchantController extends Controller
             })->orWhere(function ($q) use ($merchantId, $activeUser) {
                 $q->where('sender_id', $activeUser->id)->where('receiver_id', $merchantId);
             })
-            ->with('product')
+            ->with(['product', 'sender'])
             ->orderBy('created_at', 'asc')
             ->get();
 

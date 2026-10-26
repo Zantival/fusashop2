@@ -63,3 +63,36 @@ inputField?.addEventListener('input', function () {
   window.chatServerModerationMessage = '';
   checkProfanity();
 }, true);
+
+window.deleteMessage = async function (id, button) {
+  if (!window.confirm('¿Eliminar este mensaje que enviaste?')) return;
+  const message = button?.closest('[data-msg-id]');
+  if (message) message.classList.add('opacity-40');
+  try {
+    const response = await fetch(`/chat/message/${id}`, {
+      method: 'DELETE',
+      headers: { 'X-CSRF-TOKEN': csrfToken, Accept: 'application/json' }
+    });
+    if (!response.ok) throw new Error('No se pudo eliminar el mensaje.');
+    message?.remove();
+  } catch (error) {
+    message?.classList.remove('opacity-40');
+    window.alert(error.message || 'No se pudo eliminar el mensaje.');
+  }
+};
+
+window.attachChatSenderAvatar = function (messageRow, message) {
+  if (!messageRow || message.mine) return;
+  const avatar = document.createElement('div');
+  avatar.className = 'w-8 h-8 rounded-full shrink-0 overflow-hidden bg-emerald-600 text-white text-xs font-bold flex items-center justify-center self-end mr-2';
+  if (message.sender_avatar) {
+    const image = document.createElement('img');
+    image.src = message.sender_avatar;
+    image.alt = message.sender_name || 'Usuario';
+    image.className = 'w-full h-full object-cover';
+    avatar.appendChild(image);
+  } else {
+    avatar.textContent = (message.sender_name || '?').trim().charAt(0).toUpperCase();
+  }
+  messageRow.prepend(avatar);
+};

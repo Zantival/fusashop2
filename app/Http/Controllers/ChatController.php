@@ -30,7 +30,9 @@ class ChatController extends Controller
                 return $msg->sender_id == $userId ? $msg->receiver_id : $msg->sender_id;
             });
 
-        return view('chat.index', compact('conversations'));
+        $latestMessageId = (int) ($conversations->flatten(1)->max('id') ?? 0);
+
+        return view('chat.index', compact('conversations', 'latestMessageId'));
     }
 
     public function show($otherUserId)
@@ -46,12 +48,14 @@ class ChatController extends Controller
 
         $userId = Auth::id();
         
-        $messages = Message::where(function($q) use ($userId, $otherUserId) {
+        $messages = Message::where(function($query) use ($userId, $otherUserId) {
+            $query->where(function($q) use ($userId, $otherUserId) {
                 $q->where('sender_id', $userId)->where('receiver_id', $otherUserId);
             })->orWhere(function($q) use ($userId, $otherUserId) {
                 $q->where('sender_id', $otherUserId)->where('receiver_id', $userId);
-            })
-            ->with('product')
+            });
+        })
+            ->with(['product', 'sender'])
             ->orderBy('created_at', 'asc')
             ->get();
 
@@ -72,15 +76,19 @@ class ChatController extends Controller
     public function poll($otherUserId, Request $request)
     {
         $userId = Auth::id();
-        $since  = $request->input('since', 0); // Unix timestamp
+        $afterId = max(0, (int) $request->query('after', 0));
 
-        $messages = Message::where(function($q) use ($userId, $otherUserId) {
-                $q->where('sender_id', $userId)->where('receiver_id', $otherUserId);
-            })->orWhere(function($q) use ($userId, $otherUserId) {
-                $q->where('sender_id', $otherUserId)->where('receiver_id', $userId);
+        $messages = Message::where(function ($query) use ($userId, $otherUserId) {
+                $query->where(function ($q) use ($userId, $otherUserId) {
+                    $q->where('sender_id', $userId)->where('receiver_id', $otherUserId);
+                })->orWhere(function ($q) use ($userId, $otherUserId) {
+                    $q->where('sender_id', $otherUserId)->where('receiver_id', $userId);
+                });
             })
-            ->where('created_at', '>', \Carbon\Carbon::createFromTimestamp($since))
-            ->orderBy('created_at', 'asc')
+            ->where('id', '>', $afterId)
+            ->with(['product', 'sender'])
+            ->orderBy('id', 'asc')
+            ->limit(100)
             ->get()
             ->map(function($m) use ($userId) {
                 return [
@@ -88,6 +96,8 @@ class ChatController extends Controller
                     'content'   => e($m->content),
                     'mine'      => $m->sender_id === $userId,
                     'time'      => $m->created_at->format('H:i'),
+                    'sender_name' => $m->sender?->name,
+                    'sender_avatar' => $m->sender?->avatarUrl(),
                     'product'   => $m->product ? ['name' => e($m->product->name), 'price' => number_format($m->product->price,0,',','.')] : null,
                 ];
             });
@@ -98,7 +108,50 @@ class ChatController extends Controller
             ->filter(fn($n) => ($n->data['sender_id'] ?? null) == $otherUserId)
             ->each->markAsRead();
 
-        return response()->json(['messages' => $messages, 'server_time' => now()->timestamp]);
+        return response()->json(['messages' => $messages, 'last_message_id' => (int) ($messages->max('id') ?? $afterId)]);
+    }
+
+    public function inboxPoll(Request $request)
+    {
+        $userId = Auth::id();
+        $afterId = max(0, (int) $request->query('after', 0));
+        $messages = Message::where(function ($query) use ($userId) {
+                $query->where('sender_id', $userId)->orWhere('receiver_id', $userId);
+            })
+            ->where('id', '>', $afterId)
+            ->with(['sender', 'receiver'])
+            ->orderBy('id')
+            ->limit(50)
+            ->get();
+        $incomingPartners = $messages->where('receiver_id', $userId)->pluck('sender_id')->unique()->values();
+        $unreadCounts = $incomingPartners->isEmpty()
+            ? collect()
+            : Message::where('receiver_id', $userId)
+                ->where('is_read', false)
+                ->whereIn('sender_id', $incomingPartners)
+                ->selectRaw('sender_id, COUNT(*) as unread_count')
+                ->groupBy('sender_id')
+                ->pluck('unread_count', 'sender_id');
+
+        $messages = $messages->map(function (Message $message) use ($userId, $unreadCounts) {
+                $other = $message->sender_id === $userId ? $message->receiver : $message->sender;
+                return [
+                    'id' => $message->id,
+                    'partner_id' => $other?->id,
+                    'partner_name' => $other?->name,
+                    'partner_role' => $other?->role,
+                    'partner_avatar' => $other?->avatarUrl(),
+                    'content' => e($message->content),
+                    'mine' => $message->sender_id === $userId,
+                    'time' => $message->created_at->diffForHumans(null, true),
+                    'unread' => $message->receiver_id === $userId ? (int) ($unreadCounts[$message->sender_id] ?? 0) : 0,
+                ];
+            });
+
+        return response()->json([
+            'messages' => $messages,
+            'last_message_id' => (int) ($messages->max('id') ?? $afterId),
+        ]);
     }
 
     public function store(Request $request, ChatMessageModeration $moderator)

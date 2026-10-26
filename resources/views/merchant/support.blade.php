@@ -135,9 +135,13 @@
       <!-- ENCABEZADO DEL ANALISTA -->
       <div class="p-4 border-b border-slate-200/80 bg-gradient-to-r from-slate-900 to-emerald-950 text-white flex items-center justify-between">
         <div class="flex items-center gap-3 min-w-0">
-          <div class="w-10 h-10 rounded-full bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 font-black text-sm flex items-center justify-center shrink-0">
-            {{ strtoupper(substr($admin->name, 0, 1)) }}
-          </div>
+          @if($admin->avatar)
+            <img src="{{ $admin->avatarUrl() }}" alt="{{ $admin->name }}" class="w-10 h-10 rounded-full object-cover border border-emerald-400/40 shrink-0">
+          @else
+            <div class="w-10 h-10 rounded-full bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 font-black text-sm flex items-center justify-center shrink-0">
+              {{ strtoupper(substr($admin->name, 0, 1)) }}
+            </div>
+          @endif
           <div class="min-w-0">
             <div class="flex items-center gap-2">
               <h2 class="font-extrabold text-sm truncate">{{ $admin->name }}</h2>
@@ -175,6 +179,13 @@
         @foreach($messages as $msg)
           @php $mine = $msg->sender_id == auth()->id(); @endphp
           <div class="flex {{ $mine ? 'justify-end' : 'justify-start' }}" data-msg-id="{{ $msg->id }}">
+            @if(!$mine)
+              @if($msg->sender?->avatar)
+                <img src="{{ $msg->sender->avatarUrl() }}" alt="{{ $msg->sender->name }}" class="w-8 h-8 rounded-full object-cover self-end mr-2">
+              @else
+                <div class="w-8 h-8 rounded-full bg-emerald-600 text-white text-xs font-bold flex items-center justify-center self-end mr-2">{{ strtoupper(substr($msg->sender?->name ?? '?', 0, 1)) }}</div>
+              @endif
+            @endif
             <div class="max-w-[80%] md:max-w-[70%]">
               <div class="p-3.5 rounded-2xl shadow-2xs relative {{ $mine ? 'bg-gradient-to-r from-[#006c47] to-[#10B981] text-white rounded-tr-xs' : 'bg-white border border-slate-200 text-slate-800 rounded-tl-xs' }}">
                 <p class="text-xs md:text-sm leading-relaxed whitespace-pre-wrap">{{ e($msg->content) }}</p>
@@ -182,6 +193,9 @@
                   <span>{{ $msg->created_at->format('H:i') }}</span>
                   @if($mine)
                     <span class="material-symbols-outlined text-[12px] text-emerald-200">done_all</span>
+                    <button type="button" onclick="deleteMessage({{ $msg->id }}, this)" class="ml-2 text-white/70 hover:text-white" title="Eliminar mi mensaje" aria-label="Eliminar mi mensaje">
+                      <span class="material-symbols-outlined text-[14px]">delete</span>
+                    </button>
                   @endif
                 </div>
               </div>
@@ -225,9 +239,7 @@
 
 @push('scripts')
 <script>
-if (typeof chatLastTs === 'undefined') {
-    var chatLastTs = {{ now()->timestamp }};
-}
+window.chatLastId = Math.max(0, ...Array.from(document.querySelectorAll('#chat-box [data-msg-id]'), el => Number(el.dataset.msgId) || 0));
 
 const chatBox = document.getElementById('chat-box');
 const inputField = document.getElementById('msg-input');
@@ -262,11 +274,12 @@ function appendMsg(msg) {
                 <p class="text-xs md:text-sm leading-relaxed whitespace-pre-wrap">${msg.content}</p>
                 <div class="flex items-center justify-end gap-1 mt-1 ${msg.mine ? 'text-white/70' : 'text-slate-400'} text-[9.5px]">
                     <span>${msg.time}</span>
-                    ${msg.mine ? '<span class="material-symbols-outlined text-[12px] text-emerald-200">done_all</span>' : ''}
+                    ${msg.mine ? `<span class="material-symbols-outlined text-[12px] text-emerald-200">done_all</span><button type="button" onclick="deleteMessage(${msg.id}, this)" class="ml-2 text-white/70 hover:text-white" title="Eliminar mi mensaje"><span class="material-symbols-outlined text-[14px]">delete</span></button>` : ''}
                 </div>
             </div>
         </div>`;
 
+    window.attachChatSenderAvatar(div, msg);
     const typingEl = document.getElementById('typing-indicator');
     chatBox.insertBefore(div, typingEl);
 }
@@ -322,15 +335,15 @@ async function handleSendMessage() {
 
 async function poll() {
     try {
-        const res = await fetch(`${pollUrl}?since=${chatLastTs}`, {
+        const res = await fetch(`${pollUrl}?after=${window.chatLastId}`, {
             headers: { 'Accept': 'application/json' }
         });
         const data = await res.json();
         if (data.messages && data.messages.length > 0) {
             data.messages.forEach(appendMsg);
+            window.chatLastId = Math.max(window.chatLastId, ...data.messages.map(msg => Number(msg.id) || 0));
             scrollToBottom();
         }
-        if (data.server_time) chatLastTs = data.server_time;
     } catch (e) {}
 }
 
@@ -344,7 +357,7 @@ if (inputField) {
 }
 
 scrollToBottom();
-setInterval(poll, 3000);
+setInterval(poll, 1500);
 </script>
 @endpush
 @endsection

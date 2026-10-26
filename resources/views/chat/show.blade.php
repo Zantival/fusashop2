@@ -10,7 +10,7 @@
       <span class="material-symbols-outlined">arrow_back</span>
     </a>
     @if($otherUser->avatar)
-      <img loading="lazy" decoding="async" src="{{ Storage::url($otherUser->avatar) }}" class="w-10 h-10 rounded-full object-cover">
+      <img loading="lazy" decoding="async" src="{{ $otherUser->avatarUrl() }}" alt="{{ $otherUser->name }}" class="w-10 h-10 rounded-full object-cover">
     @else
       <div class="w-10 h-10 bg-greenhouse-gradient rounded-full flex items-center justify-center text-white font-bold shrink-0">
         {{ strtoupper(substr($otherUser->name, 0, 1)) }}
@@ -35,6 +35,13 @@
     @foreach($messages as $msg)
       @php $mine = $msg->sender_id == auth()->id(); @endphp
       <div class="flex {{ $mine ? 'justify-end' : 'justify-start' }}" data-msg-id="{{ $msg->id }}">
+        @if(!$mine)
+          @if($msg->sender?->avatar)
+            <img src="{{ $msg->sender->avatarUrl() }}" alt="{{ $msg->sender->name }}" class="w-8 h-8 rounded-full object-cover self-end mr-2">
+          @else
+            <div class="w-8 h-8 rounded-full bg-greenhouse-gradient text-white text-xs font-bold flex items-center justify-center self-end mr-2">{{ strtoupper(substr($msg->sender?->name ?? '?', 0, 1)) }}</div>
+          @endif
+        @endif
         <div class="max-w-[78%]">
           @if($msg->product_id && $msg->product)
             <div class="mb-1.5 rounded-2xl bg-surface-container-low border border-surface-container p-2.5 flex gap-2.5 items-center">
@@ -97,10 +104,7 @@
 
 @push('scripts')
 <script>
-// Use a unique name to avoid 'already declared' errors
-if (typeof chatLastTs === 'undefined') {
-    var chatLastTs = {{ now()->timestamp }};
-}
+window.chatLastId = Math.max(0, ...Array.from(document.querySelectorAll('#chat-box [data-msg-id]'), el => Number(el.dataset.msgId) || 0));
 
 const chatBox = document.getElementById('chat-box');
 const inputField = document.getElementById('msg-input');
@@ -161,6 +165,7 @@ function appendMsg(msg) {
             </div>
         </div>`;
 
+    window.attachChatSenderAvatar(div, msg);
     const typingEl = document.getElementById('typing-indicator');
     chatBox.insertBefore(div, typingEl);
 }
@@ -218,43 +223,17 @@ async function handleSendMessage() {
     }
 }
 
-async function deleteMessage(id, btn) {
-    if(!confirm('¿Estás seguro de que deseas eliminar este mensaje?')) return;
-    
-    // Optimistic UI update
-    const msgDiv = btn.closest('[data-msg-id]');
-    if (msgDiv) msgDiv.style.display = 'none';
-
-    try {
-        const res = await fetch(`/chat/message/${id}`, {
-            method: 'DELETE',
-            headers: {
-                'X-CSRF-TOKEN': csrfToken,
-                'Accept': 'application/json'
-            }
-        });
-        if (!res.ok) {
-            // Revert if failed
-            if (msgDiv) msgDiv.style.display = 'flex';
-            alert('No se pudo eliminar el mensaje');
-        }
-    } catch (e) {
-        if (msgDiv) msgDiv.style.display = 'flex';
-        console.error(e);
-    }
-}
-
 async function poll() {
     try {
-        const res = await fetch(`${pollUrl}?since=${chatLastTs}`, {
+        const res = await fetch(`${pollUrl}?after=${window.chatLastId}`, {
             headers: { 'Accept': 'application/json' }
         });
         const data = await res.json();
         if (data.messages && data.messages.length > 0) {
             data.messages.forEach(appendMsg);
+            window.chatLastId = Math.max(window.chatLastId, ...data.messages.map(msg => Number(msg.id) || 0));
             scrollToBottom();
         }
-        if (data.server_time) chatLastTs = data.server_time;
     } catch (e) {}
 }
 
@@ -268,7 +247,7 @@ inputField.addEventListener('keydown', (e) => {
 
 // Initial scroll and start polling
 scrollToBottom();
-setInterval(poll, 3000);
+setInterval(poll, 1500);
 </script>
 @endpush
 @endsection
