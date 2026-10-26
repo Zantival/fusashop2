@@ -36,7 +36,7 @@
          }
        }
      }" 
-     class="max-w-7xl mx-auto px-4 md:px-6 py-6 md:py-8 space-y-6">
+     class="merchant-dashboard w-full max-w-7xl mx-auto px-4 md:px-6 py-6 md:py-8 space-y-6">
 
   <!-- ========================================================================= -->
   <!-- 1. HEADER EJECUTIVO DEL COMERCIANTE (IDÉNTICO AL PANEL DEL ANALISTA)      -->
@@ -139,11 +139,11 @@
   <!-- ========================================================================= -->
   <!-- 2. BARRA DE CONTROL DE PERIODOS Y PESTAÑAS SEGMENTADAS (ESTILO ANALISTA) -->
   <!-- ========================================================================= -->
-  <div class="bg-white p-4 rounded-2xl shadow-[0_12px_32px_rgba(27,28,28,.06)] border border-outline-variant/20 space-y-3">
+  <div class="merchant-dashboard-toolbar bg-white p-4 rounded-2xl shadow-[0_12px_32px_rgba(27,28,28,.06)] border border-outline-variant/20 space-y-3">
     
     <!-- Fila de Filtros y Periodo Global -->
-    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3 pb-3 border-b border-outline-variant/15">
-      <div class="flex flex-wrap items-center gap-2">
+    <div class="merchant-dashboard-period flex flex-col lg:flex-row lg:items-center justify-between gap-3 pb-3 border-b border-outline-variant/15">
+      <div class="flex flex-wrap items-center gap-2 min-w-0">
         <span class="material-symbols-outlined text-[#006c47] text-xl">calendar_month</span>
         <span class="text-xs font-extrabold text-on-background uppercase tracking-wider">Periodo Comercial:</span>
         @foreach(['today' => 'Hoy', '7d' => '7 Días', '30d' => '30 Días', '90d' => 'Trimestre', 'all' => 'Histórico'] as $pKey => $pLbl)
@@ -156,7 +156,7 @@
         @endforeach
       </div>
 
-      <div class="flex flex-wrap items-center gap-3 text-xs">
+      <div class="merchant-dashboard-summary flex flex-wrap items-center gap-3 text-xs">
         <div class="flex items-center gap-1.5 bg-emerald-50/80 border border-emerald-200/80 rounded-xl px-3 py-1 text-slate-700">
           <span class="font-extrabold text-[#006c47]">Comisión FusaShop:</span>
           <span class="font-black text-slate-900">8.0%</span>

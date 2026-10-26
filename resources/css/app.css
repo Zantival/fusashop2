@@ -800,6 +800,100 @@ h3 {
 
 /* 2. Adaptación para dispositivos móviles (< 768px) */
 @media (max-width: 767.98px) {
+  /* Evita que un hijo ancho expanda la página y recorte el contenido en móviles. */
+  html,
+  body {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: clip;
+  }
+
+  #app-main-content,
+  #app-main-content > section,
+  #app-main-content > div {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  #app-main-content img,
+  #app-main-content video,
+  #app-main-content iframe {
+    max-width: 100%;
+  }
+
+  /* El menú de notificaciones debe permanecer dentro del viewport del teléfono. */
+  #main-header #notif-dropdown {
+    position: fixed !important;
+    top: calc(env(safe-area-inset-top, 0px) + 4rem) !important;
+    right: 0.5rem !important;
+    left: 0.5rem !important;
+    width: auto !important;
+    max-width: none !important;
+    max-height: calc(100dvh - 6rem) !important;
+    z-index: 80 !important;
+  }
+
+  /* El panel comercial debe poder contraerse aunque un título o cifra sea largo. */
+  .merchant-dashboard {
+    box-sizing: border-box;
+    width: 100%;
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+    overflow-x: clip;
+  }
+
+  .merchant-dashboard > *,
+  .merchant-dashboard .grid,
+  .merchant-dashboard .flex {
+    min-width: 0;
+  }
+
+  .merchant-dashboard h1,
+  .merchant-dashboard h2,
+  .merchant-dashboard h3,
+  .merchant-dashboard p {
+    overflow-wrap: anywhere;
+  }
+
+  .merchant-dashboard-toolbar {
+    padding: 0.75rem;
+  }
+
+  .merchant-dashboard-period > div:first-child {
+    row-gap: 0.5rem;
+  }
+
+  .merchant-dashboard-summary {
+    gap: 0.5rem;
+  }
+
+  .merchant-dashboard canvas {
+    max-width: 100%;
+  }
+
+  /* Las ofertas muestran más producto con menos desplazamiento vertical. */
+  .flash-deal-image {
+    aspect-ratio: 4 / 3;
+  }
+
+  .flash-deal-card > div:last-child {
+    padding: 0.75rem;
+  }
+
+  .flash-deal-card .text-xl {
+    font-size: 1rem;
+    line-height: 1.35;
+  }
+
+  .flash-deal-card .text-\[11px\] {
+    font-size: 0.625rem;
+  }
+
+  .flash-deal-card .py-2\.5 {
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+  }
+
   /* Ocultar barra horizontal de categorías de PC en móviles */
   #top-nav-category-wrapper {
     display: none !important;
@@ -927,5 +1021,40 @@ h3 {
     right: 0.5rem !important;
     bottom: 4.5rem !important;
     max-height: calc(100vh - 5.5rem) !important;
+  }
+
+  /* Desplazamiento táctil fluido para contenedores con scroll horizontal */
+  .overflow-x-auto {
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+@media (max-width: 639.98px) {
+  #main-header #fusabot-launcher {
+    width: 2.25rem !important;
+    height: 2.25rem !important;
+    min-width: 2.25rem !important;
+    min-height: 2.25rem !important;
+  }
+
+  /* Reducción armoniosa de textos largos en móviles para evitar saltos bruscos */
+  .truncate-mobile {
+    max-width: 120px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .merchant-dashboard > div:first-child {
+    padding: 1rem;
+  }
+
+  .merchant-dashboard > div:first-child h1 {
+    font-size: 1.25rem;
+    line-height: 1.35;
+  }
+
+  .merchant-dashboard-period > div:first-child > span:nth-of-type(2) {
+    flex-basis: 100%;
   }
 }
