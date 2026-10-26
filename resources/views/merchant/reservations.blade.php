@@ -8,12 +8,12 @@
   <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-2xl shadow-[0_12px_32px_rgba(27,28,28,.06)] border border-outline-variant/20">
     <div>
       <div class="flex items-center gap-2">
-        <h1 class="text-2xl md:text-3xl font-['Manrope'] font-extrabold text-on-background">Gestión de Reservas & Servicios</h1>
-        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-[#006c47] border border-emerald-200 uppercase tracking-wider flex items-center gap-1">
+        <h1 class="text-2xl md:text-3xl font-['Manrope'] font-extrabold text-slate-900">Gestión de Reservas & Servicios</h1>
+        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-emerald-100 text-[#006c47] border border-emerald-200 uppercase tracking-wider flex items-center gap-1">
           <span class="material-symbols-outlined text-xs">event_available</span> Servicios Activos
         </span>
       </div>
-      <p class="text-on-surface-variant text-xs md:text-sm mt-1">
+      <p class="text-slate-500 text-xs md:text-sm mt-1">
         Atiende y gestiona las solicitudes de tus clientes para hoteles, hospedajes, spas, restaurantes y tours en Fusagasugá y el Sumapaz.
       </p>
     </div>
@@ -138,226 +138,257 @@
       @endif
     </div>
   @else
-    <div class="space-y-4">
+    <div class="space-y-5">
       @foreach($reservations as $reservation)
         @php
           $statusMeta = [
-            'pending'   => ['label' => 'Pendiente de confirmación', 'badge' => 'bg-amber-100 text-amber-800 border-amber-200', 'icon' => 'hourglass_top'],
-            'confirmed' => ['label' => 'Confirmada', 'badge' => 'bg-emerald-100 text-emerald-800 border-emerald-200', 'icon' => 'check_circle'],
-            'rejected'  => ['label' => 'No disponible / Rechazada', 'badge' => 'bg-rose-100 text-rose-800 border-rose-200', 'icon' => 'cancel'],
-            'cancelled' => ['label' => 'Cancelada por el cliente', 'badge' => 'bg-slate-100 text-slate-700 border-slate-200', 'icon' => 'event_busy'],
-            'completed' => ['label' => 'Completada', 'badge' => 'bg-blue-100 text-blue-800 border-blue-200', 'icon' => 'task_alt'],
-          ][$reservation->status] ?? ['label' => ucfirst($reservation->status), 'badge' => 'bg-slate-100 text-slate-700 border-slate-200', 'icon' => 'info'];
+            'pending'   => ['label' => 'Pendiente de confirmación', 'badge' => 'bg-amber-100 text-amber-900 border-amber-300', 'icon' => 'hourglass_top'],
+            'confirmed' => ['label' => 'Confirmada', 'badge' => 'bg-emerald-100 text-emerald-900 border-emerald-300', 'icon' => 'check_circle'],
+            'rejected'  => ['label' => 'No disponible / Rechazada', 'badge' => 'bg-rose-100 text-rose-900 border-rose-300', 'icon' => 'cancel'],
+            'cancelled' => ['label' => 'Cancelada por el cliente', 'badge' => 'bg-slate-100 text-slate-700 border-slate-300', 'icon' => 'event_busy'],
+            'completed' => ['label' => 'Completada', 'badge' => 'bg-blue-100 text-blue-900 border-blue-300', 'icon' => 'task_alt'],
+          ][$reservation->status] ?? ['label' => ucfirst($reservation->status), 'badge' => 'bg-slate-100 text-slate-700 border-slate-300', 'icon' => 'info'];
 
           $rawPhone = preg_replace('/[^\d]/', '', $reservation->customer?->phone ?? '');
           $waPhone = str_starts_with($rawPhone, '57') ? $rawPhone : ('57' . $rawPhone);
         @endphp
 
-        <article class="bg-white rounded-2xl p-5 md:p-6 shadow-[0_12px_32px_rgba(27,28,28,.06)] border border-outline-variant/20 transition-all hover:border-emerald-300">
-          <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
-            
-            <!-- INFORMACIÓN PRINCIPAL DE LA RESERVA -->
-            <div class="flex-1 space-y-4">
-              
-              <!-- Fila Superior: Referencia + Estado + Fecha Creación -->
-              <div class="flex flex-wrap items-center gap-2">
-                <span class="font-mono text-xs font-black px-2.5 py-1 rounded-lg bg-slate-100 text-slate-800 border border-slate-200">
-                  {{ $reservation->reference }}
-                </span>
-                <span class="rounded-full px-3 py-1 text-xs font-extrabold border flex items-center gap-1 {{ $statusMeta['badge'] }}">
-                  <span class="material-symbols-outlined text-[14px]">{{ $statusMeta['icon'] }}</span>
-                  <span>{{ $statusMeta['label'] }}</span>
-                </span>
-                <span class="text-xs text-slate-400">
-                  Solicitada hace {{ $reservation->created_at->diffForHumans() }} ({{ $reservation->created_at->format('d/m/Y H:i') }})
-                </span>
-              </div>
+        <article class="bg-white rounded-2xl shadow-[0_8px_24px_rgba(27,28,28,.04)] border border-slate-200/90 overflow-hidden transition-all hover:shadow-md hover:border-emerald-300">
+          
+          <!-- 1. ENCABEZADO SUPERIOR DE LA TARJETA -->
+          <div class="bg-slate-50/90 px-5 py-3.5 border-b border-slate-100 flex flex-wrap items-center justify-between gap-3">
+            <div class="flex flex-wrap items-center gap-2.5">
+              <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-white border border-slate-200 text-slate-900 font-mono text-xs font-bold tracking-tight shadow-2xs">
+                <span class="material-symbols-outlined text-[15px] text-emerald-600">confirmation_number</span>
+                <span>{{ $reservation->reference }}</span>
+              </span>
+              <span class="text-xs text-slate-500 flex items-center gap-1">
+                <span class="material-symbols-outlined text-[14px] text-slate-400">schedule</span>
+                {{ $reservation->created_at->format('d/m/Y H:i') }} · hace {{ $reservation->created_at->diffForHumans() }}
+              </span>
+            </div>
 
-              <!-- Título del Servicio & Precio -->
-              <div class="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2 border-b border-slate-100 pb-3">
+            <div class="flex items-center gap-3">
+              @if($reservation->quoted_price !== null)
+                <div class="text-right">
+                  <span class="text-[10px] uppercase font-bold text-slate-400 block leading-tight">Tarifa estimada</span>
+                  <span class="text-sm font-black text-slate-900">${{ number_format($reservation->quoted_price, 0, ',', '.') }} COP</span>
+                </div>
+              @endif
+              <span class="rounded-full px-3 py-1 text-xs font-extrabold border flex items-center gap-1.5 shadow-2xs {{ $statusMeta['badge'] }}">
+                <span class="material-symbols-outlined text-[15px]">{{ $statusMeta['icon'] }}</span>
+                <span>{{ $statusMeta['label'] }}</span>
+              </span>
+            </div>
+          </div>
+
+          <!-- 2. CUERPO DE LA TARJETA: SERVICIO Y CLIENTE -->
+          <div class="p-5 md:p-6 space-y-5">
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5 pb-4 border-b border-slate-100">
+              
+              <!-- Detalle del Servicio -->
+              <div class="space-y-2">
+                <span class="text-[10px] font-black uppercase tracking-wider text-slate-400 flex items-center gap-1">
+                  <span class="material-symbols-outlined text-sm text-emerald-600">room_service</span> Servicio Solicitado
+                </span>
                 <div>
                   <h2 class="text-lg md:text-xl font-['Manrope'] font-extrabold text-slate-900">
                     <a href="{{ route('consumer.product', $reservation->product_id) }}" target="_blank" class="hover:text-[#006c47] transition-colors inline-flex items-center gap-1.5">
                       <span>{{ $reservation->product->name ?? 'Servicio' }}</span>
-                      <span class="material-symbols-outlined text-xs text-slate-400">open_in_new</span>
+                      <span class="material-symbols-outlined text-sm text-slate-400">open_in_new</span>
                     </a>
                   </h2>
-                  <p class="text-xs text-slate-500 mt-0.5">
-                    Categoría: <span class="font-bold text-slate-700">{{ $reservation->product->category ?? 'Servicios' }}</span> · Cantidad: <span class="font-bold text-slate-700">{{ $reservation->quantity }} {{ $reservation->quantity === 1 ? 'unidad/cupo' : 'unidades/cupos' }}</span>
-                  </p>
+                  <div class="flex flex-wrap items-center gap-2 mt-1">
+                    <span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-100 text-slate-600">
+                      {{ $reservation->product->category ?? 'Servicios' }}
+                    </span>
+                    <span class="text-xs font-semibold text-slate-600">
+                      Cantidad: <strong class="text-slate-900">{{ $reservation->quantity }} {{ $reservation->quantity === 1 ? 'unidad/cupo' : 'unidades/cupos' }}</strong>
+                    </span>
+                  </div>
                 </div>
-                @if($reservation->quoted_price !== null)
-                  <div class="text-right">
-                    <p class="text-xs text-slate-500">Precio estimado / base:</p>
-                    <p class="text-base font-extrabold text-[#006c47]">${{ number_format($reservation->quoted_price, 0, ',', '.') }} COP</p>
+
+                @if($reservation->selected_options)
+                  <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-100 text-xs text-slate-700 space-y-0.5">
+                    <span class="font-bold text-[10px] uppercase tracking-wider text-slate-400 block">Especificaciones elegidas:</span>
+                    <p class="font-medium text-slate-900">
+                      {{ collect($reservation->selected_options)->map(fn($v, $k) => "{$k}: {$v}")->implode(' · ') }}
+                    </p>
                   </div>
                 @endif
               </div>
 
-              <!-- DATOS CLAVE: AGENDA, PERSONAS, OPCIONES -->
-              <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-slate-50/80 rounded-xl p-3.5 border border-slate-200/80 text-xs">
-                <div>
-                  <span class="text-slate-500 font-bold block text-[10px] uppercase">Fecha de Reserva</span>
-                  <span class="font-extrabold text-slate-900 flex items-center gap-1 mt-0.5">
-                    <span class="material-symbols-outlined text-emerald-700 text-sm">calendar_month</span>
+              <!-- Detalle del Cliente -->
+              <div class="space-y-2">
+                <span class="text-[10px] font-black uppercase tracking-wider text-slate-400 flex items-center gap-1">
+                  <span class="material-symbols-outlined text-sm text-blue-600">person</span> Datos del Cliente
+                </span>
+                <div class="bg-slate-50/70 p-3.5 rounded-xl border border-slate-100 space-y-2">
+                  <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-emerald-100 text-emerald-800 font-black text-sm flex items-center justify-center shrink-0 border border-emerald-200">
+                      {{ strtoupper(substr($reservation->customer->name ?? 'C', 0, 1)) }}
+                    </div>
+                    <div class="min-w-0 flex-1">
+                      <p class="text-sm font-extrabold text-slate-900 truncate">{{ $reservation->customer->name ?? 'Cliente' }}</p>
+                      <p class="text-xs text-slate-500 truncate flex items-center gap-1">
+                        <span class="material-symbols-outlined text-xs text-slate-400">mail</span>
+                        {{ $reservation->customer->email ?? 'Sin correo' }}
+                      </p>
+                    </div>
+                  </div>
+
+                  @if($reservation->customer?->phone)
+                    <div class="flex flex-wrap items-center gap-2 pt-1 border-t border-slate-200/60">
+                      <a href="tel:{{ $reservation->customer->phone }}" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white border border-slate-200 hover:border-slate-300 text-slate-700 font-bold text-[11px] shadow-2xs transition-colors">
+                        <span class="material-symbols-outlined text-xs text-emerald-600">call</span>
+                        <span>{{ $reservation->customer->phone }}</span>
+                      </a>
+                      @if(strlen($rawPhone) >= 7)
+                        <a href="https://wa.me/{{ $waPhone }}?text={{ urlencode('Hola ' . ($reservation->customer->name ?? '') . ', te contacto de ' . (auth()->user()->companyProfile->company_name ?? 'FusaShop') . ' sobre tu solicitud de reserva ' . $reservation->reference . ' para ' . ($reservation->product->name ?? 'el servicio') . '.') }}" 
+                           target="_blank" rel="noopener"
+                           class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-[11px] shadow-2xs transition-colors">
+                          <span class="material-symbols-outlined text-xs">chat</span>
+                          <span>Contactar WhatsApp</span>
+                        </a>
+                      @endif
+                    </div>
+                  @endif
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Fila 2: Franja de Fecha, Hora y Personas (Espaciosa y sin solapamiento) -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              
+              <div class="flex items-center gap-3 p-3.5 bg-emerald-50/70 rounded-xl border border-emerald-100">
+                <div class="w-10 h-10 rounded-lg bg-white text-emerald-700 flex items-center justify-center shrink-0 shadow-2xs border border-emerald-100">
+                  <span class="material-symbols-outlined text-xl">calendar_month</span>
+                </div>
+                <div class="min-w-0">
+                  <span class="text-[10px] font-black uppercase text-emerald-900 tracking-wider block">Fecha Solicitada</span>
+                  <span class="text-sm font-extrabold text-slate-900">
                     {{ $reservation->preferred_date ? $reservation->preferred_date->format('d/m/Y') : 'Por coordinar' }}
                   </span>
                 </div>
+              </div>
 
-                <div>
-                  <span class="text-slate-500 font-bold block text-[10px] uppercase">Hora de Reserva</span>
-                  <span class="font-extrabold text-slate-900 flex items-center gap-1 mt-0.5">
-                    <span class="material-symbols-outlined text-emerald-700 text-sm">schedule</span>
+              <div class="flex items-center gap-3 p-3.5 bg-blue-50/70 rounded-xl border border-blue-100">
+                <div class="w-10 h-10 rounded-lg bg-white text-blue-700 flex items-center justify-center shrink-0 shadow-2xs border border-blue-100">
+                  <span class="material-symbols-outlined text-xl">schedule</span>
+                </div>
+                <div class="min-w-0">
+                  <span class="text-[10px] font-black uppercase text-blue-900 tracking-wider block">Hora Solicitada</span>
+                  <span class="text-sm font-extrabold text-slate-900">
                     {{ $reservation->preferred_time ? substr((string) $reservation->preferred_time, 0, 5) : 'Por coordinar' }}
                   </span>
                 </div>
+              </div>
 
-                <div>
-                  <span class="text-slate-500 font-bold block text-[10px] uppercase">Personas / Asistentes</span>
-                  <span class="font-extrabold text-slate-900 flex items-center gap-1 mt-0.5">
-                    <span class="material-symbols-outlined text-emerald-700 text-sm">group</span>
+              <div class="flex items-center gap-3 p-3.5 bg-purple-50/70 rounded-xl border border-purple-100">
+                <div class="w-10 h-10 rounded-lg bg-white text-purple-700 flex items-center justify-center shrink-0 shadow-2xs border border-purple-100">
+                  <span class="material-symbols-outlined text-xl">group</span>
+                </div>
+                <div class="min-w-0">
+                  <span class="text-[10px] font-black uppercase text-purple-900 tracking-wider block">Personas / Asistentes</span>
+                  <span class="text-sm font-extrabold text-slate-900">
                     {{ $reservation->party_size ? $reservation->party_size . ($reservation->party_size === 1 ? ' persona' : ' personas') : 'No especificado' }}
                   </span>
                 </div>
               </div>
 
-              <!-- OPCIONES Y ESPECIFICACIONES SELECCIONADAS -->
-              @if($reservation->selected_options)
-                <div class="text-xs bg-emerald-50/50 rounded-xl p-3 border border-emerald-100 space-y-1">
-                  <span class="font-bold text-emerald-950 uppercase text-[10px] tracking-wider block">Opciones de la reserva / Especificaciones</span>
-                  <p class="text-slate-700 font-medium">
-                    {{ collect($reservation->selected_options)->map(fn($v, $k) => "{$k}: {$v}")->implode(' · ') }}
-                  </p>
-                </div>
-              @endif
-
-              <!-- DATOS DEL CLIENTE Y CONTACTO -->
-              <div class="flex flex-wrap items-center gap-4 text-xs pt-1">
-                <div class="flex items-center gap-2">
-                  <div class="w-7 h-7 rounded-full bg-emerald-100 text-[#006c47] font-bold text-xs flex items-center justify-center">
-                    {{ strtoupper(substr($reservation->customer->name ?? 'C', 0, 1)) }}
-                  </div>
-                  <div>
-                    <span class="font-extrabold text-slate-900">{{ $reservation->customer->name ?? 'Cliente' }}</span>
-                    <span class="text-slate-500 ml-1">({{ $reservation->customer->email ?? '' }})</span>
-                  </div>
-                </div>
-
-                @if($reservation->customer?->phone)
-                  <div class="flex items-center gap-2">
-                    <a href="tel:{{ $reservation->customer->phone }}" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-[11px] transition-colors">
-                      <span class="material-symbols-outlined text-xs text-emerald-600">call</span>
-                      <span>{{ $reservation->customer->phone }}</span>
-                    </a>
-                    @if(strlen($rawPhone) >= 7)
-                      <a href="https://wa.me/{{ $waPhone }}?text={{ urlencode('Hola ' . ($reservation->customer->name ?? '') . ', te contacto de ' . (auth()->user()->companyProfile->company_name ?? 'FusaShop') . ' sobre tu solicitud de reserva ' . $reservation->reference . ' para ' . ($reservation->product->name ?? 'el servicio') . '.') }}" 
-                         target="_blank" rel="noopener"
-                         class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-100 hover:bg-emerald-200 text-[#006c47] font-extrabold text-[11px] transition-colors">
-                        <span class="material-symbols-outlined text-xs">chat</span>
-                        <span>WhatsApp</span>
-                      </a>
-                    @endif
-                  </div>
-                @endif
-              </div>
-
-              <!-- NOTA O MENSAJE DEL CLIENTE -->
-              @if($reservation->customer_notes)
-                <div class="rounded-xl bg-amber-50/60 border border-amber-200/80 p-3 text-xs text-amber-950 space-y-1">
-                  <span class="font-extrabold text-amber-900 uppercase text-[10px] tracking-wider block flex items-center gap-1">
-                    <span class="material-symbols-outlined text-xs text-amber-700">chat_bubble</span> Mensaje o indicación del cliente:
-                  </span>
-                  <p class="italic text-slate-800">"{{ $reservation->customer_notes }}"</p>
-                </div>
-              @endif
-
-              <!-- RESPUESTA PREVIA DEL COMERCIANTE -->
-              @if($reservation->merchant_notes && !in_array($reservation->status, ['pending'], true))
-                <div class="rounded-xl bg-emerald-50 border border-emerald-200 p-3 text-xs text-emerald-950 space-y-1">
-                  <span class="font-extrabold text-[#006c47] uppercase text-[10px] tracking-wider block flex items-center gap-1">
-                    <span class="material-symbols-outlined text-xs">reply</span> Tu respuesta registrada al cliente:
-                  </span>
-                  <p class="text-emerald-900 font-medium">{{ $reservation->merchant_notes }}</p>
-                  @if($reservation->responded_at)
-                    <span class="text-[10px] text-emerald-700/80 block mt-0.5">Respondida el {{ $reservation->responded_at->format('d/m/Y H:i') }}</span>
-                  @endif
-                </div>
-              @endif
-
             </div>
 
-            <!-- FORMULARIO DE GESTIÓN Y ACCIONES DEL COMERCIANTE -->
-            <div class="w-full lg:w-80 shrink-0 bg-slate-50 rounded-2xl p-4 border border-slate-200 space-y-3">
-              <h3 class="text-xs font-black uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
-                <span class="material-symbols-outlined text-base text-[#006c47]">admin_panel_settings</span> Gestión de la Reserva
-              </h3>
+            <!-- Mensaje o indicación del cliente -->
+            @if($reservation->customer_notes)
+              <div class="p-3.5 rounded-xl bg-amber-50/80 border border-amber-200 text-xs text-amber-950 flex items-start gap-2.5">
+                <span class="material-symbols-outlined text-base text-amber-700 shrink-0 mt-0.5">format_quote</span>
+                <div class="min-w-0 flex-1">
+                  <span class="font-extrabold text-amber-900 block text-[11px] mb-0.5">Mensaje o preferencia enviada por el cliente:</span>
+                  <p class="italic text-slate-800 font-medium leading-relaxed">"{{ $reservation->customer_notes }}"</p>
+                </div>
+              </div>
+            @endif
 
-              @if(in_array($reservation->status, ['pending', 'confirmed'], true))
-                <form method="POST" action="{{ route('merchant.reservations.update', $reservation) }}" class="space-y-3">
-                  @csrf
-                  @method('PATCH')
+            <!-- Respuesta del comercio registrada previamente -->
+            @if($reservation->merchant_notes && !in_array($reservation->status, ['pending'], true))
+              <div class="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-950 flex items-start gap-2.5">
+                <span class="material-symbols-outlined text-base text-emerald-700 shrink-0 mt-0.5">reply</span>
+                <div class="min-w-0 flex-1">
+                  <span class="font-extrabold text-emerald-900 block text-[11px] mb-0.5">
+                    Tu respuesta enviada al cliente:
+                    @if($reservation->responded_at)
+                      <span class="font-normal text-emerald-700 ml-1">({{ $reservation->responded_at->format('d/m/Y H:i') }})</span>
+                    @endif
+                  </span>
+                  <p class="font-medium text-slate-900 leading-relaxed">{{ $reservation->merchant_notes }}</p>
+                </div>
+              </div>
+            @endif
 
-                  <div>
-                    <label class="block text-[11px] font-bold text-slate-700 mb-1">
-                      {{ $reservation->status === 'pending' ? 'Instrucciones o mensaje al confirmar/rechazar:' : 'Actualizar mensaje o instrucciones:' }}
+          </div>
+
+          <!-- 3. BARRA DE ACCIÓN Y RESPUESTA (FOOTER INTEGRADO) -->
+          <div class="bg-slate-50/90 px-5 py-4 border-t border-slate-100">
+            @if(in_array($reservation->status, ['pending', 'confirmed'], true))
+              <form method="POST" action="{{ route('merchant.reservations.update', $reservation) }}" class="space-y-3">
+                @csrf
+                @method('PATCH')
+
+                <div class="flex flex-col lg:flex-row lg:items-center gap-3">
+                  <div class="flex-1">
+                    <label class="block text-[11px] font-extrabold text-slate-700 mb-1">
+                      {{ $reservation->status === 'pending' ? 'Instrucciones o mensaje al cliente al confirmar/rechazar (opcional):' : 'Actualizar mensaje al cliente (opcional):' }}
                     </label>
-                    <textarea name="merchant_notes" maxlength="1500" rows="3"
-                              placeholder="Ej: Confirmada para las 3:00 PM. Por favor presentar documento al ingreso en recepción..."
-                              class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs focus:ring-2 focus:ring-[#10B981] focus:border-[#10B981] outline-none">{{ old('merchant_notes', $reservation->merchant_notes) }}</textarea>
+                    <input type="text" name="merchant_notes" maxlength="1500"
+                           value="{{ old('merchant_notes', $reservation->merchant_notes) }}"
+                           placeholder="Ej: Confirmada para las 3:00 PM. Por favor presentar documento al ingreso en recepción..."
+                           class="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs text-slate-800 placeholder-slate-400 focus:ring-2 focus:ring-[#10B981] focus:border-[#10B981] outline-none shadow-2xs">
                   </div>
 
-                  @if($reservation->status === 'pending')
-                    <div class="grid grid-cols-2 gap-2">
+                  <div class="flex items-center gap-2 shrink-0 lg:self-end">
+                    @if($reservation->status === 'pending')
                       <button type="submit" name="status" value="confirmed"
-                              class="w-full py-2.5 px-3 bg-emerald-700 hover:bg-emerald-800 text-white font-extrabold text-xs rounded-xl shadow-xs transition-all flex items-center justify-center gap-1 cursor-pointer">
-                        <span class="material-symbols-outlined text-sm">check_circle</span>
-                        <span>Confirmar</span>
+                              class="px-5 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white font-extrabold text-xs rounded-xl shadow-xs hover:shadow-md transition-all flex items-center gap-1.5 cursor-pointer">
+                        <span class="material-symbols-outlined text-base">check_circle</span>
+                        <span>Confirmar Reserva</span>
                       </button>
                       <button type="submit" name="status" value="rejected"
                               onclick="return confirm('¿Seguro que no tienes disponibilidad para esta reserva? Se notificará al cliente.')"
-                              class="w-full py-2.5 px-3 bg-white hover:bg-rose-50 border border-rose-300 text-rose-700 font-extrabold text-xs rounded-xl transition-all flex items-center justify-center gap-1 cursor-pointer">
-                        <span class="material-symbols-outlined text-sm">cancel</span>
-                        <span>Rechazar</span>
+                              class="px-4 py-2.5 bg-white hover:bg-rose-50 border border-rose-300 text-rose-700 font-extrabold text-xs rounded-xl transition-all flex items-center gap-1.5 cursor-pointer">
+                        <span class="material-symbols-outlined text-base">cancel</span>
+                        <span>No disponible / Rechazar</span>
                       </button>
-                    </div>
-                  @else
-                    <div class="grid grid-cols-2 gap-2">
+                    @else
                       <button type="submit" name="status" value="completed"
-                              class="w-full py-2.5 px-3 bg-blue-700 hover:bg-blue-800 text-white font-extrabold text-xs rounded-xl shadow-xs transition-all flex items-center justify-center gap-1 cursor-pointer">
-                        <span class="material-symbols-outlined text-sm">task_alt</span>
-                        <span>Completada</span>
+                              class="px-5 py-2.5 bg-blue-700 hover:bg-blue-800 text-white font-extrabold text-xs rounded-xl shadow-xs hover:shadow-md transition-all flex items-center gap-1.5 cursor-pointer">
+                        <span class="material-symbols-outlined text-base">task_alt</span>
+                        <span>Marcar como Completada</span>
                       </button>
                       <button type="submit" name="status" value="rejected"
                               onclick="return confirm('¿Cancelar esta reserva ya confirmada? Se notificará al cliente.')"
-                              class="w-full py-2.5 px-3 bg-white hover:bg-rose-50 border border-rose-300 text-rose-700 font-extrabold text-xs rounded-xl transition-all flex items-center justify-center gap-1 cursor-pointer">
-                        <span class="material-symbols-outlined text-sm">cancel</span>
-                        <span>Cancelar</span>
+                              class="px-4 py-2.5 bg-white hover:bg-rose-50 border border-rose-300 text-rose-700 font-extrabold text-xs rounded-xl transition-all flex items-center gap-1.5 cursor-pointer">
+                        <span class="material-symbols-outlined text-base">cancel</span>
+                        <span>Cancelar Reserva</span>
                       </button>
-                    </div>
-                  @endif
-                </form>
-              @else
-                <div class="p-3 bg-white rounded-xl border border-slate-200 text-center space-y-1">
-                  <span class="material-symbols-outlined text-2xl {{ $reservation->status === 'completed' ? 'text-blue-600' : 'text-slate-400' }}">
+                    @endif
+                  </div>
+                </div>
+              </form>
+            @else
+              <div class="flex items-center justify-between text-xs text-slate-500">
+                <span class="flex items-center gap-1.5 font-bold">
+                  <span class="material-symbols-outlined text-base {{ $reservation->status === 'completed' ? 'text-blue-600' : 'text-slate-400' }}">
                     {{ $reservation->status === 'completed' ? 'verified' : 'lock' }}
                   </span>
-                  <p class="text-xs font-bold text-slate-800">
-                    {{ $reservation->status === 'completed' ? 'Servicio prestado y completado' : 'Esta solicitud se encuentra cerrada' }}
-                  </p>
-                  <p class="text-[10px] text-slate-400">Estado final: {{ $statusMeta['label'] }}</p>
-                </div>
-              @endif
-
-              <div class="pt-2 border-t border-slate-200/80 flex items-center justify-between text-[11px] text-slate-500">
-                <span>Ref: {{ $reservation->reference }}</span>
-                <a href="{{ route('merchant.messages') }}" class="text-[#006c47] font-bold hover:underline flex items-center gap-0.5">
-                  <span class="material-symbols-outlined text-xs">chat</span> Mensajería
-                </a>
+                  {{ $reservation->status === 'completed' ? 'Servicio prestado y completado exitosamente' : 'Esta solicitud se encuentra cerrada (' . $statusMeta['label'] . ')' }}
+                </span>
+                <span class="font-mono text-[11px] text-slate-400">Ref: {{ $reservation->reference }}</span>
               </div>
-
-            </div>
-
+            @endif
           </div>
+
         </article>
       @endforeach
     </div>
