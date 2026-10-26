@@ -113,9 +113,12 @@
                   {{ $badge['label'] }}
                 </span>
               </div>
-              <p class="text-xs text-slate-500 mt-0.5">
-                {{ $order->created_at->format('d M Y - h:i A') }} · Cliente: <strong>{{ e($order->user->name ?? 'Cliente') }}</strong> ({{ $order->user->phone ?? 'Sin teléfono' }})
-              </p>
+              <div class="flex items-center gap-2 mt-2">
+                <x-user-avatar :user="$order->user" size="w-8 h-8" text-size="text-[10px]" />
+                <p class="text-xs text-slate-500">
+                  {{ $order->created_at->format('d M Y - h:i A') }} · Cliente: <strong>{{ e($order->user->name ?? 'Cliente') }}</strong> ({{ $order->user->phone ?? 'Sin teléfono' }})
+                </p>
+              </div>
             </div>
 
             <div class="text-right">

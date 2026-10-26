@@ -575,8 +575,13 @@
                   </td>
 
                   <td class="py-3.5 px-4" data-label="Cliente / Contacto">
-                    <p class="font-bold text-slate-900">{{ $order->user->name ?? 'Cliente' }}</p>
-                    <span class="text-[11px] text-slate-500">{{ $order->user->phone ?? 'Sin teléfono' }}</span>
+                    <div class="flex items-center gap-2">
+                      <x-user-avatar :user="$order->user" size="w-8 h-8" text-size="text-[10px]" />
+                      <div class="min-w-0">
+                        <p class="font-bold text-slate-900">{{ $order->user->name ?? 'Cliente' }}</p>
+                        <span class="text-[11px] text-slate-500">{{ $order->user->phone ?? 'Sin teléfono' }}</span>
+                      </div>
+                    </div>
                   </td>
 
                   <td class="py-3.5 px-4" data-label="Productos / Cant.">
@@ -728,7 +733,8 @@
         @forelse($recentReviews as $rev)
           <div class="p-4 rounded-xl bg-slate-50 border border-slate-200/80 space-y-1.5">
             <div class="flex items-center justify-between">
-              <div class="flex items-center gap-2">
+              <div class="flex items-center gap-2 min-w-0">
+                <x-user-avatar :user="$rev->user" size="w-7 h-7" text-size="text-[10px]" />
                 <span class="font-bold text-xs text-slate-900">{{ $rev->user->name ?? 'Comprador verificado' }}</span>
                 <span class="text-amber-500 font-bold text-xs">★ {{ $rev->rating }}</span>
               </div>

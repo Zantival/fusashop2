@@ -23,9 +23,7 @@
                 <tr class="hover:bg-surface-container-low/30 transition-colors">
                     <td class="px-6 py-4" data-label="Usuario">
                         <div class="flex items-center gap-3">
-                            <div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs">
-                                {{ strtoupper(substr($item->user->name, 0, 1)) }}
-                            </div>
+                            <x-user-avatar :user="$item->user" size="w-8 h-8" text-size="text-xs" />
                             <div class="min-w-0">
                                 <p class="text-sm font-bold text-on-surface truncate">{{ e($item->user->name) }}</p>
                                 <p class="text-[10px] text-on-surface-variant">{{ e($item->user->role) }}</p>

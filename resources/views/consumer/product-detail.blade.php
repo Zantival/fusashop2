@@ -174,6 +174,8 @@ $specLabels = [
           <a href="{{ route('consumer.merchant.profile', $product->merchant_id) }}" class="pd-merchant flex-1">
             @if($product->merchant->companyProfile?->logo_path)
               <img loading="lazy" decoding="async" src="{{ Storage::url($product->merchant->companyProfile->logo_path) }}" alt="Logo de {{ $product->merchant->companyProfile->company_name }}" class="w-10 h-10 rounded-full object-cover">
+            @elseif($product->merchant->avatarUrl())
+              <img loading="lazy" decoding="async" src="{{ $product->merchant->avatarUrl() }}" alt="Foto de perfil de {{ $product->merchant->name }}" class="w-10 h-10 rounded-full object-cover">
             @else
               <div class="w-10 h-10 rounded-full flex items-center justify-center text-white font-black" style="background:{{ $from }}">{{ strtoupper(substr($product->merchant->name,0,1)) }}</div>
             @endif
@@ -426,14 +428,7 @@ $specLabels = [
 
           {{-- Información de Autor --}}
           <div class="flex items-center gap-3.5 pt-4 border-t border-surface-container/40">
-            @if($rev->user->avatar)
-                <img loading="lazy" decoding="async" src="{{ Storage::url($rev->user->avatar) }}" alt="Foto de perfil de {{ $rev->user->name }}" class="w-11 h-11 rounded-full object-cover shadow-inner">
-            @else
-              <div class="w-11 h-11 rounded-full flex items-center justify-center font-black text-sm shrink-0 shadow-inner"
-                   style="background: {{ $avatarBg }}; color: {{ $avatarText }}">
-                {{ strtoupper(substr($rev->user->name ?? 'A', 0, 1)) }}
-              </div>
-            @endif
+            <x-user-avatar :user="$rev->user" size="w-11 h-11" text-size="text-sm" class="shadow-inner" />
             
             <div>
               <p class="font-black text-sm text-on-surface leading-tight">
