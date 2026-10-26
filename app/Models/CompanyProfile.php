@@ -122,7 +122,9 @@ class CompanyProfile extends Model
             return null;
         }
 
-        return route('storage.serve', ['path' => $path]);
+        // Build the URL without resolving a named route so an old route cache
+        // on shared hosting cannot turn the user directory into a 500 page.
+        return url('storage/' . $path);
     }
 
     public function hasCustomWompi(): bool
