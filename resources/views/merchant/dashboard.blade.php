@@ -196,14 +196,14 @@
         @endif
       </button>
 
-      <!-- Tab 3: Pedidos & Envia.com -->
+      <!-- Tab 3: Reservas para negocios de servicios; pedidos para comercios de productos -->
       <button type="button"
-              @click="activeTab = 'orders'"
-              :class="activeTab === 'orders' ? 'bg-[#006c47] text-white font-bold shadow-md shadow-[#006c47]/20' : 'bg-surface-container-low text-on-surface-variant font-semibold hover:bg-surface-container-high'"
+              @click="activeTab = '{{ $hasServiceProducts ? 'reservations' : 'orders' }}'"
+              :class="activeTab === '{{ $hasServiceProducts ? 'reservations' : 'orders' }}' ? 'bg-[#006c47] text-white font-bold shadow-md shadow-[#006c47]/20' : 'bg-surface-container-low text-on-surface-variant font-semibold hover:bg-surface-container-high'"
               class="px-4 py-2.5 rounded-xl text-xs transition-all flex items-center gap-2 shrink-0 cursor-pointer relative">
-        <span class="material-symbols-outlined text-base">local_shipping</span>
-        <span>Tab 3: Pedidos & Despachos Envia.com</span>
-        @if($pendingOrders > 0)
+        <span class="material-symbols-outlined text-base">{{ $hasServiceProducts ? 'event_available' : 'local_shipping' }}</span>
+        <span>{{ $hasServiceProducts ? 'Tab 3: Reservas de Servicios' : 'Tab 3: Pedidos & Despachos Envia.com' }}</span>
+        @if(!$hasServiceProducts && $pendingOrders > 0)
           <span class="px-1.5 py-0.5 rounded-full text-[10px] font-black bg-amber-500 text-white leading-none">
             {{ $pendingOrders }}
           </span>
@@ -528,6 +528,20 @@
   <!-- ========================================================================= -->
   <!-- TAB 3: PEDIDOS & LOGÍSTICA ENVIA.COM                                      -->
   <!-- ========================================================================= -->
+  @if($hasServiceProducts)
+  <div x-show="activeTab === 'reservations'" class="space-y-6" style="display: none;">
+    <div class="rounded-2xl border border-emerald-200 bg-white p-6 shadow-sm">
+      <div class="flex items-start gap-4">
+        <span class="material-symbols-outlined rounded-xl bg-emerald-50 p-3 text-emerald-700">event_available</span>
+        <div class="flex-1">
+          <h2 class="text-xl font-extrabold text-slate-900">Reservas de tus servicios</h2>
+          <p class="mt-1 text-sm text-slate-600">Consulta quién reservó, revisa fechas y horarios, y confirma o responde cada solicitud.</p>
+          <a href="{{ route('merchant.reservations') }}" class="mt-4 inline-flex items-center gap-2 rounded-xl bg-emerald-700 px-4 py-3 text-sm font-bold text-white"><span class="material-symbols-outlined text-base">calendar_month</span> Ver solicitudes de reserva</a>
+        </div>
+      </div>
+    </div>
+  </div>
+  @else
   <div x-show="activeTab === 'orders'" class="space-y-6" style="display: none;">
     <div class="bg-white rounded-2xl p-6 shadow-[0_12px_32px_rgba(27,28,28,.06)] border border-outline-variant/20 space-y-4">
       
@@ -665,6 +679,7 @@
 
     </div>
   </div>
+  @endif
 
   <!-- ========================================================================= -->
   <!-- TAB 4: FINANZAS, BALANCE & PAUTAS PUBLICITARIAS                           -->

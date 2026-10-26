@@ -147,15 +147,6 @@ class AuthController extends Controller
             ]);
         }
 
-        // Si el usuario se registra como Comerciante, validar y extraer su método de pago preferido
-        $merchantPayoutData = [];
-        if ($data['role'] === 'merchant') {
-            $hasPayoutInput = $request->filled('payout_account_number') || $request->filled('wallet_phone');
-            if ($hasPayoutInput) {
-                $merchantPayoutData = \App\Models\CompanyProfile::validateAndExtractPayoutData($request, true);
-            }
-        }
-
         $code = str_pad((string) random_int(100000, 999999), 6, '0', STR_PAD_LEFT);
 
         $hashedPassword = !empty($data['password'])
@@ -188,17 +179,6 @@ class AuthController extends Controller
 
         if ($user->isConsumer()) {
             Cart::create(['user_id' => $user->id]);
-        } elseif ($user->isMerchant() && (!empty($merchantPayoutData) || $request->filled('company_name'))) {
-            \App\Models\CompanyProfile::updateOrCreate(
-                ['merchant_id' => $user->id],
-                array_merge([
-                    'company_name'          => strip_tags(trim((string) $request->input('company_name'))) ?: $user->name,
-                    'phone'                 => $user->phone ?? '',
-                    'rut_path'              => '',
-                    'kyc_status'            => 'pending',
-                    'payout_account_holder' => $merchantPayoutData['payout_account_holder'] ?? $user->name,
-                ], $merchantPayoutData)
-            );
         }
 
         $verificationEmailSent = false;

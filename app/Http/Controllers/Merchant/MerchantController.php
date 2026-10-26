@@ -60,6 +60,7 @@ class MerchantController extends Controller
 
         // Productos del comerciante para pestaña de catálogo & stock
         $products = $merchant->products()->latest()->get();
+        $hasServiceProducts = $products->contains(fn ($product) => strtolower((string) $product->type) === 'service');
 
         // Datos de ventas diarias para el gráfico Chart.js (últimos 7 días)
         $dailySales = [];
@@ -134,7 +135,7 @@ class MerchantController extends Controller
             'pendingOrders','totalOrdersCount','deliveredOrders','fulfillmentRate',
             'netIncome','readyToWithdraw','recentOrders',
             'recentReviews','avgRating','totalReviews','aiDiagnostics','academyCourses',
-            'products','dailySales','categoryDistribution'
+            'products','dailySales','categoryDistribution','hasServiceProducts'
         ));
     }
 

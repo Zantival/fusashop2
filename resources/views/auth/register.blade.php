@@ -145,7 +145,7 @@
           <div class="grid grid-cols-2 gap-3">
             <!-- Comprar / Cliente -->
             <label class="relative cursor-pointer block h-full">
-              <input type="radio" name="role" value="consumer" class="role-input absolute inset-0 w-full h-full opacity-0 z-20 cursor-pointer" {{ old('role', request('role', 'consumer'))==='consumer' ? 'checked' : '' }} onchange="toggleMerchantPayoutRegister()" required/>
+              <input type="radio" name="role" value="consumer" class="role-input absolute inset-0 w-full h-full opacity-0 z-20 cursor-pointer" {{ old('role', request('role', 'consumer'))==='consumer' ? 'checked' : '' }} required/>
               <div class="role-box flex flex-col items-center gap-2 p-4 bg-surface-container rounded-2xl border-2 border-transparent transition-all h-full relative z-10 text-center">
                 <span class="material-symbols-outlined role-icon text-on-surface-variant text-3xl">shopping_bag</span>
                 <span class="text-sm font-bold text-on-surface">Cliente</span>
@@ -154,7 +154,7 @@
             </label>
             <!-- Vender / Vendedor -->
             <label class="relative cursor-pointer block h-full">
-              <input type="radio" name="role" value="merchant" class="role-input absolute inset-0 w-full h-full opacity-0 z-20 cursor-pointer" {{ old('role', $role ?? 'consumer')==='merchant' ? 'checked' : '' }} onchange="toggleMerchantPayoutRegister()"/>
+              <input type="radio" name="role" value="merchant" class="role-input absolute inset-0 w-full h-full opacity-0 z-20 cursor-pointer" {{ old('role', $role ?? 'consumer')==='merchant' ? 'checked' : '' }}/>
               <div class="role-box flex flex-col items-center gap-2 p-4 bg-surface-container rounded-2xl border-2 border-transparent transition-all h-full relative z-10 text-center">
                 <span class="material-symbols-outlined role-icon text-on-surface-variant text-3xl">storefront</span>
                 <span class="text-sm font-bold text-on-surface">Vendedor</span>
@@ -252,108 +252,6 @@
           </div>
         </div>
 
-        {{-- Módulo de Configuración de Método de Pago Preferido para Comerciantes --}}
-        @php
-          $regMethodType = old('payout_method_type', 'bank');
-          $regBanks = \App\Models\CompanyProfile::availableBanks();
-        @endphp
-        <div id="merchant-payout-register-section" class="p-4 rounded-2xl bg-emerald-50/50 border-2 border-[#006c47]/25 space-y-3.5 transition-all" style="display: {{ old('role', $role ?? 'consumer') === 'merchant' ? 'block' : 'none' }};">
-          <div class="flex items-start gap-2.5">
-            <div class="w-9 h-9 rounded-xl bg-[#006c47] text-white flex items-center justify-center shrink-0">
-              <span class="material-symbols-outlined text-[18px]">payments</span>
-            </div>
-            <div>
-              <h3 class="text-sm font-black text-on-surface">Método de Pago Preferido (Comerciante)</h3>
-              <p class="text-[11px] text-on-surface-variant leading-snug">
-                Configura dónde deseas recibir el dinero de tus ventas: cuenta bancaria tradicional o billetera digital.
-              </p>
-            </div>
-          </div>
-
-          <div>
-            <label class="block text-xs font-bold text-on-surface mb-1">Nombre de tu Tienda o Comercio (Opcional)</label>
-            <input type="text" name="company_name" value="{{ old('company_name') }}"
-                   class="w-full px-3.5 py-2.5 bg-white border border-outline-variant/30 rounded-xl text-xs font-semibold text-on-surface outline-none focus:ring-2 focus:ring-primary/20"
-                   placeholder="Ej: Café Especial del Sumapaz">
-          </div>
-
-          <div class="grid grid-cols-2 gap-2.5">
-            <label class="cursor-pointer rounded-xl border-2 p-2.5 flex items-center gap-2 bg-white transition-all" id="reg-label-bank">
-              <input type="radio" name="payout_method_type" value="bank" id="reg-radio-bank"
-                     {{ $regMethodType === 'bank' ? 'checked' : '' }}
-                     onchange="switchRegisterPayoutType('bank')"
-                     class="text-[#006c47] focus:ring-[#006c47]">
-              <div class="min-w-0">
-                <span class="text-xs font-extrabold text-on-surface block truncate">Cuenta Bancaria</span>
-                <span class="text-[10px] text-on-surface-variant block truncate">Ahorros / Corriente</span>
-              </div>
-            </label>
-
-            <label class="cursor-pointer rounded-xl border-2 p-2.5 flex items-center gap-2 bg-white transition-all" id="reg-label-wallet">
-              <input type="radio" name="payout_method_type" value="wallet" id="reg-radio-wallet"
-                     {{ $regMethodType === 'wallet' ? 'checked' : '' }}
-                     onchange="switchRegisterPayoutType('wallet')"
-                     class="text-[#006c47] focus:ring-[#006c47]">
-              <div class="min-w-0">
-                <span class="text-xs font-extrabold text-on-surface block truncate">Billetera Digital</span>
-                <span class="text-[10px] text-on-surface-variant block truncate">Nequi o Daviplata</span>
-              </div>
-            </label>
-          </div>
-
-          <!-- Sub-panel Cuenta Bancaria Tradicional -->
-          <div id="reg-bank-fields" class="space-y-3 pt-1" style="display: {{ $regMethodType === 'bank' ? 'block' : 'none' }};">
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-              <div>
-                <label class="block text-[11px] font-bold text-on-surface-variant mb-1">Banco <span class="text-error">*</span></label>
-                <select name="payout_bank_name" id="reg-payout-bank"
-                        class="w-full px-3 py-2.5 bg-white border border-outline-variant/30 rounded-xl text-xs font-semibold text-on-surface outline-none focus:ring-2 focus:ring-primary/20">
-                  <option value="">Selecciona banco...</option>
-                  @foreach($regBanks as $bName)
-                    <option value="{{ $bName }}" {{ old('payout_bank_name', 'Bancolombia') === $bName ? 'selected' : '' }}>{{ $bName }}</option>
-                  @endforeach
-                </select>
-              </div>
-              <div>
-                <label class="block text-[11px] font-bold text-on-surface-variant mb-1">Tipo de Cuenta <span class="text-error">*</span></label>
-                <select name="payout_account_type" id="reg-payout-acc-type"
-                        class="w-full px-3 py-2.5 bg-white border border-outline-variant/30 rounded-xl text-xs font-semibold text-on-surface outline-none focus:ring-2 focus:ring-primary/20">
-                  <option value="Ahorros" {{ old('payout_account_type', 'Ahorros') === 'Ahorros' ? 'selected' : '' }}>Ahorros</option>
-                  <option value="Corriente" {{ old('payout_account_type') === 'Corriente' ? 'selected' : '' }}>Corriente</option>
-                </select>
-              </div>
-            </div>
-            <div>
-              <label class="block text-[11px] font-bold text-on-surface-variant mb-1">Número de Cuenta Bancaria <span class="text-error">*</span></label>
-              <input type="text" name="payout_account_number" id="reg-payout-acc-num" value="{{ old('payout_account_number') }}"
-                     inputmode="numeric"
-                     class="w-full px-3.5 py-2.5 bg-white border border-outline-variant/30 rounded-xl text-xs font-mono font-bold text-on-surface outline-none focus:ring-2 focus:ring-primary/20"
-                     placeholder="Ej: 12345678901">
-            </div>
-          </div>
-
-          <!-- Sub-panel Billeteras Digitales (Nequi / Daviplata) -->
-          <div id="reg-wallet-fields" class="space-y-3 pt-1" style="display: {{ $regMethodType === 'wallet' ? 'block' : 'none' }};">
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-              <div>
-                <label class="block text-[11px] font-bold text-on-surface-variant mb-1">Billetera Digital <span class="text-error">*</span></label>
-                <select name="wallet_provider" id="reg-wallet-provider"
-                        class="w-full px-3 py-2.5 bg-white border border-outline-variant/30 rounded-xl text-xs font-semibold text-on-surface outline-none focus:ring-2 focus:ring-primary/20">
-                  <option value="Nequi" {{ old('wallet_provider', 'Nequi') === 'Nequi' ? 'selected' : '' }}>Nequi</option>
-                  <option value="Daviplata" {{ old('wallet_provider') === 'Daviplata' ? 'selected' : '' }}>Daviplata</option>
-                </select>
-              </div>
-              <div>
-                <label class="block text-[11px] font-bold text-on-surface-variant mb-1">Teléfono Asociado (10 dígitos) <span class="text-error">*</span></label>
-                <input type="tel" name="wallet_phone" id="reg-wallet-phone" value="{{ old('wallet_phone') }}"
-                       maxlength="10" inputmode="numeric"
-                       class="w-full px-3.5 py-2.5 bg-white border border-outline-variant/30 rounded-xl text-xs font-mono font-bold text-on-surface outline-none focus:ring-2 focus:ring-primary/20"
-                       placeholder="Ej: 3101234567">
-              </div>
-            </div>
-          </div>
-        </div>
-
         <div class="p-3 bg-emerald-50/60 rounded-xl border border-emerald-100 flex items-center gap-2.5 text-xs text-emerald-800 form-enter">
           <span class="material-symbols-outlined text-emerald-600 text-base shrink-0">mark_email_read</span>
           <span>Al crear tu cuenta, te enviaremos un <strong>código de 6 dígitos a tu correo</strong> para confirmar tu identidad.</span>
@@ -413,48 +311,6 @@ function togglePwd(inputId, iconId) {
   i.type = i.type === 'password' ? 'text' : 'password';
   e.textContent = i.type === 'password' ? 'visibility_off' : 'visibility';
 }
-
-function toggleMerchantPayoutRegister() {
-  const checkedRole = document.querySelector('input[name="role"]:checked');
-  const isMerchant = checkedRole && checkedRole.value === 'merchant';
-  const section = document.getElementById('merchant-payout-register-section');
-  if (section) {
-    section.style.display = isMerchant ? 'block' : 'none';
-  }
-  const activeMethod = document.querySelector('input[name="payout_method_type"]:checked');
-  switchRegisterPayoutType(activeMethod ? activeMethod.value : 'bank', isMerchant);
-}
-
-function switchRegisterPayoutType(type, isMerchantOverride) {
-  const checkedRole = document.querySelector('input[name="role"]:checked');
-  const isMerchant = typeof isMerchantOverride === 'boolean' ? isMerchantOverride : (checkedRole && checkedRole.value === 'merchant');
-  const bankFields = document.getElementById('reg-bank-fields');
-  const walletFields = document.getElementById('reg-wallet-fields');
-  const labelBank = document.getElementById('reg-label-bank');
-  const labelWallet = document.getElementById('reg-label-wallet');
-  const bankAccNum = document.getElementById('reg-payout-acc-num');
-  const walletPhone = document.getElementById('reg-wallet-phone');
-
-  if (type === 'wallet') {
-    if (bankFields) bankFields.style.display = 'none';
-    if (walletFields) walletFields.style.display = 'block';
-    if (labelWallet) labelWallet.classList.add('border-[#006c47]', 'bg-emerald-50/40');
-    if (labelBank) labelBank.classList.remove('border-[#006c47]', 'bg-emerald-50/40');
-    if (bankAccNum) bankAccNum.required = false;
-    if (walletPhone) walletPhone.required = Boolean(isMerchant);
-  } else {
-    if (bankFields) bankFields.style.display = 'block';
-    if (walletFields) walletFields.style.display = 'none';
-    if (labelBank) labelBank.classList.add('border-[#006c47]', 'bg-emerald-50/40');
-    if (labelWallet) labelWallet.classList.remove('border-[#006c47]', 'bg-emerald-50/40');
-    if (walletPhone) walletPhone.required = false;
-    if (bankAccNum) bankAccNum.required = Boolean(isMerchant);
-  }
-}
-
-document.addEventListener('DOMContentLoaded', function() {
-  toggleMerchantPayoutRegister();
-});
 
 const registerForm = document.getElementById('register-form');
 const registerName = document.getElementById('register-name');
