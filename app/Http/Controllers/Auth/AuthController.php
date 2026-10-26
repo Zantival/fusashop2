@@ -107,7 +107,13 @@ class AuthController extends Controller
                     $fail('Escribe tu nombre y apellidos usando letras; permite un solo espacio entre palabras, sin espacios al inicio, al final ni repetidos.');
                 }
             }],
-            'email'    => ['required', 'email', 'unique:users,email'],
+            'email'    => [
+                'required',
+                'string',
+                app()->environment(['local', 'testing']) ? 'email:rfc' : 'email:rfc,dns',
+                'max:254',
+                'unique:users,email',
+            ],
             'role'     => ['required', 'in:consumer,merchant'],
             'phone_country' => ['required', 'in:57,1,52,34,51,56,54'],
             'phone'    => ['required', 'regex:/^[0-9]{7,15}$/'],
@@ -128,6 +134,7 @@ class AuthController extends Controller
             'phone.regex' => 'Escribe un número válido sin espacios. En Colombia debe tener 10 dígitos y comenzar por 3 (no por 0).',
             'phone_country.required' => 'Selecciona el indicativo de tu país.',
             'name.regex' => 'Escribe un nombre válido, sin espacios al inicio, al final ni repetidos.',
+            'email.email' => 'Escribe un correo válido con un dominio activo. Debes poder recibir allí el código de verificación.',
             ...PasswordPolicy::messages(),
         ]);
 

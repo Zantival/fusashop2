@@ -51,7 +51,30 @@ class UserProfileAndRegistrationTest extends TestCase
             'email' => 'maria@example.com',
             'phone' => '3101234567',
             'role'  => 'consumer',
+            'email_verified_at' => null,
         ]);
+
+        $user = User::where('email', 'maria@example.com')->firstOrFail();
+        $this->assertMatchesRegularExpression('/^\d{6}$/', $user->verification_code);
+    }
+
+    public function test_registration_rejects_numeric_names(): void
+    {
+        $this->withoutMiddleware(\Illuminate\Routing\Middleware\ThrottleRequests::class);
+
+        $this->post(route('register.post'), [
+            'name'                      => '123456789',
+            'email'                     => 'numeric-name@example.com',
+            'phone'                     => '3101234567',
+            'password'                  => 'Password123!',
+            'password_confirmation'     => 'Password123!',
+            'role'                      => 'consumer',
+            'accepted_terms'            => 1,
+            'accepted_privacy'          => 1,
+            'age_or_guardian_confirmed' => 1,
+        ])->assertSessionHasErrors('name');
+
+        $this->assertDatabaseMissing('users', ['email' => 'numeric-name@example.com']);
     }
 
     public function test_merchant_registration_succeeds_with_phone(): void
