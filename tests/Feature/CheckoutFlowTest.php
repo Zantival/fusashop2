@@ -371,6 +371,13 @@ class CheckoutFlowTest extends TestCase
             'services.google.client_id' => '',
         ]);
         $order = $this->makeOrder(qty: 1);
+        $cart = Cart::create(['user_id' => $this->consumer->id]);
+        CartItem::create([
+            'cart_id' => $cart->id,
+            'product_id' => $this->product->id,
+            'quantity' => 1,
+            'unit_price' => 50000,
+        ]);
         $wompi = app(\App\Services\WompiService::class);
 
         $checkoutUrl = $wompi->checkoutUrl($order, route('consumer.checkout.result'));
@@ -388,6 +395,8 @@ class CheckoutFlowTest extends TestCase
 
         $order->refresh();
         $this->assertSame('paid', $order->payment_status);
+        $this->assertSame(0, $cart->fresh()->items()->count(), 'El pago aprobado debe retirar los productos comprados del carrito');
+        $this->get(route('consumer.cart'))->assertOk()->assertSee('Tu carrito está vacío');
         $this->assertNotNull($order->tracking_number, 'Envia sandbox debe generar guía automáticamente sin token');
         $this->assertNotNull($order->invoice_cufe, 'Factus sandbox debe emitir CUFE y factura automáticamente sin llaves');
     }

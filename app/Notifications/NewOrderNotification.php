@@ -23,9 +23,9 @@ class NewOrderNotification extends Notification
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject('¡Nuevo Pedido Recibido en FusaShop!')
+            ->subject('¡Pedido pagado recibido en FusaShop!')
             ->greeting('Hola ' . $notifiable->name . ',')
-            ->line('Has recibido un nuevo pedido (#' . $this->order->id . ') por un total de $' . number_format($this->order->total, 2) . '.')
+            ->line('El pago del pedido #' . $this->order->id . ' fue aprobado. Total: $' . number_format($this->order->total, 2) . '.')
             ->action('Ver Detalles del Pedido', route('merchant.orders'))
             ->line('Por favor, prepara el pedido lo antes posible.');
     }
@@ -34,12 +34,13 @@ class NewOrderNotification extends Notification
     {
         return [
             'id' => $this->order->id,
-            'title' => '¡Nuevo Pedido Recibido!',
-            'message' => "Has recibido un nuevo pedido #{$this->order->id}. Revisa los detalles ahora.",
+            'title' => '¡Pedido pagado recibido!',
+            'message' => "El pago del pedido #{$this->order->id} fue aprobado. Revisa los detalles y prepara el envío.",
             'icon' => 'shopping_cart',
             'url' => route('merchant.orders'),
             'type' => 'new_order',
             'amount' => $this->order->total,
+            'payment_status' => $this->order->payment_status,
         ];
     }
 }

@@ -685,6 +685,10 @@ class ConsumerController extends Controller
     {
         $user = Auth::user();
         $cart = $user->cart()->with('items.product.merchant.companyProfile')->firstOrCreate(['user_id' => $user->id]);
+        // Un producto puede ser eliminado mientras su referencia aún existe en un carrito.
+        // Evita que la vista del carrito intente leer atributos de un producto inexistente.
+        $cart->items->filter(fn ($item) => !$item->product)->each->delete();
+        $cart->load('items.product.merchant.companyProfile');
         foreach ($cart->items as $item) {
             if ($item->product) {
                 $currentPrice = $item->product->priceForOptions($item->selected_options ?? []);
