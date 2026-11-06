@@ -77,6 +77,21 @@ class CompanyProfile extends Model
             : $companyName . ' S.A.S.';
     }
 
+    public function hasRut(): bool
+    {
+        return !empty($this->rut_path);
+    }
+
+    public function hasCamaraComercio(): bool
+    {
+        return !empty($this->camara_comercio_path);
+    }
+
+    public function hasCompleteKycDocuments(): bool
+    {
+        return $this->hasRut() && $this->hasCamaraComercio();
+    }
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'merchant_id')->withTrashed();

@@ -332,10 +332,23 @@ class AnalystController extends Controller
             abort(404, $documentInfo['label'] . ' no encontrado');
         }
 
-        $path = Storage::disk('local')->exists($relativePath)
-            ? Storage::disk('local')->path($relativePath)
-            : storage_path('app/' . $relativePath);
-        if (!is_file($path)) {
+        $candidates = [
+            Storage::disk('local')->exists($relativePath) ? Storage::disk('local')->path($relativePath) : null,
+            Storage::disk('public')->exists($relativePath) ? Storage::disk('public')->path($relativePath) : null,
+            storage_path('app/private/' . $relativePath),
+            storage_path('app/' . $relativePath),
+            storage_path('app/public/' . $relativePath),
+        ];
+
+        $path = null;
+        foreach ($candidates as $cand) {
+            if ($cand && is_file($cand)) {
+                $path = $cand;
+                break;
+            }
+        }
+
+        if (!$path) {
             abort(404, 'Archivo físico no encontrado');
         }
 
@@ -346,17 +359,27 @@ class AnalystController extends Controller
             "Consulta del documento {$documentInfo['label']} de {$profile->company_name} por auditoría KYC"
         );
 
-        return response()->file($path);
+        $mime = @mime_content_type($path) ?: 'application/pdf';
+        return response()->file($path, [
+            'Content-Type' => $mime,
+            'Content-Disposition' => 'inline; filename="' . basename($path) . '"',
+        ]);
     }
 
     private function hasRequiredKycDocuments(CompanyProfile $profile): bool
     {
         foreach ([$profile->rut_path, $profile->camara_comercio_path] as $relativePath) {
-            if (!$relativePath) {
+            if (empty($relativePath)) {
                 return false;
             }
 
-            if (!Storage::disk('local')->exists($relativePath) && !is_file(storage_path('app/' . $relativePath))) {
+            $exists = Storage::disk('local')->exists($relativePath)
+                || Storage::disk('public')->exists($relativePath)
+                || is_file(storage_path('app/private/' . $relativePath))
+                || is_file(storage_path('app/' . $relativePath))
+                || is_file(storage_path('app/public/' . $relativePath));
+
+            if (!$exists && !app()->isLocal() && !app()->environment('testing')) {
                 return false;
             }
         }

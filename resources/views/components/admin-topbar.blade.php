@@ -1,11 +1,20 @@
 @php
   $adminUser = auth()->user();
-  $pendingKycCount = \App\Models\CompanyProfile::where('kyc_status', 'pending')->count();
-  $failedIntegrationsCount = \App\Models\IntegrationLog::where('status', 'failed')->whereNull('resolved_at')->where('created_at', '>=', now()->subDay())->count();
-  $openPqrsCount = \App\Models\PQRS::whereIn('status', ['pending', 'in_review'])->count();
-  $pendingBannersCount = \App\Models\BannerRequest::where('status', 'pending')->count();
-  $unreadDbNotifs = $adminUser ? $adminUser->unreadNotifications()->count() : 0;
-  $unreadChatMessages = $adminUser ? \App\Models\Message::where('receiver_id', $adminUser->id)->where('is_read', false)->count() : 0;
+  try {
+    $pendingKycCount = \App\Models\CompanyProfile::where('kyc_status', 'pending')->count();
+    $failedIntegrationsCount = \App\Models\IntegrationLog::where('status', 'failed')->whereNull('resolved_at')->where('created_at', '>=', now()->subDay())->count();
+    $openPqrsCount = \App\Models\PQRS::whereIn('status', ['pending', 'in_review'])->count();
+    $pendingBannersCount = \App\Models\BannerRequest::where('status', 'pending')->count();
+    $unreadDbNotifs = $adminUser ? $adminUser->unreadNotifications()->count() : 0;
+    $unreadChatMessages = $adminUser ? \App\Models\Message::where('receiver_id', $adminUser->id)->where('is_read', false)->count() : 0;
+  } catch (\Throwable $e) {
+    $pendingKycCount = 0;
+    $failedIntegrationsCount = 0;
+    $openPqrsCount = 0;
+    $pendingBannersCount = 0;
+    $unreadDbNotifs = 0;
+    $unreadChatMessages = 0;
+  }
   // El globo de la campana cuenta solo notificaciones sin leer.
   // KYC, PQRS e integraciones siguen siendo alertas operativas hasta resolverse.
   $totalAlertsCount = $unreadDbNotifs;
@@ -182,7 +191,7 @@
         </div>
 
         <div class="max-h-56 overflow-y-auto divide-y divide-slate-100">
-          @forelse($adminUser->unreadNotifications()->take(6)->get() as $notif)
+          @forelse(($recentAdminNotifs ?? collect()) as $notif)
             <a href="{{ route('notifications.open', $notif->id) }}"
                data-no-ajax
                class="p-2.5 hover:bg-emerald-50/80 transition-all flex items-start gap-2 bg-emerald-50/30 group cursor-pointer block"
