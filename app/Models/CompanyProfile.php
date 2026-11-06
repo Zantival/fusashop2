@@ -69,9 +69,12 @@ class CompanyProfile extends Model
         });
     }
 
-    public static function suggestedLegalName(string $companyName): string
+    public static function suggestedLegalName(?string $companyName): string
     {
-        $companyName = trim($companyName);
+        $companyName = trim((string) $companyName);
+        if ($companyName === '') {
+            return 'Comercio S.A.S.';
+        }
         return preg_match('/\sS\.?A\.?S\.?$/iu', $companyName)
             ? $companyName
             : $companyName . ' S.A.S.';

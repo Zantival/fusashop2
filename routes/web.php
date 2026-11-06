@@ -338,6 +338,7 @@ Route::middleware(['auth', 'verified', 'role:merchant'])->prefix('merchant')->na
 });
 
 // --- Administrador (Analyst) ---
+Route::redirect('/admin', '/admin/dashboard');
 Route::middleware(['auth', 'role:analyst'])->prefix('admin')->name('analyst.')->group(function () {
     Route::get('/dashboard',                      [AnalystController::class, 'dashboard'])->name('dashboard');
     Route::get('/search',                         [AnalystController::class, 'globalSearch'])->name('search');

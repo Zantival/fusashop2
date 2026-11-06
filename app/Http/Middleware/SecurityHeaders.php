@@ -14,9 +14,15 @@ class SecurityHeaders
     public function handle(Request $request, Closure $next): Response
     {
         // 1. Ocultar versión de PHP y servidor (Previene "PHP Version with Known Vulnerabilities")
-        header_remove('X-Powered-By');
-        if (function_exists('header_remove')) {
-            header_remove('Server');
+        try {
+            if (!headers_sent()) {
+                @header_remove('X-Powered-By');
+                if (function_exists('header_remove')) {
+                    @header_remove('Server');
+                }
+            }
+        } catch (\Throwable) {
+            // Silenciar advertencias o incompatibilidades en entornos CGI/FastCGI
         }
 
         // 2. Filtro WAF temprano: Detecta firmas de inyección SQL (time-based, boolean, stacked)
