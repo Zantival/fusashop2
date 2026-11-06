@@ -25,8 +25,8 @@
               <div class="flex items-center gap-2.5">
                 <x-user-avatar :user="$o->user" size="w-9 h-9" text-size="text-xs" />
                 <div class="min-w-0">
-                  <p class="font-semibold text-on-background text-sm">{{ e($o->user->name) }}</p>
-                  <p class="text-on-surface-variant text-xs">{{ e($o->user->email) }}</p>
+                  <p class="font-semibold text-on-background text-sm">{{ e($o->user?->name ?? 'Usuario eliminado') }}</p>
+                  <p class="text-on-surface-variant text-xs">{{ e($o->user?->email ?? 'Sin correo') }}</p>
                 </div>
               </div>
             </td>
@@ -36,11 +36,11 @@
             <td class="px-6 py-4 text-xs">
               @if($o->invoice_pdf_path)
                 <div class="flex items-center gap-1.5">
-                  <a href="{{ route('analyst.orders.invoice', [$o->id, 'pdf']) }}" class="px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200 font-bold hover:bg-emerald-100">
+                  <a href="{{ url('/admin/orders/' . $o->id . '/invoice/pdf') }}" class="px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200 font-bold hover:bg-emerald-100">
                     PDF ({{ $o->invoice_number ?: 'DIAN' }})
                   </a>
                   @if($o->invoice_xml_path)
-                    <a href="{{ route('analyst.orders.invoice', [$o->id, 'xml']) }}" class="px-2 py-1 rounded-lg bg-slate-100 text-slate-700 border border-slate-200 font-bold hover:bg-slate-200">
+                    <a href="{{ url('/admin/orders/' . $o->id . '/invoice/xml') }}" class="px-2 py-1 rounded-lg bg-slate-100 text-slate-700 border border-slate-200 font-bold hover:bg-slate-200">
                       XML
                     </a>
                   @endif
@@ -49,7 +49,7 @@
                 <span class="text-on-surface-variant/60">Pendiente</span>
               @endif
             </td>
-            <td class="px-6 py-4 text-sm text-on-surface-variant" data-label="Fecha">{{ $o->created_at->format('d/m/Y') }}</td>
+            <td class="px-6 py-4 text-sm text-on-surface-variant" data-label="Fecha">{{ $o->created_at?->format('d/m/Y') ?? '-' }}</td>
           </tr>
           @endforeach
         </tbody>

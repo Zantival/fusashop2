@@ -18,6 +18,18 @@
   // El globo de la campana cuenta solo notificaciones sin leer.
   // KYC, PQRS e integraciones siguen siendo alertas operativas hasta resolverse.
   $totalAlertsCount = $unreadDbNotifs;
+
+  try {
+    if (!session()->has('logged_in_at')) {
+      $fallbackLogin = $adminUser?->last_seen_at ? $adminUser->last_seen_at->copy()->timezone('America/Bogota') : now()->timezone('America/Bogota');
+      session(['logged_in_at' => $fallbackLogin->toIso8601String()]);
+    }
+    $adminLoginAt = \Carbon\Carbon::parse(session('logged_in_at'))->timezone('America/Bogota');
+  } catch (\Throwable $e) {
+    $adminLoginAt = now()->timezone('America/Bogota');
+  }
+  $adminLoginDateFormatted = $adminLoginAt->format('d/m/Y');
+  $adminLoginTimeFormatted = $adminLoginAt->format('h:i a');
 @endphp
 
 <!-- Barra móvil superior para Administrador (solo en móviles < 768px) -->
@@ -29,6 +41,10 @@
     <x-logo size="sm" :href="route('analyst.dashboard')" :with-microcopy="false" />
   </div>
   <div class="flex items-center gap-2">
+    <span class="inline-flex items-center gap-1 px-2 py-1 text-[10px] font-bold bg-slate-100 text-slate-700 rounded-lg border border-slate-200" title="Fecha y hora de ingreso">
+      <span class="material-symbols-outlined text-[12px] text-[#006c47]">schedule</span>
+      <span>{{ $adminLoginDateFormatted }} · {{ $adminLoginTimeFormatted }}</span>
+    </span>
     <a href="{{ route('chat.index') }}" data-no-ajax
        class="relative inline-flex items-center justify-center gap-1.5 px-2.5 py-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-[#006c47] border border-emerald-200 font-extrabold text-xs"
        aria-label="Abrir mensajes">
@@ -85,6 +101,15 @@
            title="Editar mi perfil y foto de Administrador">
           <span class="material-symbols-outlined text-[14px]">edit</span>
         </a>
+      </div>
+
+      <!-- Indicador de Fecha y Hora de Ingreso -->
+      <div class="mt-1.5 px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200/80 flex items-center justify-between text-[10px] text-slate-600">
+        <span class="font-bold text-slate-500 flex items-center gap-1">
+          <span class="material-symbols-outlined text-[13px] text-[#006c47]">login</span>
+          <span>Ingreso:</span>
+        </span>
+        <span class="font-extrabold text-slate-800">{{ $adminLoginDateFormatted }} · {{ $adminLoginTimeFormatted }}</span>
       </div>
 
       <!-- Menú desplegable de Píldora de Perfil (se abre verticalmente debajo) -->

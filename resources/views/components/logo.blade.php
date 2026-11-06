@@ -8,14 +8,14 @@
 if (!$href) {
     if (auth()->check()) {
         if (auth()->user()->isMerchant()) {
-            $href = route('merchant.dashboard');
+            $href = url('/merchant/dashboard');
         } elseif (auth()->user()->isAnalyst()) {
-            $href = route('analyst.dashboard');
+            $href = url('/admin/dashboard');
         } else {
-            $href = route('consumer.home');
+            $href = url('/');
         }
     } else {
-        $href = route('consumer.home');
+        $href = url('/');
     }
 }
 
@@ -26,13 +26,22 @@ $sizeClasses = match($size) {
     default => ['icon' => 'w-8 h-8 sm:w-9 sm:h-9 text-xs sm:text-sm', 'text' => 'text-lg sm:text-xl', 'sub' => 'text-[9px] sm:text-[10px]', 'logo' => 'h-7 sm:h-9 max-w-36 sm:max-w-44'],
 };
 
-$logoPath = collect(\Illuminate\Support\Facades\Storage::disk('public')->files('system'))
-    ->first(fn ($path) => preg_match('/^system\/global_logo\.(png|jpe?g|webp)$/i', $path));
+$logoPath = null;
+$logoVersion = '1';
+try {
+    $logoPath = collect(\Illuminate\Support\Facades\Storage::disk('public')->files('system'))
+        ->first(fn ($path) => preg_match('/^system\/global_logo\.(png|jpe?g|webp)$/i', $path));
+    if ($logoPath) {
+        $logoVersion = substr(md5((string) \Illuminate\Support\Facades\Storage::disk('public')->lastModified($logoPath)), 0, 8);
+    }
+} catch (\Throwable) {
+    $logoPath = null;
+}
 @endphp
 
 <a href="{{ $href }}" class="inline-flex items-center gap-2.5 group shrink-0 no-underline" title="FusaShop — El epicentro de compras del Sumapaz">
     @if($logoPath)
-        <img loading="lazy" decoding="async" src="{{ route('files.serve', ['disk' => 'system', 'path' => basename($logoPath)]) }}?v={{ substr(md5((string) \Illuminate\Support\Facades\Storage::disk('public')->lastModified($logoPath)), 0, 8) }}"
+        <img loading="lazy" decoding="async" src="{{ url('files/system/' . basename($logoPath)) }}?v={{ $logoVersion }}"
              alt="Logo FusaShop"
              class="{{ $sizeClasses['logo'] }} w-auto object-contain">
     @else

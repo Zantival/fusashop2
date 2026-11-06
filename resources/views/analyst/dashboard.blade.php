@@ -73,8 +73,28 @@
   </div>
 
   <!-- EXECUTIVE HEADER & PRESERVED ACTION BUTTONS -->
+  @php
+    try {
+      if (!session()->has('logged_in_at')) {
+        $fallbackLogin = auth()->user()?->last_seen_at ? auth()->user()->last_seen_at->copy()->timezone('America/Bogota') : now()->timezone('America/Bogota');
+        session(['logged_in_at' => $fallbackLogin->toIso8601String()]);
+      }
+      $dashboardLoginAt = \Carbon\Carbon::parse(session('logged_in_at'))->timezone('America/Bogota');
+    } catch (\Throwable $e) {
+      $dashboardLoginAt = now()->timezone('America/Bogota');
+    }
+  @endphp
   <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-2xl shadow-[0_12px_32px_rgba(27,28,28,.06)] border border-outline-variant/20">
     <div>
+      <div class="flex flex-wrap items-center gap-2 mb-2">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-xl bg-emerald-50 border border-emerald-200 text-[#006c47] text-xs font-extrabold shadow-2xs">
+          <span class="material-symbols-outlined text-[15px] text-[#006c47]">calendar_today</span>
+          <span>Fecha de ingreso: {{ $dashboardLoginAt->format('d/m/Y') }}</span>
+          <span class="text-emerald-300">•</span>
+          <span class="material-symbols-outlined text-[15px] text-[#006c47]">schedule</span>
+          <span>Hora de ingreso: {{ $dashboardLoginAt->format('h:i a') }}</span>
+        </div>
+      </div>
       <div class="flex items-center gap-2">
         <h1 class="text-2xl md:text-3xl font-['Manrope'] font-extrabold text-on-background">Panel Ejecutivo Fusagasugá</h1>
         <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#6efcb9]/40 text-[#006c47] border border-[#6efcb9] uppercase tracking-wider">Enterprise SaaS</span>
@@ -1304,7 +1324,7 @@
           </form>
 
           @if($profile && $profile->rut_path)
-            <a href="{{ route('analyst.users.rut', $m->id) }}" target="_blank" class="px-3 py-1.5 bg-surface-container hover:bg-surface-container-high text-on-surface font-semibold rounded-lg text-xs">
+            <a href="{{ url('/admin/users/' . $m->id . '/documents/rut') }}" target="_blank" class="px-3 py-1.5 bg-surface-container hover:bg-surface-container-high text-on-surface font-semibold rounded-lg text-xs">
               RUT
             </a>
           @endif
@@ -1365,16 +1385,16 @@
               <div class="flex items-center justify-between text-xs">
                 <div>
                   <p class="font-bold text-on-background text-sm">{{ e($kyc->company_name) }}</p>
-                  <p class="text-on-surface-variant">{{ e($kyc->user->name) }} · {{ e($kyc->user->email) }}</p>
+                  <p class="text-on-surface-variant">{{ e($kyc->user?->name ?? 'Comerciante') }} · {{ e($kyc->user?->email ?? 'Sin correo') }}</p>
                 </div>
                 <div class="flex items-center gap-1.5">
                   @if($kyc->rut_path)
-                    <a href="{{ route('analyst.users.kyc-document', [$kyc->merchant_id, 'rut']) }}" target="_blank" rel="noopener" class="px-2.5 py-1 bg-surface-container-high hover:bg-slate-200 text-on-surface font-bold rounded-lg text-xs inline-flex items-center gap-1">
+                    <a href="{{ url('/admin/users/' . $kyc->merchant_id . '/documents/rut') }}" target="_blank" rel="noopener" class="px-2.5 py-1 bg-surface-container-high hover:bg-slate-200 text-on-surface font-bold rounded-lg text-xs inline-flex items-center gap-1">
                       <span class="material-symbols-outlined text-xs text-red-600">picture_as_pdf</span> Ver RUT
                     </a>
                   @endif
                   @if($kyc->camara_comercio_path)
-                    <a href="{{ route('analyst.users.kyc-document', [$kyc->merchant_id, 'camara_comercio']) }}" target="_blank" rel="noopener" class="px-2.5 py-1 bg-surface-container-high hover:bg-slate-200 text-on-surface font-bold rounded-lg text-xs inline-flex items-center gap-1">
+                    <a href="{{ url('/admin/users/' . $kyc->merchant_id . '/documents/camara_comercio') }}" target="_blank" rel="noopener" class="px-2.5 py-1 bg-surface-container-high hover:bg-slate-200 text-on-surface font-bold rounded-lg text-xs inline-flex items-center gap-1">
                       <span class="material-symbols-outlined text-xs text-blue-600">description</span> Ver Cámara
                     </a>
                   @endif
@@ -1426,7 +1446,7 @@
             <div class="space-y-3">
               @foreach($pendingBanners as $pb)
               <div class="p-3 bg-surface-container-low rounded-xl flex items-center justify-between text-xs">
-                <span class="font-bold text-on-background">{{ e($pb->user->companyProfile->company_name ?? $pb->user->name) }}</span>
+                <span class="font-bold text-on-background">{{ e($pb->user?->companyProfile?->company_name ?? $pb->user?->name ?? 'Comerciante') }}</span>
                 <a href="{{ route('analyst.banner-requests.show', $pb->id) }}" class="px-3 py-1 bg-primary text-white font-bold rounded-lg text-xs">Revisar</a>
               </div>
               @endforeach
@@ -1611,11 +1631,11 @@
             @foreach($merchantCommissions->take(10) as $mc)
               <tr class="hover:bg-surface-container-low transition-colors">
                 <td class="py-3.5 px-4 font-bold text-on-surface">
-                  {{ $mc->merchant->companyProfile->company_name ?? $mc->merchant->name }}
-                  <span class="block text-[10px] text-on-surface-variant font-normal">{{ $mc->merchant->email }}</span>
+                  {{ $mc->merchant?->companyProfile?->company_name ?? $mc->merchant?->name ?? 'Comercio' }}
+                  <span class="block text-[10px] text-on-surface-variant font-normal">{{ $mc->merchant?->email ?? '' }}</span>
                 </td>
                 <td class="py-3.5 px-4 text-on-surface-variant">
-                  {{ $mc->merchant->phone ?? 'Sin teléfono' }}
+                  {{ $mc->merchant?->phone ?? 'Sin teléfono' }}
                 </td>
                 <td class="py-3.5 px-4 font-bold text-on-surface">
                   ${{ number_format($mc->sales, 0, ',', '.') }} COP

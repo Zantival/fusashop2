@@ -41,7 +41,7 @@ class Order extends Model
     // Etapas visibles: Pendiente(pending) · Pagado(processing) · En empaque(processing+packed_at)
     //                  · Enviado(shipped) · Entregado(delivered)
 
-    public function user()     { return $this->belongsTo(User::class); }
+    public function user()     { return $this->belongsTo(User::class)->withTrashed(); }
     public function merchant() { return $this->belongsTo(User::class, 'merchant_id')->withTrashed(); }
     public function items()    { return $this->hasMany(OrderItem::class); }
     public function transactions() { return $this->hasMany(PaymentTransaction::class); }

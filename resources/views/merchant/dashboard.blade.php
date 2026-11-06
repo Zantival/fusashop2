@@ -40,6 +40,17 @@
   <!-- ========================================================================= -->
   <!-- 1. HEADER EJECUTIVO DEL COMERCIANTE (IDÉNTICO AL PANEL DEL ANALISTA)      -->
   <!-- ========================================================================= -->
+  @php
+    try {
+      if (!session()->has('logged_in_at')) {
+        $fallbackMerchantLogin = auth()->user()?->last_seen_at ? auth()->user()->last_seen_at->copy()->timezone('America/Bogota') : now()->timezone('America/Bogota');
+        session(['logged_in_at' => $fallbackMerchantLogin->toIso8601String()]);
+      }
+      $merchantDashboardLoginAt = \Carbon\Carbon::parse(session('logged_in_at'))->timezone('America/Bogota');
+    } catch (\Throwable $e) {
+      $merchantDashboardLoginAt = now()->timezone('America/Bogota');
+    }
+  @endphp
   <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-2xl shadow-[0_12px_32px_rgba(27,28,28,.06)] border border-outline-variant/20">
     <div class="flex items-center gap-4">
       <div class="w-14 h-14 rounded-2xl bg-emerald-50 border-2 border-emerald-200 shrink-0 flex items-center justify-center shadow-inner overflow-hidden">
@@ -50,6 +61,15 @@
         @endif
       </div>
       <div>
+        <div class="flex flex-wrap items-center gap-2 mb-1.5">
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-xl bg-emerald-50 border border-emerald-200 text-[#006c47] text-xs font-extrabold shadow-2xs">
+            <span class="material-symbols-outlined text-[15px] text-[#006c47]">calendar_today</span>
+            <span>Fecha de ingreso: {{ $merchantDashboardLoginAt->format('d/m/Y') }}</span>
+            <span class="text-emerald-300">•</span>
+            <span class="material-symbols-outlined text-[15px] text-[#006c47]">schedule</span>
+            <span>Hora de ingreso: {{ $merchantDashboardLoginAt->format('h:i a') }}</span>
+          </div>
+        </div>
         <div class="flex flex-wrap items-center gap-2">
           <h1 class="text-2xl md:text-3xl font-['Manrope'] font-extrabold text-on-background flex items-center gap-1.5">
             <span>Bienvenido, {{ auth()->user()->companyProfile->company_name ?? auth()->user()->name }}</span>

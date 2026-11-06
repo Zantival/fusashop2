@@ -217,7 +217,7 @@
 
             {{-- RUT DIAN --}}
             @if($merchantProfile && $merchantProfile->rut_path)
-              <a href="{{ route('analyst.users.kyc-document', [$user->id, 'rut']) }}" target="_blank" rel="noopener"
+              <a href="{{ url('/admin/users/' . $user->id . '/documents/rut') }}" target="_blank" rel="noopener"
                  class="flex items-center justify-between p-4 bg-white border border-slate-200 rounded-xl hover:border-red-400 hover:shadow-xs transition-all group">
                 <div class="flex items-center gap-3">
                   <div class="w-10 h-10 rounded-xl bg-red-50 text-red-600 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
@@ -244,7 +244,7 @@
 
             {{-- Cámara de Comercio --}}
             @if($merchantProfile && $merchantProfile->camara_comercio_path)
-              <a href="{{ route('analyst.users.kyc-document', [$user->id, 'camara_comercio']) }}" target="_blank" rel="noopener"
+              <a href="{{ url('/admin/users/' . $user->id . '/documents/camara_comercio') }}" target="_blank" rel="noopener"
                  class="flex items-center justify-between p-4 bg-white border border-slate-200 rounded-xl hover:border-blue-400 hover:shadow-xs transition-all group">
                 <div class="flex items-center gap-3">
                   <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">

@@ -22,7 +22,7 @@ class Reservation extends Model
         ];
     }
 
-    public function customer() { return $this->belongsTo(User::class, 'user_id'); }
+    public function customer() { return $this->belongsTo(User::class, 'user_id')->withTrashed(); }
     public function merchant() { return $this->belongsTo(User::class, 'merchant_id')->withTrashed(); }
     public function product() { return $this->belongsTo(Product::class); }
 }

@@ -25,8 +25,8 @@
                         <div class="flex items-center gap-3">
                             <x-user-avatar :user="$item->user" size="w-8 h-8" text-size="text-xs" />
                             <div class="min-w-0">
-                                <p class="text-sm font-bold text-on-surface truncate">{{ e($item->user->name) }}</p>
-                                <p class="text-[10px] text-on-surface-variant">{{ e($item->user->role) }}</p>
+                                <p class="text-sm font-bold text-on-surface truncate">{{ e($item->user?->name ?? 'Usuario') }}</p>
+                                <p class="text-[10px] text-on-surface-variant">{{ e($item->user?->role ?? 'consumer') }}</p>
                             </div>
                         </div>
                     </td>
@@ -46,7 +46,7 @@
                         </span>
                     </td>
                     <td class="px-6 py-4 text-right" data-label="Fecha">
-                        <p class="text-xs text-on-surface-variant">{{ $item->created_at->format('d/m/Y') }}</p>
+                        <p class="text-xs text-on-surface-variant">{{ $item->created_at?->format('d/m/Y') ?? '-' }}</p>
                     </td>
                     <td class="px-6 py-4 text-right" data-label="Acción">
                         <button onclick="openPqrsModal({{ $item->id }}, '{{ e($item->subject) }}', '{{ e($item->content) }}', '{{ e($item->admin_response) }}', '{{ $item->status }}')" 

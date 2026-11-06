@@ -152,7 +152,7 @@
               {{-- Botones de Inspección Documental (RUT y Cámara de Comercio) --}}
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 @if($profile->rut_path)
-                  <a href="{{ route('analyst.users.kyc-document', [$qUser->id, 'rut']) }}" target="_blank" rel="noopener"
+                  <a href="{{ url('/admin/users/' . $qUser->id . '/documents/rut') }}" target="_blank" rel="noopener"
                      class="flex items-center justify-between px-3 py-2 bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 rounded-xl text-xs font-bold transition-all">
                     <span class="flex items-center gap-1.5 truncate">
                       <span class="material-symbols-outlined text-base text-red-600">picture_as_pdf</span>
@@ -168,7 +168,7 @@
                 @endif
 
                 @if($profile->camara_comercio_path)
-                  <a href="{{ route('analyst.users.kyc-document', [$qUser->id, 'camara_comercio']) }}" target="_blank" rel="noopener"
+                  <a href="{{ url('/admin/users/' . $qUser->id . '/documents/camara_comercio') }}" target="_blank" rel="noopener"
                      class="flex items-center justify-between px-3 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 rounded-xl text-xs font-bold transition-all">
                     <span class="flex items-center gap-1.5 truncate">
                       <span class="material-symbols-outlined text-base text-blue-600">description</span>
@@ -355,7 +355,7 @@
 
                 {{-- RUT DIAN --}}
                 @if($merchantProfile && $merchantProfile->rut_path)
-                  <a href="{{ route('analyst.users.kyc-document', [$u->id, 'rut']) }}" target="_blank" rel="noopener"
+                  <a href="{{ url('/admin/users/' . $u->id . '/documents/rut') }}" target="_blank" rel="noopener"
                      class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 rounded-xl text-xs font-bold transition-all"
                      title="Ver Formulario RUT DIAN (Abre en nueva pestaña)">
                     <span class="material-symbols-outlined text-[16px] text-red-600">picture_as_pdf</span>
@@ -371,7 +371,7 @@
 
                 {{-- Cámara de Comercio --}}
                 @if($merchantProfile && $merchantProfile->camara_comercio_path)
-                  <a href="{{ route('analyst.users.kyc-document', [$u->id, 'camara_comercio']) }}" target="_blank" rel="noopener"
+                  <a href="{{ url('/admin/users/' . $u->id . '/documents/camara_comercio') }}" target="_blank" rel="noopener"
                      class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 rounded-xl text-xs font-bold transition-all"
                      title="Ver Certificado de Cámara de Comercio (Abre en nueva pestaña)">
                     <span class="material-symbols-outlined text-[16px] text-blue-600">description</span>

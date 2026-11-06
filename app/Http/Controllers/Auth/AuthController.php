@@ -66,7 +66,7 @@ class AuthController extends Controller
                 return redirect()->route('verification.notice');
             }
 
-            return $this->redirectByRole(Auth::user());
+            return $this->recordLoginAndRedirect(Auth::user());
         }
 
         return back()->withErrors(['email' => 'Credenciales incorrectas.'])->onlyInput('email');
@@ -310,7 +310,7 @@ class AuthController extends Controller
         session()->flash('welcome_new_user', true);
         session()->flash('success', '¡Excelente! Tu correo electrónico ha sido verificado con éxito.');
 
-        return $this->redirectByRole($user);
+        return $this->recordLoginAndRedirect($user);
     }
 
     public function resendVerificationCode(Request $request)
@@ -343,6 +343,19 @@ class AuthController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
         return redirect()->route('login');
+    }
+
+    private function recordLoginAndRedirect(User $user)
+    {
+        try {
+            $nowBogota = now()->timezone('America/Bogota');
+            session(['logged_in_at' => $nowBogota->toIso8601String()]);
+            $user->forceFill(['last_seen_at' => now()])->saveQuietly();
+        } catch (\Throwable) {
+            // No bloquear el inicio de sesión si ocurre un error al registrar last_seen_at
+        }
+
+        return $this->redirectByRole($user);
     }
 
     private function redirectByRole(User $user)

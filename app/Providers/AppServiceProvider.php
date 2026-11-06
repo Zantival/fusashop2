@@ -16,6 +16,23 @@ class AppServiceProvider extends ServiceProvider
     {
         Paginator::useTailwind();
 
+        // Asegurar columna legal_name en company_profiles en servidores donde no se haya corrido migrate.
+        try {
+            $flagPath = storage_path('framework/company_profiles_legal_name_ready.flag');
+            if (!is_file($flagPath)) {
+                if (\Illuminate\Support\Facades\Schema::hasTable('company_profiles')) {
+                    if (!\Illuminate\Support\Facades\Schema::hasColumn('company_profiles', 'legal_name')) {
+                        \Illuminate\Support\Facades\Schema::table('company_profiles', function (\Illuminate\Database\Schema\Blueprint $table) {
+                            $table->string('legal_name')->nullable()->after('company_name');
+                        });
+                    }
+                    @file_put_contents($flagPath, (string) time());
+                }
+            }
+        } catch (\Throwable) {
+            // No bloquear la petición si la conexión aún no está disponible.
+        }
+
         // En local, permite dirigir correos de prueba al correo dueño de la cuenta Resend.
         if (app()->environment('local') && filled(config('mail.always_to'))) {
             Mail::alwaysTo(config('mail.always_to'), 'FusaShop Dev');

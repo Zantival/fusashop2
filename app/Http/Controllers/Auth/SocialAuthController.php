@@ -100,6 +100,11 @@ class SocialAuthController extends Controller
 
             // Usuario verificado: iniciar sesión normalmente
             Auth::login($user, true);
+            try {
+                session(['logged_in_at' => now()->timezone('America/Bogota')->toIso8601String()]);
+                $user->forceFill(['last_seen_at' => now()])->saveQuietly();
+            } catch (\Throwable) {
+            }
             return $this->redirectByRole($user);
 
         } catch (\Throwable $e) {

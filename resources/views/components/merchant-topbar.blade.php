@@ -51,6 +51,18 @@
   // El globo de Alertas representa solo elementos por ver. Los pedidos,
   // el stock y las reseñas conservan sus contadores operativos independientes.
   $totalAlertsCount = $unreadDirectMessages->count() + $unreadMerchantNotifs + $pendingReservationsCount;
+
+  try {
+    if (!session()->has('logged_in_at')) {
+      $fallbackLogin = $merchantUser?->last_seen_at ? $merchantUser->last_seen_at->copy()->timezone('America/Bogota') : now()->timezone('America/Bogota');
+      session(['logged_in_at' => $fallbackLogin->toIso8601String()]);
+    }
+    $merchantLoginAt = \Carbon\Carbon::parse(session('logged_in_at'))->timezone('America/Bogota');
+  } catch (\Throwable $e) {
+    $merchantLoginAt = now()->timezone('America/Bogota');
+  }
+  $merchantLoginDateFormatted = $merchantLoginAt->format('d/m/Y');
+  $merchantLoginTimeFormatted = $merchantLoginAt->format('h:i a');
 @endphp
 
 <!-- Barra móvil superior para Comerciante (solo en móviles < 768px) -->
@@ -62,7 +74,11 @@
     <x-logo size="sm" :href="route('merchant.dashboard')" :with-microcopy="false" />
   </div>
   <div class="flex items-center gap-2">
-    <span class="px-2 py-0.5 text-[10px] font-black bg-emerald-100 text-[#006c47] rounded-full">Merchant Center</span>
+    <span class="inline-flex items-center gap-1 px-2 py-1 text-[10px] font-bold bg-slate-100 text-slate-700 rounded-lg border border-slate-200" title="Fecha y hora de ingreso">
+      <span class="material-symbols-outlined text-[12px] text-[#006c47]">schedule</span>
+      <span>{{ $merchantLoginDateFormatted }} · {{ $merchantLoginTimeFormatted }}</span>
+    </span>
+    <span class="hidden sm:inline-flex px-2 py-0.5 text-[10px] font-black bg-emerald-100 text-[#006c47] rounded-full">Merchant Center</span>
   </div>
 </div>
 
@@ -122,6 +138,15 @@
            title="Editar mi perfil comercial">
           <span class="material-symbols-outlined text-[14px]">edit</span>
         </a>
+      </div>
+
+      <!-- Indicador de Fecha y Hora de Ingreso -->
+      <div class="mt-1.5 px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200/80 flex items-center justify-between text-[10px] text-slate-600">
+        <span class="font-bold text-slate-500 flex items-center gap-1">
+          <span class="material-symbols-outlined text-[13px] text-[#006c47]">login</span>
+          <span>Ingreso:</span>
+        </span>
+        <span class="font-extrabold text-slate-800">{{ $merchantLoginDateFormatted }} · {{ $merchantLoginTimeFormatted }}</span>
       </div>
 
       <!-- Menú desplegable de Píldora -->

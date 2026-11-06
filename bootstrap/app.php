@@ -4,6 +4,35 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 
+// Auto-limpieza de cachés obsoletos de rutas y vistas tras despliegues en hosting compartido (Hostinger).
+try {
+    $basePath = dirname(__DIR__);
+    $webRoutesFile = $basePath . '/routes/web.php';
+    if (is_file($webRoutesFile)) {
+        $routesMtime = @filemtime($webRoutesFile) ?: 0;
+        foreach (glob($basePath . '/bootstrap/cache/routes*.php') ?: [] as $cachedRouteFile) {
+            if ((@filemtime($cachedRouteFile) ?: 0) < $routesMtime) {
+                @unlink($cachedRouteFile);
+            }
+        }
+
+        $deployVersion = md5($routesMtime . '|' . (@filemtime(__FILE__) ?: 0));
+        $markerFile = $basePath . '/storage/framework/deploy_cache_version.txt';
+        $previousVersion = is_file($markerFile) ? trim((string) @file_get_contents($markerFile)) : '';
+        if ($previousVersion !== $deployVersion) {
+            foreach (glob($basePath . '/bootstrap/cache/routes*.php') ?: [] as $cachedRouteFile) {
+                @unlink($cachedRouteFile);
+            }
+            foreach (glob($basePath . '/storage/framework/views/*.php') ?: [] as $compiledView) {
+                @unlink($compiledView);
+            }
+            @file_put_contents($markerFile, $deployVersion);
+        }
+    }
+} catch (\Throwable) {
+    // Continuar normalmente si el sistema de archivos tiene restricciones.
+}
+
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
         web: __DIR__.'/../routes/web.php',

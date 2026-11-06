@@ -140,15 +140,16 @@ class User extends Authenticatable implements MustVerifyEmail
         }
 
         $avatar = trim($this->avatar);
+        $version = $this->updated_at?->timestamp ?? 0;
         if (preg_match('#^https?://#i', $avatar)) {
             $host = strtolower((string) parse_url($avatar, PHP_URL_HOST));
             if (preg_match('/^lh\d+\.googleusercontent\.com$/', $host)) {
-                return route('users.avatar', ['user' => $this->getKey(), 'v' => $this->updated_at?->timestamp ?? 0]);
+                return url('user-avatars/' . $this->getKey() . '?v=' . $version);
             }
             return $avatar;
         }
 
-        return route('users.avatar', ['user' => $this->getKey(), 'v' => $this->updated_at?->timestamp ?? 0]);
+        return url('user-avatars/' . $this->getKey() . '?v=' . $version);
     }
 
     public function products() { return $this->hasMany(Product::class, 'merchant_id'); }
