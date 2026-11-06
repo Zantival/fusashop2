@@ -357,6 +357,7 @@ Route::middleware(['auth', 'role:analyst'])->prefix('admin')->name('analyst.')->
     Route::patch('/users/{user}/toggle-block',    [AnalystController::class, 'userToggleBlock'])->name('users.toggle-block');
     Route::patch('/users/{user}/toggle-verification', [AnalystController::class, 'userToggleVerification'])->name('users.toggle-verification');
     Route::get('/users/{user}/rut',               [AnalystController::class, 'userRut'])->name('users.rut');
+    Route::get('/users/{user}/documents/{document}', [AnalystController::class, 'userKycDocument'])->whereIn('document', ['rut', 'camara_comercio'])->name('users.kyc-document');
     Route::post('/users/{user}/kyc',              [AnalystController::class, 'updateKyc'])->name('users.kyc');
     Route::post('/users/{user}/sector',           [AnalystController::class, 'updateMerchantSector'])->name('users.sector');
 

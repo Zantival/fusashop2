@@ -287,22 +287,56 @@ class AnalystController extends Controller
 
     public function userRut(User $user)
     {
+        return $this->userKycDocument($user, 'rut');
+    }
+
+    public function userKycDocument(User $user, string $document)
+    {
+        abort_unless($user->role === 'merchant', 404);
+
         $profile = $user->companyProfile;
-        if (!$profile || !$profile->rut_path) {
-            abort(404, 'RUT no encontrado');
+        $documentFields = [
+            'rut' => ['field' => 'rut_path', 'label' => 'RUT'],
+            'camara_comercio' => ['field' => 'camara_comercio_path', 'label' => 'Cámara de Comercio'],
+        ];
+        abort_unless(isset($documentFields[$document]), 404);
+
+        $documentInfo = $documentFields[$document];
+        $relativePath = $profile?->{$documentInfo['field']};
+        if (!$relativePath) {
+            abort(404, $documentInfo['label'] . ' no encontrado');
         }
-        $path = storage_path('app/private/' . $profile->rut_path);
-        if (!file_exists($path)) {
-            $path = storage_path('app/' . $profile->rut_path);
-        }
-        if (!file_exists($path)) {
+
+        $path = Storage::disk('local')->exists($relativePath)
+            ? Storage::disk('local')->path($relativePath)
+            : storage_path('app/' . $relativePath);
+        if (!is_file($path)) {
             abort(404, 'Archivo físico no encontrado');
         }
 
         // Registro de acceso a documento con datos personales (Ley 1581 de 2012)
-        AdminAuditLog::record('kyc.rut_downloaded', $profile, "Descarga de RUT de {$profile->company_name} por auditoría KYC");
+        AdminAuditLog::record(
+            'kyc.document_viewed',
+            $profile,
+            "Consulta del documento {$documentInfo['label']} de {$profile->company_name} por auditoría KYC"
+        );
 
         return response()->file($path);
+    }
+
+    private function hasRequiredKycDocuments(CompanyProfile $profile): bool
+    {
+        foreach ([$profile->rut_path, $profile->camara_comercio_path] as $relativePath) {
+            if (!$relativePath) {
+                return false;
+            }
+
+            if (!Storage::disk('local')->exists($relativePath) && !is_file(storage_path('app/' . $relativePath))) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     public function userToggleVerification(Request $request, User $user)
@@ -311,7 +345,13 @@ class AnalystController extends Controller
             return back()->with('error', 'Solo los usuarios con rol Comerciante pueden recibir o perder el chulito de verificación.');
         }
 
-        $profile = CompanyProfile::firstOrCreate(
+        $profile = $user->companyProfile;
+        $willVerify = $profile?->kyc_status !== 'approved';
+        if ($willVerify && (!$profile || !$this->hasRequiredKycDocuments($profile))) {
+            return back()->with('error', 'No se puede aprobar el comercio: primero debe cargar el RUT y el certificado de Cámara de Comercio para su revisión.');
+        }
+
+        $profile ??= CompanyProfile::firstOrCreate(
             ['merchant_id' => $user->id],
             [
                 'company_name'  => $user->name,
@@ -327,7 +367,6 @@ class AnalystController extends Controller
             'kyc_notes'  => $profile->kyc_notes,
         ];
 
-        $willVerify = $profile->kyc_status !== 'approved';
         $newStatus = $willVerify ? 'approved' : 'pending';
         $notes = $willVerify
             ? 'Insignia de verificación (chulito) otorgada por el Analista.'
@@ -362,13 +401,22 @@ class AnalystController extends Controller
 
     public function updateKyc(Request $request, User $user)
     {
+        if ($user->role !== 'merchant') {
+            return back()->with('error', 'La revisión documental KYC solo aplica a cuentas de comerciante.');
+        }
+
         $request->validate([
             'kyc_status'         => 'required|in:approved,pending,rejected',
             'kyc_rejection_code' => 'nullable|string|max:60',
             'kyc_notes'          => 'nullable|string|max:1000',
         ]);
 
-        $profile = CompanyProfile::firstOrCreate(
+        $profile = $user->companyProfile;
+        if ($request->kyc_status === 'approved' && (!$profile || !$this->hasRequiredKycDocuments($profile))) {
+            return back()->with('error', 'No se puede aprobar el comercio: el RUT y el certificado de Cámara de Comercio deben estar cargados y disponibles para su revisión.');
+        }
+
+        $profile ??= CompanyProfile::firstOrCreate(
             ['merchant_id' => $user->id],
             [
                 'company_name'  => $user->name,

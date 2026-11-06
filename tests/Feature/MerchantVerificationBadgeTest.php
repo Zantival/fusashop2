@@ -6,6 +6,7 @@ use App\Models\CompanyProfile;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class MerchantVerificationBadgeTest extends TestCase
@@ -25,6 +26,10 @@ class MerchantVerificationBadgeTest extends TestCase
 
     public function test_analyst_can_give_and_remove_merchant_verification_badge(): void
     {
+        Storage::fake('local');
+        Storage::disk('local')->put('ruts/test.pdf', '%PDF RUT');
+        Storage::disk('local')->put('camara/test.pdf', '%PDF CAMARA');
+
         $analyst = $this->createUser([
             'name'          => 'Analista Principal',
             'role'          => 'analyst',
@@ -41,9 +46,13 @@ class MerchantVerificationBadgeTest extends TestCase
             'company_name'  => 'Café Sumapaz Especial',
             'phone'         => '3101234567',
             'rut_path'      => 'ruts/test.pdf',
+            'camara_comercio_path' => 'camara/test.pdf',
             'business_type' => 'Alimentos',
             'kyc_status'    => 'pending',
         ]);
+
+        $this->actingAs($analyst)->get(route('analyst.users.kyc-document', [$merchant->id, 'rut']))->assertOk();
+        $this->actingAs($analyst)->get(route('analyst.users.kyc-document', [$merchant->id, 'camara_comercio']))->assertOk();
 
         // 1. Inicialmente sin verificar: no tiene el chulito en su vitrina pública
         $storeResponseBefore = $this->get(route('consumer.merchant.profile', $merchant->id));
@@ -92,8 +101,9 @@ class MerchantVerificationBadgeTest extends TestCase
         $usersPageUnverified->assertSee('Dar Verificación ✓');
     }
 
-    public function test_analyst_can_give_verification_even_if_merchant_had_no_company_profile_yet(): void
+    public function test_analyst_cannot_approve_without_both_documents_and_can_approve_after_review(): void
     {
+        Storage::fake('local');
         $analyst = $this->createUser([
             'name'          => 'Analista Principal',
             'role'          => 'analyst',
@@ -105,11 +115,37 @@ class MerchantVerificationBadgeTest extends TestCase
             'role' => 'merchant',
         ]);
 
-        // Dar verificación crea automáticamente el CompanyProfile y le otorga el chulito
+        $this->actingAs($merchantWithoutProfile)
+            ->get(route('merchant.dashboard'))
+            ->assertRedirect(route('merchant.profile'));
+
+        // No se debe aprobar ni crear un perfil aprobado cuando faltan documentos.
         $response = $this->actingAs($analyst)
             ->patch(route('analyst.users.toggle-verification', $merchantWithoutProfile->id));
 
         $response->assertRedirect();
+        $this->assertDatabaseMissing('company_profiles', ['merchant_id' => $merchantWithoutProfile->id]);
+
+        $this->actingAs($analyst)
+            ->post(route('analyst.users.kyc', $merchantWithoutProfile->id), ['kyc_status' => 'approved'])
+            ->assertRedirect();
+        $this->assertDatabaseMissing('company_profiles', ['merchant_id' => $merchantWithoutProfile->id]);
+
+        Storage::disk('local')->put('kyc/rut.pdf', '%PDF RUT');
+        Storage::disk('local')->put('kyc/camara.pdf', '%PDF CAMARA');
+        CompanyProfile::create([
+            'merchant_id' => $merchantWithoutProfile->id,
+            'company_name' => 'Artesanías del Sumapaz',
+            'phone' => '3101234567',
+            'business_type' => 'Artesanías',
+            'rut_path' => 'kyc/rut.pdf',
+            'camara_comercio_path' => 'kyc/camara.pdf',
+            'kyc_status' => 'pending',
+        ]);
+
+        $this->actingAs($analyst)
+            ->post(route('analyst.users.kyc', $merchantWithoutProfile->id), ['kyc_status' => 'approved'])
+            ->assertRedirect();
         $this->assertDatabaseHas('company_profiles', [
             'merchant_id' => $merchantWithoutProfile->id,
             'kyc_status'  => 'approved',

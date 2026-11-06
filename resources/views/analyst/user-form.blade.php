@@ -232,11 +232,11 @@
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             @if($merchantProfile && $merchantProfile->rut_path)
-              <a href="{{ route('analyst.users.rut', $user->id) }}" target="_blank" class="flex items-center justify-between p-4 bg-white border border-slate-200 rounded-xl hover:border-[#10B981] transition-all">
+              <a href="{{ route('analyst.users.kyc-document', [$user->id, 'rut']) }}" target="_blank" rel="noopener" class="flex items-center justify-between p-4 bg-white border border-slate-200 rounded-xl hover:border-[#10B981] transition-all">
                 <div class="flex items-center gap-3">
                   <span class="material-symbols-outlined text-red-600">picture_as_pdf</span>
                   <div>
-                    <span class="text-xs font-extrabold block">Descargar RUT Privado (DIAN)</span>
+                    <span class="text-xs font-extrabold block">Ver RUT Privado (DIAN)</span>
                     <span class="text-[10px] text-slate-400">El acceso queda registrado en auditoría</span>
                   </div>
                 </div>
@@ -252,7 +252,22 @@
               </div>
             @endif
 
-            <a href="https://www.rues.org.co/" target="_blank" class="flex items-center justify-between p-4 bg-blue-50/60 border border-blue-200 rounded-xl hover:border-blue-500 transition-all">
+            @if($merchantProfile && $merchantProfile->camara_comercio_path)
+              <a href="{{ route('analyst.users.kyc-document', [$user->id, 'camara_comercio']) }}" target="_blank" rel="noopener" class="flex items-center justify-between p-4 bg-white border border-slate-200 rounded-xl hover:border-[#10B981] transition-all">
+                <div class="flex items-center gap-3">
+                  <span class="material-symbols-outlined text-blue-600">description</span>
+                  <div>
+                    <span class="text-xs font-extrabold block">Ver Cámara de Comercio</span>
+                    <span class="text-[10px] text-slate-400">Documento privado; acceso auditado</span>
+                  </div>
+                </div>
+                <span class="material-symbols-outlined text-slate-400">open_in_new</span>
+              </a>
+            @else
+              <div class="p-4 bg-amber-50 border border-amber-200 rounded-xl text-xs font-bold text-amber-800">Cámara de Comercio no adjuntada</div>
+            @endif
+
+            <a href="https://www.rues.org.co/" target="_blank" rel="noopener noreferrer" class="flex items-center justify-between p-4 bg-blue-50/60 border border-blue-200 rounded-xl hover:border-blue-500 transition-all">
               <div class="flex items-center gap-3">
                 <span class="material-symbols-outlined text-blue-600">verified</span>
                 <div>

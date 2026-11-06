@@ -1369,10 +1369,18 @@
                 </div>
                 <div class="flex items-center gap-1.5">
                   @if($kyc->rut_path)
-                    <a href="{{ route('analyst.users.rut', $kyc->merchant_id) }}" target="_blank" class="px-2.5 py-1 bg-surface-container-high hover:bg-slate-200 text-on-surface font-bold rounded-lg text-xs inline-flex items-center gap-1">
+                    <a href="{{ route('analyst.users.kyc-document', [$kyc->merchant_id, 'rut']) }}" target="_blank" rel="noopener" class="px-2.5 py-1 bg-surface-container-high hover:bg-slate-200 text-on-surface font-bold rounded-lg text-xs inline-flex items-center gap-1">
                       <span class="material-symbols-outlined text-xs text-red-600">picture_as_pdf</span> Ver RUT
                     </a>
                   @endif
+                  @if($kyc->camara_comercio_path)
+                    <a href="{{ route('analyst.users.kyc-document', [$kyc->merchant_id, 'camara_comercio']) }}" target="_blank" rel="noopener" class="px-2.5 py-1 bg-surface-container-high hover:bg-slate-200 text-on-surface font-bold rounded-lg text-xs inline-flex items-center gap-1">
+                      <span class="material-symbols-outlined text-xs text-blue-600">description</span> Ver Cámara
+                    </a>
+                  @endif
+                  <a href="{{ route('analyst.users.edit', $kyc->merchant_id) }}" class="px-2.5 py-1 bg-white border border-slate-200 hover:bg-slate-50 text-on-surface font-bold rounded-lg text-xs inline-flex items-center gap-1">
+                    Ver perfil y datos
+                  </a>
                   <a href="https://www.rues.org.co/" target="_blank" class="px-2.5 py-1 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 font-bold rounded-lg text-xs inline-flex items-center gap-1" title="Verificar matrícula mercantil en RUES Oficial">
                     <span class="material-symbols-outlined text-xs">verified</span> RUES Oficial
                   </a>
