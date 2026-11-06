@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Mail\VerifyEmailCodeMail;
 use App\Mail\WelcomeMail;
 use App\Models\Cart;
+use App\Models\CompanyProfile;
 use App\Models\User;
 use App\Support\PasswordPolicy;
 use App\Notifications\NewUserNotification;
@@ -103,6 +104,10 @@ class AuthController extends Controller
         $isSocial = session()->has('social_registration');
         $socialData = session('social_registration', []);
 
+        if (!$request->filled('business_name') && $request->filled('company_name')) {
+            $request->merge(['business_name' => $request->input('company_name')]);
+        }
+
         $rules = [
             'name'     => ['required', 'string', 'max:255', function ($attribute, $value, $fail) {
                 if (!preg_match('/^\p{L}+(?:[ \'\x{2019}-]\p{L}+)*$/u', $value)) {
@@ -117,6 +122,7 @@ class AuthController extends Controller
                 Rule::unique('users', 'email')->whereNull('deleted_at'),
             ],
             'role'     => ['required', 'in:consumer,merchant'],
+            'business_name' => [Rule::requiredIf($request->input('role') === 'merchant'), 'nullable', 'string', 'max:255'],
             'phone_country' => ['nullable', 'in:57,1,52,34,51,56,54'],
             'phone'    => ['required', 'regex:/^[0-9]{7,15}$/'],
             'accepted_terms' => ['required', 'accepted'],
@@ -132,6 +138,8 @@ class AuthController extends Controller
         }
 
         $data = $request->validate($rules, [
+            'business_name.required' => 'El nombre del negocio o empresa es obligatorio para registrarte como vendedor.',
+            'business_name.max' => 'El nombre del negocio no puede superar los 255 caracteres.',
             'phone.required' => 'El número de teléfono es obligatorio.',
             'phone.regex' => 'Escribe un número válido sin espacios. En Colombia debe tener 10 dígitos y comenzar por 3 (no por 0).',
             'phone_country.required' => 'Selecciona el indicativo de tu país.',
@@ -203,6 +211,21 @@ class AuthController extends Controller
 
             return User::create($attributes);
         });
+
+        if ($trashedUser && $user->companyProfile) {
+            $user->companyProfile->update(['kyc_status' => 'pending']);
+        }
+
+        if ($user->isMerchant()) {
+            $profile = $user->companyProfile ?? new CompanyProfile([
+                'merchant_id' => $user->id,
+                'rut_path' => '',
+                'kyc_status' => 'pending',
+            ]);
+            $profile->company_name = strip_tags(trim($data['business_name']));
+            $profile->phone = $user->phone;
+            $profile->save();
+        }
 
         if ($isSocial) {
             session()->forget('social_registration');

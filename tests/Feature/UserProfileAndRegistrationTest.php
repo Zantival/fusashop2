@@ -141,8 +141,21 @@ class UserProfileAndRegistrationTest extends TestCase
     {
         $this->withoutMiddleware(\Illuminate\Routing\Middleware\ThrottleRequests::class);
 
+        $this->post(route('register.post'), [
+            'name'                      => 'Don Pedro',
+            'email'                     => 'pedro-missing-biz@example.com',
+            'phone'                     => '3209876543',
+            'password'                  => 'Password123!',
+            'password_confirmation'     => 'Password123!',
+            'role'                      => 'merchant',
+            'accepted_terms'            => 1,
+            'accepted_privacy'          => 1,
+            'age_or_guardian_confirmed' => 1,
+        ])->assertSessionHasErrors('business_name');
+
         $response = $this->post(route('register.post'), [
             'name'                      => 'Don Pedro',
+            'business_name'             => 'Café Sumapaz',
             'email'                     => 'pedro@example.com',
             'phone'                     => '3209876543',
             'password'                  => 'Password123!',
@@ -154,9 +167,17 @@ class UserProfileAndRegistrationTest extends TestCase
         ]);
 
         $this->assertDatabaseHas('users', [
+            'name'  => 'Don Pedro',
             'email' => 'pedro@example.com',
-            'phone' => '3209876543',
+            'phone' => '+573209876543',
             'role'  => 'merchant',
+        ]);
+
+        $merchant = User::where('email', 'pedro@example.com')->firstOrFail();
+        $this->assertDatabaseHas('company_profiles', [
+            'merchant_id'  => $merchant->id,
+            'company_name' => 'Café Sumapaz',
+            'legal_name'   => 'Café Sumapaz S.A.S.',
         ]);
     }
 

@@ -175,9 +175,9 @@ $specLabels = [
             @if($product->merchant->companyProfile?->logo_path)
               <img loading="lazy" decoding="async" src="{{ $product->merchant->companyProfile->logoUrl() }}" alt="Logo de {{ $product->merchant->companyProfile->company_name }}" class="w-10 h-10 rounded-full object-cover">
             @elseif($product->merchant->avatarUrl())
-              <img loading="lazy" decoding="async" src="{{ $product->merchant->avatarUrl() }}" alt="Foto de perfil de {{ $product->merchant->name }}" class="w-10 h-10 rounded-full object-cover">
+              <img loading="lazy" decoding="async" src="{{ $product->merchant->avatarUrl() }}" alt="Logo de {{ $product->merchant->companyProfile?->company_name ?? $product->merchant->name }}" class="w-10 h-10 rounded-full object-cover">
             @else
-              <div class="w-10 h-10 rounded-full flex items-center justify-center text-white font-black" style="background:{{ $from }}">{{ strtoupper(substr($product->merchant->name,0,1)) }}</div>
+              <div class="w-10 h-10 rounded-full flex items-center justify-center text-white font-black" style="background:{{ $from }}">{{ strtoupper(substr($product->merchant->companyProfile?->company_name ?? $product->merchant->name,0,1)) }}</div>
             @endif
             <div class="flex-1 min-w-0">
               <p class="text-[9px] font-black text-white/30 uppercase tracking-widest">Vendido por</p>

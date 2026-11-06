@@ -48,16 +48,24 @@
       </h2>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
         <div>
-          <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-2">Nombre del Representante Legal *</label>
-          <input type="text" name="owner_name" value="{{ old('owner_name', Auth::user()->name) }}" required
-            class="w-full bg-surface-container-low rounded-xl border-2 {{ $errors->has('owner_name') ? 'border-[#ba1a1a]' : 'border-transparent focus:border-primary' }} p-4 outline-none text-on-surface text-sm transition-all">
-          @error('owner_name') <p class="text-xs text-[#ba1a1a] mt-1">{{ $message }}</p> @enderror
-        </div>
-        <div>
-          <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-2">Razón Social *</label>
-          <input type="text" name="company_name" value="{{ old('company_name', $profile->company_name ?? '') }}" required
+          <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-2">Nombre del negocio / empresa *</label>
+          <input type="text" id="merchant-business-name" name="company_name" value="{{ old('company_name', $profile->company_name ?? '') }}" placeholder="Ej. Café Sumapaz" required
             class="w-full bg-surface-container-low rounded-xl border-2 {{ $errors->has('company_name') ? 'border-[#ba1a1a]' : 'border-transparent focus:border-primary' }} p-4 outline-none text-on-surface text-sm transition-all">
           @error('company_name') <p class="text-xs text-[#ba1a1a] mt-1">{{ $message }}</p> @enderror
+          <p class="mt-1 text-xs text-on-surface-variant">Este nombre comercial aparecerá públicamente en tu tienda y productos.</p>
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-2">Nombre del representante legal *</label>
+          <input type="text" name="owner_name" value="{{ old('owner_name', Auth::user()->name) }}" placeholder="Nombre y apellido del representante" required
+            class="w-full bg-surface-container-low rounded-xl border-2 {{ $errors->has('owner_name') ? 'border-[#ba1a1a]' : 'border-transparent focus:border-primary' }} p-4 outline-none text-on-surface text-sm transition-all">
+          @error('owner_name') <p class="text-xs text-[#ba1a1a] mt-1">{{ $message }}</p> @enderror
+          <p class="mt-1 text-xs text-on-surface-variant">Titular responsable del comercio (no se muestra como nombre de la tienda).</p>
+        </div>
+        <div class="md:col-span-2">
+          <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-2">Razón Social (Automática con S.A.S.)</label>
+          <input type="text" id="merchant-legal-name-input" name="legal_name" value="{{ \App\Models\CompanyProfile::suggestedLegalName(old('company_name', $profile->company_name ?? 'Nombre del negocio')) }}" readonly
+            class="w-full bg-emerald-50/60 rounded-xl border-2 border-emerald-200/80 p-4 outline-none text-[#006c47] font-bold text-sm cursor-not-allowed">
+          <p class="mt-1 text-xs text-on-surface-variant">Se asigna automáticamente a partir del nombre del negocio junto con <strong>S.A.S.</strong> (<span id="merchant-legal-name-preview">{{ \App\Models\CompanyProfile::suggestedLegalName(old('company_name', $profile->company_name ?? 'Nombre del negocio')) }}</span>).</p>
         </div>
         <div>
           <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-2">Tipo de Productos que vende *</label>
@@ -197,6 +205,18 @@
 </div>
 
 <script>
+const merchantBusinessName = document.getElementById('merchant-business-name');
+merchantBusinessName?.addEventListener('input', function() {
+  const name = this.value.trim();
+  const suggested = name
+    ? (/\sS\.?A\.?S\.?$/i.test(name) ? name : `${name} S.A.S.`)
+    : 'Nombre del negocio S.A.S.';
+  const preview = document.getElementById('merchant-legal-name-preview');
+  const input = document.getElementById('merchant-legal-name-input');
+  if (preview) preview.textContent = suggested;
+  if (input) input.value = suggested;
+});
+
 document.querySelector('form').onsubmit = function() {
   const btn = this.querySelector('button[type="submit"]');
   btn.disabled = true;

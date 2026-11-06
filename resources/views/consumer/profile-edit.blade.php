@@ -165,9 +165,25 @@
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+        @if($user->isMerchant())
+          <div>
+            <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-1.5">
+              Nombre del Negocio / Empresa <span class="text-rose-500">*</span>
+            </label>
+            <div class="relative">
+              <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">storefront</span>
+              <input type="text" name="company_name" value="{{ old('company_name', $user->companyProfile?->company_name ?? '') }}" required
+                     oninput="const v=this.value.trim();const el=document.getElementById('account-legal-name-preview');if(el)el.textContent=v?(/\sS\.?A\.?S\.?$/i.test(v)?v:v+' S.A.S.'):'Nombre del negocio S.A.S.';"
+                     class="w-full bg-surface-container-low pl-10 pr-3 py-3 rounded-xl border border-outline-variant/30 text-xs font-semibold text-on-surface outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                     placeholder="Ej. Café Sumapaz">
+            </div>
+            <p class="text-[11px] text-on-surface-variant/70 mt-1">Nombre público de tu tienda. Razón social automática: <strong id="account-legal-name-preview" class="text-primary">{{ \App\Models\CompanyProfile::suggestedLegalName(old('company_name', $user->companyProfile?->company_name ?? 'Nombre del negocio')) }}</strong></p>
+          </div>
+        @endif
+
         <div>
           <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-1.5">
-            Nombre Completo <span class="text-rose-500">*</span>
+            {{ $user->isMerchant() ? 'Nombre del Representante Legal' : 'Nombre Completo' }} <span class="text-rose-500">*</span>
           </label>
           <div class="relative">
             <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">badge</span>
@@ -175,6 +191,9 @@
                    class="w-full bg-surface-container-low pl-10 pr-3 py-3 rounded-xl border border-outline-variant/30 text-xs font-semibold text-on-surface outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                    placeholder="Tu nombre y apellidos">
           </div>
+          @if($user->isMerchant())
+            <p class="text-[11px] text-on-surface-variant/70 mt-1">Titular legal del negocio (no se muestra como nombre de la tienda).</p>
+          @endif
         </div>
 
         <div>

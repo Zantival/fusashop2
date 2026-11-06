@@ -12,6 +12,7 @@ class CompanyProfile extends Model
     protected $fillable = [
         'merchant_id',
         'company_name',
+        'legal_name',
         'phone',
         'rut_path',
         'camara_comercio_path',
@@ -51,6 +52,23 @@ class CompanyProfile extends Model
             'wompi_integrity_secret' => \App\Casts\SafeEncrypted::class,
             'wompi_events_secret' => \App\Casts\SafeEncrypted::class,
         ];
+    }
+
+    protected static function booted(): void
+    {
+        static::saving(function (CompanyProfile $profile): void {
+            if (filled($profile->company_name)) {
+                $profile->legal_name = self::suggestedLegalName($profile->company_name);
+            }
+        });
+    }
+
+    public static function suggestedLegalName(string $companyName): string
+    {
+        $companyName = trim($companyName);
+        return preg_match('/\sS\.?A\.?S\.?$/iu', $companyName)
+            ? $companyName
+            : $companyName . ' S.A.S.';
     }
 
     public function user(): BelongsTo

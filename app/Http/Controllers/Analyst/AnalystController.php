@@ -152,6 +152,7 @@ class AnalystController extends Controller
     {
         $data = $request->validate([
             'name'          => 'required|string|max:255',
+            'company_name'  => 'nullable|string|max:255',
             'email'         => 'required|email|unique:users',
             'password'      => ['required', PasswordPolicy::rule()],
             'role'          => 'required|in:consumer,merchant,analyst',
@@ -179,6 +180,16 @@ class AnalystController extends Controller
             'email_verified_at' => now(),
         ]);
 
+        if ($user->role === 'merchant' && !empty($data['company_name'])) {
+            CompanyProfile::create([
+                'merchant_id'  => $user->id,
+                'company_name' => strip_tags(trim($data['company_name'])),
+                'phone'        => $user->phone ?: '',
+                'rut_path'     => '',
+                'kyc_status'   => 'pending',
+            ]);
+        }
+
         AdminAuditLog::record('user.created', $user, 'Creación manual desde panel admin', null, $user->only(['name', 'email', 'role']));
         return redirect()->route('analyst.users')->with('success', 'Usuario creado exitosamente.');
     }
@@ -192,6 +203,7 @@ class AnalystController extends Controller
     {
         $data = $request->validate([
             'name'          => 'required|string|max:255',
+            'company_name'  => 'nullable|string|max:255',
             'email'         => 'required|email|unique:users,email,' . $user->id,
             'role'          => 'nullable|in:consumer,merchant,analyst',
             'admin_subrole' => 'nullable|in:super_admin,analyst_readonly,support',
@@ -224,6 +236,19 @@ class AnalystController extends Controller
         }
 
         $user->update($update);
+
+        if ($newRole === 'merchant' && !empty($data['company_name'])) {
+            $cp = $user->companyProfile ?? new CompanyProfile([
+                'merchant_id' => $user->id,
+                'rut_path'    => '',
+                'kyc_status'  => 'pending',
+            ]);
+            $cp->company_name = strip_tags(trim($data['company_name']));
+            if (!$cp->phone && $user->phone) {
+                $cp->phone = $user->phone;
+            }
+            $cp->save();
+        }
         AdminAuditLog::record('user.updated', $user, 'Actualización de usuario / avatar', $before, $user->only(['name', 'email', 'role', 'admin_subrole', 'avatar']));
 
         if ($isEditingSelf) {

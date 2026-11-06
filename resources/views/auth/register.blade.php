@@ -1,5 +1,6 @@
 @extends('layouts.auth')
 @section('title', 'Crear cuenta')
+@php($selectedRole = old('role', request('role', $role ?? 'consumer')))
 
 @section('styles')
 <style>
@@ -145,7 +146,7 @@
           <div class="grid grid-cols-2 gap-3">
             <!-- Comprar / Cliente -->
             <label class="relative cursor-pointer block h-full">
-              <input type="radio" name="role" value="consumer" class="role-input absolute inset-0 w-full h-full opacity-0 z-20 cursor-pointer" {{ old('role', request('role', 'consumer'))==='consumer' ? 'checked' : '' }} required/>
+              <input type="radio" name="role" value="consumer" class="role-input absolute inset-0 w-full h-full opacity-0 z-20 cursor-pointer" {{ $selectedRole==='consumer' ? 'checked' : '' }} required/>
               <div class="role-box flex flex-col items-center gap-2 p-4 bg-surface-container rounded-2xl border-2 border-transparent transition-all h-full relative z-10 text-center">
                 <span class="material-symbols-outlined role-icon text-on-surface-variant text-3xl">shopping_bag</span>
                 <span class="text-sm font-bold text-on-surface">Cliente</span>
@@ -154,7 +155,7 @@
             </label>
             <!-- Vender / Vendedor -->
             <label class="relative cursor-pointer block h-full">
-              <input type="radio" name="role" value="merchant" class="role-input absolute inset-0 w-full h-full opacity-0 z-20 cursor-pointer" {{ old('role', $role ?? 'consumer')==='merchant' ? 'checked' : '' }}/>
+              <input type="radio" name="role" value="merchant" class="role-input absolute inset-0 w-full h-full opacity-0 z-20 cursor-pointer" {{ $selectedRole==='merchant' ? 'checked' : '' }}/>
               <div class="role-box flex flex-col items-center gap-2 p-4 bg-surface-container rounded-2xl border-2 border-transparent transition-all h-full relative z-10 text-center">
                 <span class="material-symbols-outlined role-icon text-on-surface-variant text-3xl">storefront</span>
                 <span class="text-sm font-bold text-on-surface">Vendedor</span>
@@ -164,15 +165,26 @@
           </div>
         </div>
 
+        <div id="business-name-field" class="form-enter {{ $selectedRole === 'merchant' ? '' : 'hidden' }}">
+          <label for="business-name" class="block text-sm font-semibold text-on-surface mb-1.5">Nombre del negocio / empresa <span class="text-error">*</span></label>
+          <div class="input-wrap">
+            <span class="material-symbols-outlined input-icon-box">storefront</span>
+            <input type="text" id="business-name" name="business_name" value="{{ old('business_name') }}"
+              class="input-field" placeholder="Ej. Café Sumapaz" maxlength="255"
+              {{ $selectedRole === 'merchant' ? 'required' : '' }}>
+          </div>
+          <p class="mt-1 text-xs text-on-surface-variant">Este nombre comercial aparecerá públicamente en tu tienda y productos. La razón social se completará automáticamente como “<strong id="legal-name-preview" class="text-primary">{{ \App\Models\CompanyProfile::suggestedLegalName(old('business_name') ?: 'Nombre del negocio') }}</strong>”.</p>
+        </div>
+
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div class="form-enter md:col-span-2">
-            <label class="block text-sm font-semibold text-on-surface mb-1.5">Nombre completo</label>
+            <label id="register-name-label" class="block text-sm font-semibold text-on-surface mb-1.5">{{ $selectedRole === 'merchant' ? 'Nombre del representante legal *' : 'Nombre completo *' }}</label>
             <div class="input-wrap">
               <span class="material-symbols-outlined input-icon-box">person</span>
               <input type="text" id="register-name" name="name" value="{{ old('name', session('social_registration.name')) }}" required
                 class="input-field" placeholder="Tu nombre y apellido" autocomplete="name" pattern="\S+(?: \S+)*" title="No uses espacios al inicio, al final ni repetidos" aria-describedby="name-help">
             </div>
-            <p id="name-help" class="mt-1 text-xs text-on-surface-variant">Usa letras; se permiten nombres compuestos con un solo espacio entre palabras.</p>
+            <p id="name-help" class="mt-1 text-xs text-on-surface-variant">{{ $selectedRole === 'merchant' ? 'Escribe el nombre de la persona responsable del negocio. No se mostrará como nombre de la tienda.' : 'Usa letras; se permiten nombres compuestos con un solo espacio entre palabras.' }}</p>
             <p id="name-error" class="hidden mt-1 text-xs font-semibold text-error" role="alert">Revisa el nombre: no uses espacios al inicio, al final ni repetidos, y escribe solo letras.</p>
           </div>
 
@@ -314,8 +326,31 @@ function togglePwd(inputId, iconId) {
 
 const registerForm = document.getElementById('register-form');
 const registerName = document.getElementById('register-name');
+const businessNameInput = document.getElementById('business-name');
 const passwordInput = document.getElementById('password');
 const passwordConfirmationInput = document.getElementById('password_confirmation');
+
+function syncMerchantRegistrationFields() {
+  const isMerchant = document.querySelector('input[name="role"]:checked')?.value === 'merchant';
+  const businessNameField = document.getElementById('business-name-field');
+  const nameLabel = document.getElementById('register-name-label');
+  const nameHelp = document.getElementById('name-help');
+  if (businessNameField) businessNameField.classList.toggle('hidden', !isMerchant);
+  if (businessNameInput) businessNameInput.required = isMerchant;
+  if (nameLabel) nameLabel.textContent = isMerchant ? 'Nombre del representante legal *' : 'Nombre completo *';
+  if (nameHelp) nameHelp.textContent = isMerchant
+    ? 'Escribe el nombre de la persona responsable del negocio. No se mostrará como nombre de la tienda.'
+    : 'Usa letras; se permiten nombres compuestos con un solo espacio entre palabras.';
+}
+
+document.querySelectorAll('input[name="role"]').forEach(input => input.addEventListener('change', syncMerchantRegistrationFields));
+businessNameInput?.addEventListener('input', function () {
+  const preview = document.getElementById('legal-name-preview');
+  if (preview) preview.textContent = this.value.trim()
+    ? ( /\sS\.?A\.?S\.?$/i.test(this.value.trim()) ? this.value.trim() : `${this.value.trim()} S.A.S.` )
+    : 'Nombre del negocio S.A.S.';
+});
+syncMerchantRegistrationFields();
 
 function validateRegistrationPasswords() {
   if (!passwordInput || !passwordConfirmationInput) return true;

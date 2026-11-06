@@ -75,19 +75,23 @@
 
         {{-- Name and Description Inputs --}}
         <div class="text-center md:text-left mt-2 flex-1 w-full">
+          <label class="block text-[11px] font-bold text-primary uppercase tracking-wider mb-0.5">Nombre del negocio / tienda *</label>
           <div class="relative group/name inline-block w-full">
-            <input type="text" name="company_name" value="{{ old('company_name', $profile->company_name ?? '') }}"
+            <input type="text" id="store-edit-company-name" name="company_name" value="{{ old('company_name', $profile->company_name ?? '') }}"
                    class="w-full md:w-auto bg-transparent border-b-2 border-transparent hover:border-primary/30 focus:border-primary text-3xl font-['Manrope'] font-extrabold text-on-surface focus:ring-0 p-0 transition-all cursor-text"
-                   placeholder="Nombre de tu tienda (Ej: El Oasis de las Flores)" required>
+                   placeholder="Nombre de tu tienda (Ej: El Oasis de las Flores)" required
+                   oninput="const v=this.value.trim();const el=document.getElementById('store-edit-legal-preview');if(el)el.textContent=v?(/\sS\.?A\.?S\.?$/i.test(v)?v:v+' S.A.S.'):'Nombre del negocio S.A.S.';">
             <span class="material-symbols-outlined absolute -right-8 top-1/2 -translate-y-1/2 text-primary opacity-0 group-hover/name:opacity-100 text-sm">edit</span>
           </div>
           
-          <div class="mt-2 flex flex-col md:flex-row items-center md:items-start gap-1 md:gap-4">
-            <p class="text-on-surface-variant text-sm flex items-center gap-1 shrink-0">
-              <span class="material-symbols-outlined text-sm align-middle text-primary">verified</span> Empresa verificada
+          <div class="mt-2 flex flex-col md:flex-row flex-wrap items-center md:items-start gap-2 md:gap-4">
+            <p class="text-on-surface-variant text-xs font-semibold flex items-center gap-1 shrink-0 bg-emerald-50 text-[#006c47] px-2.5 py-1 rounded-lg border border-emerald-200">
+              <span class="material-symbols-outlined text-sm align-middle text-primary">domain</span>
+              <span>Razón social: <strong id="store-edit-legal-preview">{{ \App\Models\CompanyProfile::suggestedLegalName(old('company_name', $profile->company_name ?? 'Nombre del negocio')) }}</strong></span>
             </p>
-            <div class="flex items-center gap-2 group/owner">
+            <div class="flex items-center gap-1.5 group/owner">
               <span class="material-symbols-outlined text-sm text-primary">person</span>
+              <span class="text-xs font-bold text-on-surface-variant">Representante legal:</span>
               <input type="text" name="owner_name" value="{{ old('owner_name', auth()->user()->name) }}" 
                      class="bg-transparent border-none p-0 text-sm font-semibold text-on-surface-variant focus:ring-0 w-auto hover:bg-surface-container-low rounded px-1 transition-colors"
                      placeholder="Nombre del representante" required>

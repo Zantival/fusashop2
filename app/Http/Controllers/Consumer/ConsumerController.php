@@ -980,6 +980,7 @@ class ConsumerController extends Controller
             }],
             'email'            => 'required|email|unique:users,email,'.$user->id,
             'phone'            => 'required|string|max:50',
+            'company_name'     => 'nullable|string|max:255',
             'billing_document' => ['required', 'regex:/^[0-9]{6,10}$/'],
             'address'          => 'nullable|string|max:255',
             'avatar'           => 'nullable|image|mimes:jpeg,png,jpg,webp,gif|max:4096',
@@ -1045,11 +1046,14 @@ class ConsumerController extends Controller
         if ($user->isMerchant()) {
             $cp = $user->companyProfile ?? new CompanyProfile([
                 'merchant_id'  => $user->id,
-                'company_name' => $user->name,
+                'company_name' => $request->filled('company_name') ? strip_tags(trim((string) $request->input('company_name'))) : $user->name,
                 'phone'        => $updateData['phone'],
                 'rut_path'     => '',
                 'kyc_status'   => 'pending',
             ]);
+            if ($request->filled('company_name')) {
+                $cp->company_name = strip_tags(trim((string) $request->input('company_name')));
+            }
             $cp->phone = $updateData['phone'];
             $cp->address = $updateData['address'] ?: $cp->address;
             if (!empty($payoutData)) {

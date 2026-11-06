@@ -53,11 +53,19 @@
         </div>
       </div>
 
+      @php($selectedAdminRole = old('role', $user?->role ?? 'consumer'))
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+        <div id="analyst-company-name-wrap" class="sm:col-span-2 {{ $selectedAdminRole === 'merchant' ? '' : 'hidden' }}">
+          <label class="block text-sm font-semibold text-[#1b1c1c] mb-2">Nombre del negocio / empresa *</label>
+          <input type="text" id="analyst-company-name" name="company_name" value="{{ old('company_name', $user?->companyProfile?->company_name) }}"
+            oninput="const v=this.value.trim();const el=document.getElementById('analyst-legal-name-preview');if(el)el.textContent=v?(/\sS\.?A\.?S\.?$/i.test(v)?v:v+' S.A.S.'):'Nombre del negocio S.A.S.';"
+            class="w-full px-4 py-3 bg-[#f0eded] rounded-xl border-0 outline-none focus:ring-2 focus:ring-[#006c47]" placeholder="Ej. Café Sumapaz"/>
+          <p class="mt-1 text-xs text-slate-500">Nombre público de la tienda. Razón social automática: <strong id="analyst-legal-name-preview" class="text-[#006c47]">{{ \App\Models\CompanyProfile::suggestedLegalName(old('company_name', $user?->companyProfile?->company_name ?: 'Nombre del negocio')) }}</strong></p>
+        </div>
         <div class="sm:col-span-2">
-          <label class="block text-sm font-semibold text-[#1b1c1c] mb-2">Nombre completo *</label>
+          <label id="analyst-user-name-label" class="block text-sm font-semibold text-[#1b1c1c] mb-2">{{ $selectedAdminRole === 'merchant' ? 'Nombre del representante legal *' : 'Nombre completo *' }}</label>
           <input type="text" name="name" value="{{ old('name', $user?->name) }}" required
-            class="w-full px-4 py-3 bg-[#f0eded] rounded-xl border-0 outline-none focus:ring-2 focus:ring-[#006c47]" placeholder="Nombre completo"/>
+            class="w-full px-4 py-3 bg-[#f0eded] rounded-xl border-0 outline-none focus:ring-2 focus:ring-[#006c47]" placeholder="Nombre y apellido"/>
         </div>
         <div class="sm:col-span-2">
           <label class="block text-sm font-semibold text-[#1b1c1c] mb-2">Correo electrónico *</label>
@@ -77,7 +85,7 @@
         @else
           <div>
             <label class="block text-sm font-semibold text-[#1b1c1c] mb-2">Rol Principal *</label>
-            <select name="role" required class="w-full px-4 py-3 bg-[#f0eded] rounded-xl border-0 outline-none focus:ring-2 focus:ring-[#006c47]">
+            <select id="analyst-role-select" name="role" required onchange="const m=this.value==='merchant';document.getElementById('analyst-company-name-wrap')?.classList.toggle('hidden',!m);const lbl=document.getElementById('analyst-user-name-label');if(lbl)lbl.textContent=m?'Nombre del representante legal *':'Nombre completo *';" class="w-full px-4 py-3 bg-[#f0eded] rounded-xl border-0 outline-none focus:ring-2 focus:ring-[#006c47]">
               @foreach(['consumer'=>'Consumidor','merchant'=>'Comerciante','analyst'=>'Analista / Admin'] as $val=>$label)
                 <option value="{{ $val }}" {{ old('role',$user?->role)===$val?'selected':'' }}>{{ $label }}</option>
               @endforeach
@@ -210,6 +218,8 @@
             <div class="p-4 bg-slate-50 rounded-xl border border-slate-200">
               <p class="text-xs font-bold text-slate-400 uppercase mb-1">Información Corporativa</p>
               <p class="text-sm font-extrabold">{{ $merchantProfile->company_name ?? $user->name }}</p>
+              <p class="text-xs text-slate-600">Razón social sugerida: {{ $merchantProfile->legal_name ?? \App\Models\CompanyProfile::suggestedLegalName($merchantProfile->company_name ?? $user->name) }}</p>
+              <p class="text-xs text-slate-600">Representante legal: {{ $user->name }}</p>
               <p class="text-xs text-slate-600">Actividad declarada: {{ $merchantProfile->business_type ?? 'Por definir' }}</p>
               <p class="text-xs text-slate-600">Tel: {{ $merchantProfile->phone ?? $user->phone ?? 'Sin teléfono' }} · Dir: {{ $merchantProfile->address ?? 'Fusagasugá' }}</p>
             </div>

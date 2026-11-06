@@ -83,14 +83,14 @@
         <div class="flex-1 min-w-0">
           <div class="flex flex-wrap items-center gap-2 mb-0.5">
             <span class="font-bold text-on-background text-base truncate flex items-center gap-1.5">
-              <span>{{ e($u->name) }}</span>
+              <span>{{ e($isMerchantUser && $companyName ? $companyName : $u->name) }}</span>
               @if($isMerchantVerified)
                 <span class="material-symbols-outlined text-[#006c47] text-[18px] shrink-0" style="font-variation-settings: 'FILL' 1" title="Comerciante con chulito de verificación activo">verified</span>
               @endif
             </span>
             @if($isMerchantUser && $companyName && $companyName !== $u->name)
               <span class="text-xs font-extrabold text-[#006c47] bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-lg truncate">
-                🏪 {{ e($companyName) }}
+                👤 Rep. Legal: {{ e($u->name) }}
               </span>
             @endif
             <span class="px-2 py-0.5 rounded-full text-[10px] font-bold {{ $rCls }}">{{ ucfirst($u->role) }}</span>
