@@ -12,11 +12,13 @@ use App\Notifications\NewUserNotification;
 use App\Notifications\WelcomeNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Password as PasswordBroker;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
 class AuthController extends Controller
 {
@@ -112,10 +114,10 @@ class AuthController extends Controller
                 'string',
                 app()->environment(['local', 'testing']) ? 'email:rfc' : 'email:rfc,dns',
                 'max:254',
-                'unique:users,email',
+                Rule::unique('users', 'email')->whereNull('deleted_at'),
             ],
             'role'     => ['required', 'in:consumer,merchant'],
-            'phone_country' => ['required', 'in:57,1,52,34,51,56,54'],
+            'phone_country' => ['nullable', 'in:57,1,52,34,51,56,54'],
             'phone'    => ['required', 'regex:/^[0-9]{7,15}$/'],
             'accepted_terms' => ['required', 'accepted'],
             'accepted_privacy' => ['required', 'accepted'],
@@ -138,6 +140,15 @@ class AuthController extends Controller
             ...PasswordPolicy::messages(),
         ]);
 
+        if ($isSocial) {
+            // The identity provider is the source of truth for the prefilled email.
+            $data['email'] = (string) ($socialData['email'] ?? '');
+            $data['name'] = trim((string) ($socialData['name'] ?? $data['name']));
+        }
+
+        // Older clients and bookmarked forms may not send the country prefix.
+        $data['phone_country'] = $data['phone_country'] ?? '57';
+
         if (($data['phone_country'] === '57' && (!preg_match('/^3[0-9]{9}$/', $data['phone'])))
             || ($data['phone_country'] !== '57' && strlen($data['phone']) < 7)) {
             throw \Illuminate\Validation\ValidationException::withMessages([
@@ -153,7 +164,15 @@ class AuthController extends Controller
             ? Hash::make($data['password'])
             : Hash::make(Str::random(32));
 
-        $user = User::create([
+        $trashedUser = User::onlyTrashed()->where('email', strtolower($data['email']))->first();
+
+        if ($trashedUser && $trashedUser->is_blocked) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'email' => 'Esta cuenta está bloqueada y no se puede reactivar. Contacta al equipo de soporte.',
+            ]);
+        }
+
+        $attributes = [
             'name'                         => strip_tags($data['name']),
             'email'                        => strtolower($data['email']),
             'password'                     => $hashedPassword,
@@ -171,13 +190,25 @@ class AuthController extends Controller
             'accepted_privacy_version'      => '2026-10-25',
             'age_or_guardian_confirmed_at' => now(),
             'marketing_consent_at'          => !empty($data['marketing_opt_in']) ? now() : null,
-        ]);
+        ];
+
+        // A soft-deleted user still owns the unique email in the database. Reuse
+        // that row so its order history and foreign-key relationships remain intact.
+        $user = DB::transaction(function () use ($trashedUser, $attributes) {
+            if ($trashedUser) {
+                $trashedUser->restore();
+                $trashedUser->forceFill($attributes)->save();
+                return $trashedUser;
+            }
+
+            return User::create($attributes);
+        });
 
         if ($isSocial) {
             session()->forget('social_registration');
         }
 
-        if ($user->isConsumer()) {
+        if ($user->isConsumer() && !$user->cart()->exists()) {
             Cart::create(['user_id' => $user->id]);
         }
 

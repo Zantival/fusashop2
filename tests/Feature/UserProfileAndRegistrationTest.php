@@ -7,6 +7,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
@@ -56,6 +57,65 @@ class UserProfileAndRegistrationTest extends TestCase
 
         $user = User::where('email', 'maria@example.com')->firstOrFail();
         $this->assertMatchesRegularExpression('/^\d{6}$/', $user->verification_code);
+    }
+
+    public function test_registration_reactivates_soft_deleted_account_with_same_email(): void
+    {
+        Mail::fake();
+        $deleted = User::create([
+            'name' => 'Maria Anterior',
+            'email' => 'maria-borrada@example.com',
+            'phone' => '+573001112233',
+            'role' => 'consumer',
+            'password' => Hash::make('Password123!'),
+        ]);
+        $deleted->delete();
+
+        $this->post(route('register.post'), [
+            'name' => 'Maria Gomez',
+            'email' => 'maria-borrada@example.com',
+            'phone' => '3101234567',
+            'password' => 'Password123!',
+            'password_confirmation' => 'Password123!',
+            'role' => 'consumer',
+            'accepted_terms' => 1,
+            'accepted_privacy' => 1,
+            'age_or_guardian_confirmed' => 1,
+        ])->assertRedirect(route('verification.notice'));
+
+        $this->assertSame(1, User::withTrashed()->where('email', 'maria-borrada@example.com')->count());
+        $this->assertNull($deleted->fresh()->deleted_at);
+        $this->assertSame('+573101234567', $deleted->fresh()->phone);
+        $this->assertNull($deleted->fresh()->email_verified_at);
+        Mail::assertSent(\App\Mail\VerifyEmailCodeMail::class);
+    }
+
+    public function test_google_registration_uses_session_identity_and_allows_optional_password(): void
+    {
+        Mail::fake();
+        $this->withSession(['social_registration' => [
+            'provider' => 'google',
+            'provider_id' => 'google-user-123',
+            'email' => 'google-user@example.com',
+            'name' => 'Google User',
+            'avatar' => 'https://example.com/avatar.png',
+        ]])->post(route('register.post'), [
+            'name' => 'Altered Name',
+            'email' => 'tampered@example.com',
+            'phone' => '3101234567',
+            'role' => 'consumer',
+            'accepted_terms' => 1,
+            'accepted_privacy' => 1,
+            'age_or_guardian_confirmed' => 1,
+        ])->assertRedirect(route('verification.notice'));
+
+        $this->assertDatabaseHas('users', [
+            'name' => 'Google User',
+            'email' => 'google-user@example.com',
+            'provider' => 'google',
+            'provider_id' => 'google-user-123',
+        ]);
+        $this->assertDatabaseMissing('users', ['email' => 'tampered@example.com']);
     }
 
     public function test_registration_rejects_numeric_names(): void

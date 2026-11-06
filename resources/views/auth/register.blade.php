@@ -98,7 +98,7 @@
       @if(session('info'))
         <div class="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-2xl flex items-start gap-3 form-enter shadow-xs">
           <span class="material-symbols-outlined text-amber-600 text-[22px] shrink-0 mt-0.5">info</span>
-          <p class="text-sm text-amber-900 font-medium leading-relaxed">{{ session('info') }}</p>
+          <p class="text-sm text-amber-900 font-medium leading-relaxed">{{ session('info') }}@if(session('social_registration')) Google ya completó tu nombre y correo; selecciona el tipo de cuenta, agrega tu teléfono y acepta los consentimientos para continuar.@endif</p>
         </div>
       @endif
 

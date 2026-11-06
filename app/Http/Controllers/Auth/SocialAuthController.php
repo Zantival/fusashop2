@@ -44,6 +44,12 @@ class SocialAuthController extends Controller
             $socialUser = Socialite::driver($provider)->user();
             $email = strtolower((string) $socialUser->getEmail());
 
+            if ($email === '') {
+                return redirect()->route('register')->withErrors([
+                    'email' => 'Google no compartió un correo electrónico. Revisa los permisos de tu cuenta e inténtalo de nuevo.',
+                ]);
+            }
+
             $user = User::where('email', $email)->first();
 
             // CASO 1: Si no existe en la base de datos, NO creamos la cuenta en blanco.
