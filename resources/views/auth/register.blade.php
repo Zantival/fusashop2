@@ -1,6 +1,6 @@
 @extends('layouts.auth')
 @section('title', 'Crear cuenta')
-@php($selectedRole = old('role', request('role', $role ?? 'consumer')))
+
 
 @section('styles')
 <style>
@@ -56,6 +56,9 @@
 @endsection
 
 @section('content')
+@php
+  $selectedRole = $selectedRole ?? old('role', request('role', $role ?? 'consumer'));
+@endphp
 <div class="min-h-screen flex flex-col lg:flex-row">
   <!-- Left Panel -->
   <div class="bg-gradient lg:w-5/12 xl:w-1/2 flex flex-col items-center justify-center p-8 lg:p-16 py-16 relative overflow-hidden">

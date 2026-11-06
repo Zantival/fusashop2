@@ -58,7 +58,13 @@ class CompanyProfile extends Model
     {
         static::saving(function (CompanyProfile $profile): void {
             if (filled($profile->company_name)) {
-                $profile->legal_name = self::suggestedLegalName($profile->company_name);
+                try {
+                    if (\Illuminate\Support\Facades\Schema::hasColumn('company_profiles', 'legal_name')) {
+                        $profile->legal_name = self::suggestedLegalName($profile->company_name);
+                    }
+                } catch (\Throwable) {
+                    // Prevenir fallos en entornos donde la migración esté pendiente
+                }
             }
         });
     }

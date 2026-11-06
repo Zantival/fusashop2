@@ -96,7 +96,8 @@ class AuthController extends Controller
     public function showRegister(Request $request)
     {
         $role = in_array($request->query('role'), ['consumer', 'merchant']) ? $request->query('role') : 'consumer';
-        return view('auth.register', compact('role'));
+        $selectedRole = old('role', $role);
+        return view('auth.register', compact('role', 'selectedRole'));
     }
 
     public function register(Request $request)
