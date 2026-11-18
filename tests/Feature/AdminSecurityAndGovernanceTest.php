@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\User;
+use App\Notifications\NewUserNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
@@ -47,6 +48,39 @@ class AdminSecurityAndGovernanceTest extends TestCase
             $this->actingAs($consumer)->get($uri)->assertStatus(403);
             $this->actingAs($merchant)->get($uri)->assertStatus(403);
         }
+    }
+
+    public function test_admin_notification_badge_and_dropdown_use_the_same_unread_notifications(): void
+    {
+        $admin = User::create([
+            'name' => 'Analista Notificaciones',
+            'email' => 'admin_notifications@fusashop.test',
+            'password' => Hash::make('password123'),
+            'role' => 'analyst',
+            'email_verified_at' => now(),
+        ]);
+        $newUser = User::create([
+            'name' => 'Nuevo Usuario',
+            'email' => 'new_user_notifications@fusashop.test',
+            'password' => Hash::make('password123'),
+            'role' => 'consumer',
+            'email_verified_at' => now(),
+        ]);
+        $admin->notify(new NewUserNotification($newUser));
+
+        $this->actingAs($admin)
+            ->get(route('analyst.dashboard'))
+            ->assertOk()
+            ->assertSee('Nuevo Usuario')
+            ->assertSee('id="admin-unread-notifications-count"', false);
+
+        $this->from(route('analyst.dashboard'))->post(route('notifications.readAll'))->assertRedirect(route('analyst.dashboard'));
+        $this->assertSame(0, $admin->unreadNotifications()->count());
+
+        $this->get(route('analyst.dashboard'))
+            ->assertOk()
+            ->assertDontSee('id="admin-unread-notifications-count"', false)
+            ->assertSee('Sin notificaciones pendientes por ver');
     }
 
     public function test_analyst_can_access_dashboard_and_causal_reports_and_soft_delete_preserves_user(): void

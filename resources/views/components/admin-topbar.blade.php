@@ -5,6 +5,7 @@
     $failedIntegrationsCount = \App\Models\IntegrationLog::where('status', 'failed')->whereNull('resolved_at')->where('created_at', '>=', now()->subDay())->count();
     $openPqrsCount = \App\Models\PQRS::whereIn('status', ['pending', 'in_review'])->count();
     $pendingBannersCount = \App\Models\BannerRequest::where('status', 'pending')->count();
+    $recentAdminNotifs = $adminUser ? $adminUser->unreadNotifications()->latest()->limit(6)->get() : collect();
     $unreadDbNotifs = $adminUser ? $adminUser->unreadNotifications()->count() : 0;
     $unreadChatMessages = $adminUser ? \App\Models\Message::where('receiver_id', $adminUser->id)->where('is_read', false)->count() : 0;
   } catch (\Throwable $e) {
@@ -13,6 +14,7 @@
     $openPqrsCount = 0;
     $pendingBannersCount = 0;
     $unreadDbNotifs = 0;
+    $recentAdminNotifs = collect();
     $unreadChatMessages = 0;
   }
   // El globo de la campana cuenta solo notificaciones sin leer.
@@ -152,7 +154,7 @@
           <span class="material-symbols-outlined text-[15px] text-[#006c47] shrink-0">notifications</span>
           <span class="truncate">Alertas</span>
           @if($totalAlertsCount > 0)
-            <span class="bg-[#F97316] text-white text-[9px] font-black px-1.5 py-0.5 rounded-full leading-none shrink-0">
+            <span id="admin-unread-notifications-count" class="bg-[#F97316] text-white text-[9px] font-black px-1.5 py-0.5 rounded-full leading-none shrink-0">
               {{ $totalAlertsCount > 99 ? '99+' : $totalAlertsCount }}
             </span>
           @endif
@@ -216,7 +218,7 @@
         </div>
 
         <div class="max-h-56 overflow-y-auto divide-y divide-slate-100">
-          @forelse(($recentAdminNotifs ?? collect()) as $notif)
+          @forelse($recentAdminNotifs as $notif)
             <a href="{{ route('notifications.open', $notif->id) }}"
                data-no-ajax
                class="p-2.5 hover:bg-emerald-50/80 transition-all flex items-start gap-2 bg-emerald-50/30 group cursor-pointer block"

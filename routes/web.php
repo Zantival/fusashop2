@@ -232,7 +232,7 @@ Route::middleware('auth')->group(function () {
     })->name('notifications.read');
     
     Route::post('/notifications/read-all', function () {
-        auth()->user()->unreadNotifications->markAsRead();
+        auth()->user()->unreadNotifications()->update(['read_at' => now()]);
         return back();
     })->name('notifications.readAll');
 
