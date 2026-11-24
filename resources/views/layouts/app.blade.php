@@ -9,7 +9,7 @@
 <script>
 window.fusaShopPageTitle = document.title;
 (function() {
-  var marqueeChars = Array.from('🛍️ Regresa, no te pierdas las ofertas de FusaShop — Productos locales de Fusagasugá, envíos rápidos y FusaCoins esperándote 🪙   ');
+  var marqueeChars = Array.from('FusaShop — Regresa por ofertas locales del Sumapaz   ');
   var marqueeInterval = null;
   var marqueePos = 0;
   function stopMarquee() {
@@ -23,10 +23,10 @@ window.fusaShopPageTitle = document.title;
     marqueePos = 0;
     var renderFrame = function() {
       document.title = marqueeChars.slice(marqueePos).concat(marqueeChars.slice(0, marqueePos)).join('');
-      marqueePos = (marqueePos + 1) % marqueeChars.length;
+      marqueePos = (marqueePos + 2) % marqueeChars.length;
     };
     renderFrame();
-    marqueeInterval = setInterval(renderFrame, 500);
+    marqueeInterval = setInterval(renderFrame, 100);
   }
   window.setFusaShopPageTitle = function(title) {
     if (title) window.fusaShopPageTitle = title;
