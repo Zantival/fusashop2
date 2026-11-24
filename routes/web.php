@@ -101,11 +101,18 @@ Route::middleware('auth')->group(function () {
                 'notifications' => auth()->user()->unreadNotifications()->take(10)->get()
             ]);
         }
-        if (auth()->check() && auth()->user()->isAnalyst()) {
-            return redirect()->route('analyst.notifications');
-        }
-        return view('notifications.index');
+        $notifications = auth()->user()->notifications()->latest()->paginate(15)->withQueryString();
+        return view('notifications.index', compact('notifications'));
     })->name('notifications.index');
+
+    Route::get('/notifications/{id}', function ($id) {
+        $notification = auth()->user()->notifications()->findOrFail($id);
+        if (is_null($notification->read_at)) {
+            $notification->markAsRead();
+        }
+
+        return view('notifications.show', compact('notification'));
+    })->name('notifications.show');
 
     Route::get('/notifications/{id}/open', function ($id) {
         $user = auth()->user();
@@ -346,7 +353,7 @@ Route::middleware(['auth', 'role:analyst'])->prefix('admin')->name('analyst.')->
     Route::post('/how-to-start-guide',            [AnalystController::class, 'updateHowToStartGuide'])->name('how-to-start.update');
     Route::get('/audit-logs',                     [AnalystController::class, 'auditLogs'])->name('audit-logs');
     Route::get('/settlements/export',              [AnalystController::class, 'settlementsExportCsv'])->name('settlements.export');
-    Route::get('/notifications',                  fn() => view('notifications.index'))->name('notifications');
+    Route::get('/notifications',                  fn() => redirect()->route('notifications.index'))->name('notifications');
 
     Route::get('/users',                          [AnalystController::class, 'users'])->name('users');
     Route::get('/users/create',                   [AnalystController::class, 'userCreate'])->name('users.create');

@@ -83,6 +83,41 @@ class AdminSecurityAndGovernanceTest extends TestCase
             ->assertSee('Sin notificaciones pendientes por ver');
     }
 
+    public function test_opening_notification_detail_marks_it_read_without_removing_it_from_history(): void
+    {
+        $admin = User::create([
+            'name' => 'Analista Detalle',
+            'email' => 'admin_detail@fusashop.test',
+            'password' => Hash::make('password123'),
+            'role' => 'analyst',
+            'email_verified_at' => now(),
+        ]);
+        $newUser = User::create([
+            'name' => 'Cuenta de Prueba',
+            'email' => 'new_user_detail@fusashop.test',
+            'password' => Hash::make('password123'),
+            'role' => 'consumer',
+            'email_verified_at' => now(),
+        ]);
+        $admin->notify(new NewUserNotification($newUser));
+        $notification = $admin->notifications()->firstOrFail();
+
+        $this->actingAs($admin)
+            ->get(route('notifications.show', $notification->id))
+            ->assertOk()
+            ->assertSee('Detalle de notificación')
+            ->assertSee('Cuenta de Prueba')
+            ->assertSee('conserva en tu historial');
+
+        $this->assertDatabaseHas('notifications', ['id' => $notification->id]);
+        $this->assertNotNull($notification->fresh()->read_at);
+
+        $this->get(route('notifications.index'))
+            ->assertOk()
+            ->assertSee('Cuenta de Prueba')
+            ->assertSee('Leída');
+    }
+
     public function test_analyst_can_access_dashboard_and_causal_reports_and_soft_delete_preserves_user(): void
     {
         $admin = User::create([

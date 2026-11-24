@@ -110,14 +110,15 @@
     </div>
 
     <div class="space-y-3">
-      @forelse($user ? $user->unreadNotifications()->get() : [] as $notification)
+      @forelse($notifications as $notification)
         @php
-          $openUrl = route('notifications.open', $notification->id);
+          $detailUrl = route('notifications.show', $notification->id);
           $isSalesReport = ($notification->data['type'] ?? '') === 'merchant_sales_report';
+          $isUnread = is_null($notification->read_at);
         @endphp
 
-        <div class="p-4 rounded-2xl border transition-all bg-emerald-50/40 border-emerald-200 hover:border-[#10B981] shadow-2xs flex items-start gap-4 group">
-          <a href="{{ $openUrl }}" data-no-ajax class="w-10 h-10 rounded-xl shrink-0 flex items-center justify-center mt-0.5 bg-emerald-100 text-[#006c47] group-hover:bg-[#006c47] group-hover:text-white transition-colors" title="Abrir mensaje">
+        <div class="p-4 rounded-2xl border transition-all {{ $isUnread ? 'bg-emerald-50/40 border-emerald-200' : 'bg-white border-slate-200' }} hover:border-[#10B981] shadow-2xs flex items-start gap-4 group">
+          <a href="{{ $detailUrl }}" data-no-ajax class="w-10 h-10 rounded-xl shrink-0 flex items-center justify-center mt-0.5 {{ $isUnread ? 'bg-emerald-100 text-[#006c47]' : 'bg-slate-100 text-slate-500' }} group-hover:bg-[#006c47] group-hover:text-white transition-colors" title="Ver detalle de notificación">
             <span class="material-symbols-outlined text-xl">
               {{ $notification->data['icon'] ?? 'notifications' }}
             </span>
@@ -125,20 +126,21 @@
 
           <div class="flex-1 min-w-0">
             <div class="flex items-start justify-between gap-2">
-              <a href="{{ $openUrl }}" data-no-ajax class="font-extrabold text-slate-900 group-hover:text-[#006c47] text-sm hover:underline transition-colors">
+              <a href="{{ $detailUrl }}" data-no-ajax class="font-extrabold text-slate-900 group-hover:text-[#006c47] text-sm hover:underline transition-colors">
                 {{ $notification->data['title'] ?? 'Notificación del Sistema' }}
               </a>
-              <span class="text-[11px] font-semibold text-slate-400 shrink-0">
-                {{ $notification->created_at->diffForHumans() }}
+              <span class="text-[11px] font-semibold text-slate-400 shrink-0 text-right">
+                {{ $notification->created_at->diffForHumans() }}<br>
+                <span class="{{ $isUnread ? 'text-emerald-700' : 'text-slate-400' }}">{{ $isUnread ? 'Sin leer' : 'Leída' }}</span>
               </span>
             </div>
 
-            <a href="{{ $openUrl }}" data-no-ajax class="block text-xs text-slate-600 hover:text-slate-900 mt-1 leading-relaxed">
+            <a href="{{ $detailUrl }}" data-no-ajax class="block text-xs text-slate-600 hover:text-slate-900 mt-1 leading-relaxed">
               {{ $notification->data['message'] ?? '' }}
             </a>
 
             <div class="mt-2.5">
-              <a href="{{ $openUrl }}" data-no-ajax class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-[#006c47] hover:bg-[#10B981] text-white shadow-2xs transition-colors">
+              <a href="{{ $detailUrl }}" data-no-ajax class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-[#006c47] hover:bg-[#10B981] text-white shadow-2xs transition-colors">
                 <span class="material-symbols-outlined text-sm">visibility</span>
                 <span>{{ $isSalesReport ? 'Abrir Reporte de Ventas y Diagnóstico Causal →' : 'Ver Mensaje / Detalle →' }}</span>
               </a>
@@ -146,22 +148,27 @@
           </div>
 
           <div class="shrink-0">
-             <form action="{{ route('notifications.read', $notification->id) }}" method="POST" data-no-ajax>
-               @csrf
-               <button type="submit" class="p-2 text-slate-400 hover:text-[#006c47] hover:bg-emerald-100 rounded-xl transition-colors cursor-pointer" title="Marcar como leída y ocultar">
-                 <span class="material-symbols-outlined text-lg">check</span>
-               </button>
-             </form>
+             @if($isUnread)
+               <form action="{{ route('notifications.read', $notification->id) }}" method="POST" data-no-ajax>
+                 @csrf
+                 <button type="submit" class="p-2 text-slate-400 hover:text-[#006c47] hover:bg-emerald-100 rounded-xl transition-colors cursor-pointer" title="Marcar como leída; se conservará en el historial">
+                   <span class="material-symbols-outlined text-lg">check</span>
+                 </button>
+               </form>
+             @else
+               <span class="material-symbols-outlined p-2 text-emerald-700 text-lg" title="Leída; conservada en el historial">task_alt</span>
+             @endif
           </div>
         </div>
       @empty
         <div class="text-center py-14 bg-slate-50/60 rounded-2xl border border-slate-200/80">
           <span class="material-symbols-outlined text-5xl text-slate-300 mb-2">notifications_paused</span>
-          <h3 class="text-base font-bold text-slate-700">Sin notificaciones pendientes por ahora</h3>
-          <p class="text-xs text-slate-500 mt-1">Ya has revisado todos tus mensajes y alertas recientes.</p>
+          <h3 class="text-base font-bold text-slate-700">No hay notificaciones en tu historial</h3>
+          <p class="text-xs text-slate-500 mt-1">Cuando recibas una notificación, aparecerá aquí y podrás volver a consultarla después.</p>
         </div>
       @endforelse
     </div>
+    <div class="pt-2">{{ $notifications->links() }}</div>
   </div>
 
 </div>
