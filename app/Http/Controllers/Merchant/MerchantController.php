@@ -167,14 +167,18 @@ class MerchantController extends Controller
             'phone'                  => 'required|string|max:50',
             'employee_count'         => 'nullable|integer|min:1',
             'description'            => 'nullable|string|max:2000',
-            'rut_file'               => 'required_without:rut_exists|mimes:pdf|max:2048',
-            'camara_comercio_file'   => 'required_without:camara_comercio_exists|mimes:pdf,jpg,jpeg,png|max:3072',
+            'id_document_file'       => 'required_without:id_document_exists|nullable|file|mimes:pdf,jpg,jpeg,png|max:4096',
+            'rut_file'               => 'nullable|file|mimes:pdf|max:3072',
+            'camara_comercio_file'   => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:4096',
             'logo'                   => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
             'banners.*'              => 'nullable|image|mimes:jpg,jpeg,png,webp|max:3072',
-            'address'                => 'nullable|string|max:255',
+            'address'                => 'required|string|max:255',
             'google_maps_url'        => 'nullable|url|max:500',
             'latitude'               => 'nullable|numeric',
             'longitude'              => 'nullable|numeric',
+        ], [
+            'id_document_file.required_without' => 'La foto o archivo de tu documento de identidad (Cédula) es obligatorio para que el administrador audite y apruebe a tu negocio para vender.',
+            'address.required'                  => 'La dirección física del negocio es obligatoria para la verificación y despacho de pedidos.',
         ]);
 
         $payoutData = CompanyProfile::validateAndExtractPayoutData($request, false);
@@ -207,12 +211,25 @@ class MerchantController extends Controller
             $profile->whatsapp = preg_replace('/\D/', '', $request->whatsapp ?? '');
         }
 
+        if ($request->hasFile('id_document_file')) {
+            if ($profile->id_document_path) {
+                Storage::delete($profile->id_document_path);
+            }
+            $ext = $request->file('id_document_file')->getClientOriginalExtension();
+            $profile->id_document_path = $request->file('id_document_file')->storeAs('kyc', Str::uuid() . '_cedula.' . $ext, 'local');
+            if ($profile->kyc_status !== 'approved') {
+                $profile->kyc_status = 'pending';
+            }
+        }
+
         if ($request->hasFile('rut_file')) {
             if ($profile->rut_path) {
                 Storage::delete($profile->rut_path);
             }
             $profile->rut_path = $request->file('rut_file')->storeAs('kyc', Str::uuid() . '_rut.pdf', 'local');
-            $profile->kyc_status = 'pending';
+            if ($profile->kyc_status !== 'approved') {
+                $profile->kyc_status = 'pending';
+            }
         }
 
         if ($request->hasFile('camara_comercio_file')) {
@@ -221,7 +238,9 @@ class MerchantController extends Controller
             }
             $ext = $request->file('camara_comercio_file')->getClientOriginalExtension();
             $profile->camara_comercio_path = $request->file('camara_comercio_file')->storeAs('kyc', Str::uuid() . '_camara.' . $ext, 'local');
-            $profile->kyc_status = 'pending';
+            if ($profile->kyc_status !== 'approved') {
+                $profile->kyc_status = 'pending';
+            }
         }
 
         if ($request->hasFile('logo')) {

@@ -9,6 +9,10 @@ class CompanyProfile extends Model
 {
     protected $hidden = ['wompi_integrity_secret', 'wompi_events_secret'];
 
+    protected $attributes = [
+        'rut_path' => '',
+    ];
+
     protected $fillable = [
         'merchant_id',
         'company_name',
@@ -16,6 +20,8 @@ class CompanyProfile extends Model
         'phone',
         'rut_path',
         'camara_comercio_path',
+        'id_document_path',
+        'is_verified',
         'logo_path',
         'banners_path',
         'description',
@@ -49,6 +55,7 @@ class CompanyProfile extends Model
         return [
             'banners_path' => 'array',
             'settled_at'   => 'datetime',
+            'is_verified'  => 'boolean',
             'wompi_integrity_secret' => \App\Casts\SafeEncrypted::class,
             'wompi_events_secret' => \App\Casts\SafeEncrypted::class,
         ];
@@ -88,6 +95,26 @@ class CompanyProfile extends Model
     public function hasCamaraComercio(): bool
     {
         return !empty($this->camara_comercio_path);
+    }
+
+    public function hasIdDocument(): bool
+    {
+        return !empty($this->id_document_path);
+    }
+
+    public function hasCompleteFormalDocuments(): bool
+    {
+        return $this->hasCamaraComercio();
+    }
+
+    public function hasRequiredSellingDocuments(): bool
+    {
+        return $this->hasIdDocument() && filled($this->address);
+    }
+
+    public function isOfficiallyVerified(): bool
+    {
+        return (bool) $this->is_verified;
     }
 
     public function hasCompleteKycDocuments(): bool

@@ -321,8 +321,10 @@ class AnalystController extends Controller
 
         $profile = $user->companyProfile;
         $documentFields = [
-            'rut' => ['field' => 'rut_path', 'label' => 'RUT'],
+            'rut'             => ['field' => 'rut_path', 'label' => 'RUT DIAN'],
             'camara_comercio' => ['field' => 'camara_comercio_path', 'label' => 'Cámara de Comercio'],
+            'id_document'     => ['field' => 'id_document_path', 'label' => 'Documento de Identidad (Cédula)'],
+            'cedula'          => ['field' => 'id_document_path', 'label' => 'Documento de Identidad (Cédula)'],
         ];
         abort_unless(isset($documentFields[$document]), 404);
 
@@ -366,25 +368,19 @@ class AnalystController extends Controller
         ]);
     }
 
-    private function hasRequiredKycDocuments(CompanyProfile $profile): bool
+    private function hasRequiredSellingDocuments(CompanyProfile $profile): bool
     {
-        foreach ([$profile->rut_path, $profile->camara_comercio_path] as $relativePath) {
-            if (empty($relativePath)) {
-                return false;
-            }
-
-            $exists = Storage::disk('local')->exists($relativePath)
-                || Storage::disk('public')->exists($relativePath)
-                || is_file(storage_path('app/private/' . $relativePath))
-                || is_file(storage_path('app/' . $relativePath))
-                || is_file(storage_path('app/public/' . $relativePath));
-
-            if (!$exists && !app()->isLocal() && !app()->environment('testing')) {
-                return false;
-            }
+        if (!$profile->hasRequiredSellingDocuments()) {
+            return false;
         }
 
-        return true;
+        $path = $profile->id_document_path;
+
+        return Storage::disk('local')->exists($path)
+            || Storage::disk('public')->exists($path)
+            || is_file(storage_path('app/private/' . $path))
+            || is_file(storage_path('app/' . $path))
+            || is_file(storage_path('app/public/' . $path));
     }
 
     public function userToggleVerification(Request $request, User $user)
@@ -395,8 +391,8 @@ class AnalystController extends Controller
 
         $profile = $user->companyProfile;
         $willVerify = $profile?->kyc_status !== 'approved';
-        if ($willVerify && (!$profile || !$this->hasRequiredKycDocuments($profile))) {
-            return back()->with('error', 'No se puede aprobar el comercio: primero debe cargar el RUT y el certificado de Cámara de Comercio para su revisión.');
+        if ($willVerify && (!$profile || !$this->hasRequiredSellingDocuments($profile))) {
+            return back()->with('error', 'No se puede aprobar el comercio: se requiere contar con la foto del documento de identidad (Cédula) y la dirección registrada del negocio.');
         }
 
         $profile ??= CompanyProfile::firstOrCreate(
@@ -411,17 +407,21 @@ class AnalystController extends Controller
         );
 
         $before = [
-            'kyc_status' => $profile->kyc_status,
-            'kyc_notes'  => $profile->kyc_notes,
+            'kyc_status'  => $profile->kyc_status,
+            'is_verified' => $profile->is_verified,
+            'kyc_notes'   => $profile->kyc_notes,
         ];
 
         $newStatus = $willVerify ? 'approved' : 'pending';
+        $hasFormalDocs = !empty($profile->camara_comercio_path) || !empty($profile->rut_path);
+        $newIsVerified = $willVerify && $hasFormalDocs;
         $notes = $willVerify
-            ? 'Insignia de verificación (chulito) otorgada por el Analista.'
-            : 'Insignia de verificación (chulito) retirada por el Analista.';
+            ? ($newIsVerified ? 'Comercio aprobado y chulito de verificación otorgado por el Analista.' : 'Comercio MiPyme aprobado para vender por el Analista.')
+            : 'Habilitación de venta / chulito de verificación retirado por el Analista.';
 
         $profile->update([
             'kyc_status'         => $newStatus,
+            'is_verified'        => $newIsVerified,
             'kyc_rejection_code' => null,
             'kyc_notes'          => $notes,
         ]);
@@ -431,7 +431,7 @@ class AnalystController extends Controller
             $profile,
             $notes,
             $before,
-            ['kyc_status' => $newStatus]
+            ['kyc_status' => $newStatus, 'is_verified' => $newIsVerified]
         );
 
         try {
@@ -441,8 +441,8 @@ class AnalystController extends Controller
         }
 
         $msg = $willVerify
-            ? "✓ Chulito de verificación otorgado a «{$profile->company_name}»."
-            : "Se retiró el chulito de verificación a «{$profile->company_name}».";
+            ? ($newIsVerified ? "✓ Chulito de verificación oficial otorgado a «{$profile->company_name}»." : "✓ Comercio «{$profile->company_name}» aprobado para vender.")
+            : "Se retiró la aprobación de venta a «{$profile->company_name}».";
 
         return back()->with('success', $msg);
     }
@@ -460,8 +460,8 @@ class AnalystController extends Controller
         ]);
 
         $profile = $user->companyProfile;
-        if ($request->kyc_status === 'approved' && (!$profile || !$this->hasRequiredKycDocuments($profile))) {
-            return back()->with('error', 'No se puede aprobar el comercio: el RUT y el certificado de Cámara de Comercio deben estar cargados y disponibles para su revisión.');
+        if ($request->kyc_status === 'approved' && (!$profile || !$this->hasRequiredSellingDocuments($profile))) {
+            return back()->with('error', 'No se puede aprobar el comercio para vender: debe contar al menos con el documento de identidad (Cédula) y la dirección registrada del negocio.');
         }
 
         $profile ??= CompanyProfile::firstOrCreate(
@@ -492,8 +492,18 @@ class AnalystController extends Controller
             $compiledNotes = 'Comercio verificado y aprobado por el Analista.';
         }
 
+        $isVerified = $profile->is_verified;
+        if ($request->kyc_status === 'approved') {
+            // Si tiene Cámara de Comercio o el admin solicita otorgar el distintivo oficial
+            $hasFormalDocument = !empty($profile->camara_comercio_path) || !empty($profile->rut_path);
+            $isVerified = $request->boolean('grant_verified_badge') && $hasFormalDocument;
+        } elseif (in_array($request->kyc_status, ['pending', 'rejected'])) {
+            $isVerified = false;
+        }
+
         $profile->update([
             'kyc_status'         => $request->kyc_status,
+            'is_verified'        => $isVerified,
             'kyc_rejection_code' => $request->kyc_status === 'rejected' ? $code : null,
             'kyc_notes'          => $compiledNotes,
         ]);
@@ -501,6 +511,7 @@ class AnalystController extends Controller
         AdminAuditLog::record('kyc.' . $request->kyc_status, $profile, $compiledNotes ?? 'Decisión KYC', $before, [
             'kyc_status'         => $request->kyc_status,
             'kyc_rejection_code' => $code,
+            'is_verified'        => $isVerified,
         ]);
 
         try {
@@ -510,7 +521,9 @@ class AnalystController extends Controller
         }
 
         $statusMsg = match ($request->kyc_status) {
-            'approved' => "✓ Chulito de verificación otorgado a «{$profile->company_name}».",
+            'approved' => $isVerified
+                ? "✓ Chulito de verificación oficial otorgado a «{$profile->company_name}»."
+                : "✓ Comercio «{$profile->company_name}» aprobado para vender.",
             'pending'  => "Se retiró el chulito de verificación a «{$profile->company_name}» (estado: sin verificar).",
             default    => "Verificación KYC rechazada para «{$profile->company_name}».",
         };

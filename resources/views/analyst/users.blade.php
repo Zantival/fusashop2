@@ -149,61 +149,81 @@
                 </div>
               </div>
 
-              {{-- Botones de Inspección Documental (RUT y Cámara de Comercio) --}}
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                @if($profile->rut_path)
-                  <a href="{{ route('analyst.users.kyc-document', [$qUser->id, 'rut']) }}" target="_blank" rel="noopener"
-                     class="flex items-center justify-between px-3 py-2 bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 rounded-xl text-xs font-bold transition-all">
+              {{-- Botones de Inspección Documental (Cédula Obligatoria, RUT y Cámara de Comercio) --}}
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                {{-- Cédula de Identidad --}}
+                @if($profile->id_document_path)
+                  <a href="{{ route('analyst.users.kyc-document', [$qUser->id, 'id_document']) }}" target="_blank" rel="noopener"
+                     class="flex items-center justify-between px-2.5 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 rounded-xl text-xs font-bold transition-all">
                     <span class="flex items-center gap-1.5 truncate">
-                      <span class="material-symbols-outlined text-base text-red-600">picture_as_pdf</span>
-                      <span class="truncate">Ver RUT DIAN</span>
+                      <span class="material-symbols-outlined text-base text-[#006c47]">badge</span>
+                      <span class="truncate">Ver Cédula</span>
                     </span>
-                    <span class="material-symbols-outlined text-[14px]">open_in_new</span>
+                    <span class="material-symbols-outlined text-[13px]">open_in_new</span>
                   </a>
                 @else
-                  <div class="flex items-center gap-1.5 px-3 py-2 bg-rose-50 text-rose-800 border border-rose-200 rounded-xl text-xs font-bold">
+                  <div class="flex items-center gap-1.5 px-2.5 py-2 bg-rose-50 text-rose-800 border border-rose-200 rounded-xl text-xs font-bold">
                     <span class="material-symbols-outlined text-base text-rose-600">error</span>
-                    <span>Sin RUT cargado</span>
+                    <span class="truncate">Sin Cédula</span>
                   </div>
                 @endif
 
-                @if($profile->camara_comercio_path)
-                  <a href="{{ route('analyst.users.kyc-document', [$qUser->id, 'camara_comercio']) }}" target="_blank" rel="noopener"
-                     class="flex items-center justify-between px-3 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 rounded-xl text-xs font-bold transition-all">
+                {{-- RUT DIAN --}}
+                @if($profile->rut_path)
+                  <a href="{{ route('analyst.users.kyc-document', [$qUser->id, 'rut']) }}" target="_blank" rel="noopener"
+                     class="flex items-center justify-between px-2.5 py-2 bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 rounded-xl text-xs font-bold transition-all">
                     <span class="flex items-center gap-1.5 truncate">
-                      <span class="material-symbols-outlined text-base text-blue-600">description</span>
-                      <span class="truncate">Ver Cámara de Comercio</span>
+                      <span class="material-symbols-outlined text-base text-red-600">picture_as_pdf</span>
+                      <span class="truncate">Ver RUT</span>
                     </span>
-                    <span class="material-symbols-outlined text-[14px]">open_in_new</span>
+                    <span class="material-symbols-outlined text-[13px]">open_in_new</span>
                   </a>
                 @else
-                  <div class="flex items-center gap-1.5 px-3 py-2 bg-amber-50 text-amber-800 border border-amber-200 rounded-xl text-xs font-bold">
-                    <span class="material-symbols-outlined text-base text-amber-600">warning</span>
-                    <span>Sin Cámara Comercio</span>
+                  <div class="flex items-center gap-1.5 px-2.5 py-2 bg-slate-50 text-slate-500 border border-slate-200 rounded-xl text-xs font-medium">
+                    <span class="material-symbols-outlined text-base text-slate-400">help</span>
+                    <span class="truncate">Sin RUT (Opcional)</span>
+                  </div>
+                @endif
+
+                {{-- Cámara de Comercio --}}
+                @if($profile->camara_comercio_path)
+                  <a href="{{ route('analyst.users.kyc-document', [$qUser->id, 'camara_comercio']) }}" target="_blank" rel="noopener"
+                     class="flex items-center justify-between px-2.5 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 rounded-xl text-xs font-bold transition-all">
+                    <span class="flex items-center gap-1.5 truncate">
+                      <span class="material-symbols-outlined text-base text-blue-600">verified</span>
+                      <span class="truncate">Cámara Comercio</span>
+                    </span>
+                    <span class="material-symbols-outlined text-[13px]">open_in_new</span>
+                  </a>
+                @else
+                  <div class="flex items-center gap-1.5 px-2.5 py-2 bg-slate-50 text-slate-500 border border-slate-200 rounded-xl text-xs font-medium">
+                    <span class="material-symbols-outlined text-base text-amber-500">info</span>
+                    <span class="truncate">Sin Cámara</span>
                   </div>
                 @endif
               </div>
 
-              {{-- Botón Consulta RUES y Formulario de Decisión --}}
+              {{-- Botón Consulta RUES, Formulario de Decisión y Botón Auditar --}}
               <div class="pt-1 flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
                 <a href="https://www.rues.org.co/" target="_blank" rel="noopener noreferrer"
-                   class="px-2.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-[11px] font-bold flex items-center justify-center gap-1 transition-all"
+                   class="px-2.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-[11px] font-bold flex items-center justify-center gap-1 transition-all shrink-0"
                    title="Consultar registro mercantil nacional">
-                  <span class="material-symbols-outlined text-sm">search</span> RUES Oficial
+                  <span class="material-symbols-outlined text-sm">search</span> RUES
                 </a>
 
                 <form method="POST" action="{{ route('analyst.users.kyc', $qUser->id) }}" class="flex-1 flex gap-2">
                   @csrf
                   <button type="submit" name="kyc_status" value="approved"
                           class="flex-1 py-2 px-3 bg-[#006c47] hover:bg-[#10B981] text-white font-extrabold rounded-xl text-xs transition-all flex items-center justify-center gap-1 cursor-pointer shadow-xs">
-                    <span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1">verified</span>
-                    <span>Dar Chulito ✓</span>
+                    <span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1">{{ $profile->camara_comercio_path ? 'verified' : 'storefront' }}</span>
+                    <span>{{ $profile->camara_comercio_path ? 'Aprobar y Dar Chulito ✓' : 'Aprobar para Vender' }}</span>
                   </button>
-                  <a href="{{ route('analyst.users.edit', $qUser->id) }}"
-                     class="py-2 px-3 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold rounded-xl text-xs transition-all flex items-center justify-center gap-1">
-                    <span class="material-symbols-outlined text-sm">edit</span> Auditar / Editar
-                  </a>
                 </form>
+
+                <a href="{{ route('analyst.users.edit', $qUser->id) }}"
+                   class="py-2 px-3 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold rounded-xl text-xs transition-all flex items-center justify-center gap-1 shrink-0">
+                  <span class="material-symbols-outlined text-sm">edit</span> Auditar / Editar
+                </a>
               </div>
             </div>
           @endif
@@ -349,9 +369,25 @@
                 </div>
               </div>
 
-              {{-- Botones de Inspección de Documentos (RUT y Cámara de Comercio) --}}
+              {{-- Botones de Inspección de Documentos (Cédula, RUT y Cámara de Comercio) --}}
               <div class="flex flex-wrap items-center gap-2 pt-0.5">
                 <span class="text-xs font-bold text-slate-600 shrink-0">Documentos:</span>
+
+                {{-- Cédula de Identidad --}}
+                @if($merchantProfile && $merchantProfile->id_document_path)
+                  <a href="{{ route('analyst.users.kyc-document', [$u->id, 'id_document']) }}" target="_blank" rel="noopener"
+                     class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 rounded-xl text-xs font-bold transition-all"
+                     title="Ver Cédula o Documento de Identidad">
+                    <span class="material-symbols-outlined text-[16px] text-[#006c47]">badge</span>
+                    <span>Ver Cédula</span>
+                    <span class="material-symbols-outlined text-[12px]">open_in_new</span>
+                  </a>
+                @else
+                  <span class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-rose-50 text-rose-800 border border-rose-200 rounded-xl text-xs font-semibold">
+                    <span class="material-symbols-outlined text-[15px] text-rose-600">error</span>
+                    <span>Sin Cédula</span>
+                  </span>
+                @endif
 
                 {{-- RUT DIAN --}}
                 @if($merchantProfile && $merchantProfile->rut_path)
@@ -418,7 +454,7 @@
                 <span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' {{ $isMerchantVerified ? '0' : '1' }}">
                   {{ $isMerchantVerified ? 'verified_off' : 'verified' }}
                 </span>
-                <span>{{ $isMerchantVerified ? 'Quitar Chulito' : 'Dar Chulito ✓' }}</span>
+                <span>{{ $isMerchantVerified ? 'Quitar Verificación' : 'Dar Verificación ✓' }}</span>
               </button>
             </form>
           @endif

@@ -100,6 +100,7 @@ class SocialAuthController extends Controller
 
             // Usuario verificado: iniciar sesión normalmente
             Auth::login($user, true);
+            request()->session()->regenerate();
             try {
                 session(['logged_in_at' => now()->timezone('America/Bogota')->toIso8601String()]);
                 $user->forceFill(['last_seen_at' => now()])->saveQuietly();
@@ -118,10 +119,10 @@ class SocialAuthController extends Controller
     private function redirectByRole(User $user)
     {
         if ($user->role === 'merchant') {
-            if (!$user->companyProfile) {
-                return redirect()->route('merchant.profile');
+            if (!$user->companyProfile || $user->companyProfile->kyc_status !== 'approved') {
+                return redirect()->intended(route('merchant.profile'));
             }
-            return redirect()->route('merchant.dashboard');
+            return redirect()->intended(route('merchant.dashboard'));
         }
 
         return match ($user->role) {

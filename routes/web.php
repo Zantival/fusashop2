@@ -358,16 +358,16 @@ Route::middleware(['auth', 'role:analyst'])->prefix('admin')->name('analyst.')->
     Route::get('/users',                          [AnalystController::class, 'users'])->name('users');
     Route::get('/users/create',                   [AnalystController::class, 'userCreate'])->name('users.create');
     Route::post('/users',                         [AnalystController::class, 'userStore'])->name('users.store');
-    Route::get('/users/{user}/edit',              [AnalystController::class, 'userEdit'])->name('users.edit');
-    Route::put('/users/{user}',                   [AnalystController::class, 'userUpdate'])->name('users.update');
-    Route::delete('/users/{user}',                [AnalystController::class, 'userDelete'])->name('users.delete');
+    Route::get('/users/{user}/edit',              [AnalystController::class, 'userEdit'])->name('users.edit')->withTrashed();
+    Route::put('/users/{user}',                   [AnalystController::class, 'userUpdate'])->name('users.update')->withTrashed();
+    Route::delete('/users/{user}',                [AnalystController::class, 'userDelete'])->name('users.delete')->withTrashed();
     Route::post('/users/{id}/restore',            [AnalystController::class, 'userRestore'])->name('users.restore');
-    Route::patch('/users/{user}/toggle-block',    [AnalystController::class, 'userToggleBlock'])->name('users.toggle-block');
-    Route::patch('/users/{user}/toggle-verification', [AnalystController::class, 'userToggleVerification'])->name('users.toggle-verification');
-    Route::get('/users/{user}/rut',               [AnalystController::class, 'userRut'])->name('users.rut');
-    Route::get('/users/{user}/documents/{document}', [AnalystController::class, 'userKycDocument'])->whereIn('document', ['rut', 'camara_comercio'])->name('users.kyc-document');
-    Route::post('/users/{user}/kyc',              [AnalystController::class, 'updateKyc'])->name('users.kyc');
-    Route::post('/users/{user}/sector',           [AnalystController::class, 'updateMerchantSector'])->name('users.sector');
+    Route::patch('/users/{user}/toggle-block',    [AnalystController::class, 'userToggleBlock'])->name('users.toggle-block')->withTrashed();
+    Route::patch('/users/{user}/toggle-verification', [AnalystController::class, 'userToggleVerification'])->name('users.toggle-verification')->withTrashed();
+    Route::get('/users/{user}/rut',               [AnalystController::class, 'userRut'])->name('users.rut')->withTrashed();
+    Route::get('/users/{user}/documents/{document}', [AnalystController::class, 'userKycDocument'])->whereIn('document', ['rut', 'camara_comercio', 'id_document', 'cedula'])->name('users.kyc-document')->withTrashed();
+    Route::post('/users/{user}/kyc',              [AnalystController::class, 'updateKyc'])->name('users.kyc')->withTrashed();
+    Route::post('/users/{user}/sector',           [AnalystController::class, 'updateMerchantSector'])->name('users.sector')->withTrashed();
 
     Route::get('/orders',                         [AnalystController::class, 'orders'])->name('orders');
     Route::get('/orders/export',                  [AnalystController::class, 'ordersExportCsv'])->name('orders.export');

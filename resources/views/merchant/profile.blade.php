@@ -92,8 +92,8 @@
           @error('whatsapp') <p class="text-xs text-[#ba1a1a] mt-1">{{ $message }}</p> @enderror
         </div>
         <div class="md:col-span-2">
-          <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-2">Dirección (para el mapa)</label>
-          <input type="text" name="address" value="{{ old('address', $profile->address ?? '') }}" placeholder="Cra 10 # 3-45, Fusagasugá"
+          <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-2">Dirección física del negocio o despacho * <span class="text-primary text-[11px] font-semibold lowercase">(requerida para vender)</span></label>
+          <input type="text" name="address" value="{{ old('address', $profile->address ?? '') }}" required placeholder="Cra 10 # 3-45, Fusagasugá"
             class="w-full bg-surface-container-low rounded-xl border-2 {{ $errors->has('address') ? 'border-[#ba1a1a]' : 'border-transparent focus:border-primary' }} p-4 outline-none text-on-surface text-sm transition-all">
           @error('address') <p class="text-xs text-[#ba1a1a] mt-1">{{ $message }}</p> @enderror
         </div>
@@ -106,40 +106,77 @@
       </div>
     </div>
 
-    <!-- KYC / Documentos -->
+    <!-- KYC / Documentos de Verificación -->
     <div class="bg-white rounded-2xl p-6 shadow-sm border border-surface-container">
-      <h2 class="font-bold text-on-surface mb-6 flex items-center gap-2 pb-4 border-b border-surface-container">
-        <span class="material-symbols-outlined text-primary text-[20px]">description</span> Documentos Legales (KYC)
-      </h2>
-      <p class="text-xs text-on-surface-variant mb-6">Los documentos se guardan de forma privada y solo son accesibles por el equipo analista para verificar tu negocio.</p>
+      <div class="flex items-center justify-between pb-4 border-b border-surface-container mb-6 flex-wrap gap-2">
+        <h2 class="font-bold text-on-surface flex items-center gap-2">
+          <span class="material-symbols-outlined text-primary text-[20px]">badge</span> Documentación & Verificación del Negocio
+        </h2>
+        <span class="px-2.5 py-1 rounded-full text-[11px] font-extrabold bg-emerald-50 text-emerald-800 border border-emerald-200">
+          💡 Aprobación MiPyme con Cédula y Dirección
+        </span>
+      </div>
+      <p class="text-xs text-on-surface-variant mb-6 leading-relaxed">
+        <strong>Puedes vender como MiPyme</strong> cuando cargues tu <strong>cédula</strong>, registres la <strong>dirección del negocio</strong> y el administrador apruebe tu perfil. El <strong>RUT y la Cámara de Comercio son opcionales</strong>: si no los tienes, igual puedes vender; solo no podrás obtener el sello de <strong>Comercio Verificado (✓)</strong>. El administrador revisará los documentos opcionales antes de otorgar ese sello.
+      </p>
       
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div>
-          <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-2">Registro Único Tributario (RUT) *</label>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- Documento de Identidad (Obligatorio) -->
+        <div class="p-4 bg-emerald-50/50 rounded-2xl border-2 border-emerald-200">
+          <div class="flex items-center justify-between mb-2">
+            <label class="block text-xs font-black text-emerald-900 uppercase tracking-wider">Cédula de Identidad *</label>
+            <span class="px-2 py-0.5 rounded text-[10px] font-extrabold bg-[#006c47] text-white">Obligatorio</span>
+          </div>
+          <p class="text-[11px] text-slate-600 mb-3">Foto legible de tu Cédula o documento de identidad (PDF o imagen).</p>
+          @if($profile?->id_document_path)
+            <input type="hidden" name="id_document_exists" value="1">
+          @endif
+          <input type="file" name="id_document_file" accept=".pdf,image/*" {{ $profile?->id_document_path ? '' : 'required' }}
+            class="w-full text-xs text-slate-700 file:mr-3 file:py-2 file:px-3 file:rounded-xl file:border-0 file:font-bold file:bg-[#006c47] file:text-white hover:file:opacity-90 file:cursor-pointer">
+          @error('id_document_file') <p class="text-xs text-[#ba1a1a] mt-1">{{ $message }}</p> @enderror
+          @if($profile?->id_document_path)
+            <p class="text-xs mt-3 text-emerald-800 font-bold flex items-center gap-1">
+              <span class="material-symbols-outlined text-[15px] text-[#006c47]">check_circle</span> Cédula cargada correctamente
+            </p>
+          @endif
+        </div>
+
+        <!-- RUT DIAN (Opcional / Recomendado) -->
+        <div class="p-4 bg-slate-50 rounded-2xl border border-slate-200">
+          <div class="flex items-center justify-between mb-2">
+            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">RUT DIAN</label>
+            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-200 text-slate-700">Recomendado</span>
+          </div>
+          <p class="text-[11px] text-slate-500 mb-3">Opcional para MiPymes. Si tienes RUT, cárgalo en formato PDF.</p>
           @if($profile?->rut_path)
             <input type="hidden" name="rut_exists" value="1">
           @endif
-          <input type="file" name="rut_file" accept=".pdf" {{ $profile?->rut_path ? '' : 'required' }}
-            class="w-full text-sm text-on-surface-variant file:mr-4 file:py-2.5 file:px-5 file:rounded-xl file:border-0 file:font-bold file:bg-primary file:text-white hover:file:opacity-90 file:cursor-pointer">
+          <input type="file" name="rut_file" accept=".pdf"
+            class="w-full text-xs text-slate-700 file:mr-3 file:py-2 file:px-3 file:rounded-xl file:border-0 file:font-bold file:bg-slate-700 file:text-white hover:file:opacity-90 file:cursor-pointer">
           @error('rut_file') <p class="text-xs text-[#ba1a1a] mt-1">{{ $message }}</p> @enderror
           @if($profile?->rut_path)
-            <p class="text-xs mt-3 text-primary font-bold flex items-center gap-1">
-              <span class="material-symbols-outlined text-[14px]">check_circle</span> RUT cargado correctamente
+            <p class="text-xs mt-3 text-slate-700 font-bold flex items-center gap-1">
+              <span class="material-symbols-outlined text-[15px] text-[#006c47]">check_circle</span> RUT cargado
             </p>
           @endif
         </div>
         
-        <div>
-          <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-2">Cámara de Comercio *</label>
+        <!-- Cámara de Comercio (Opcional para Chulito Oficial) -->
+        <div class="p-4 bg-blue-50/50 rounded-2xl border border-blue-200">
+          <div class="flex items-center justify-between mb-2">
+            <label class="block text-xs font-bold text-blue-900 uppercase tracking-wider">Cámara de Comercio</label>
+            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-800">Para Chulito ✓</span>
+          </div>
+          <p class="text-[11px] text-slate-500 mb-3">Opcional. Súbelo para obtener el Sello Oficial de Comercio Verificado.</p>
           @if($profile?->camara_comercio_path)
             <input type="hidden" name="camara_comercio_exists" value="1">
           @endif
-          <input type="file" name="camara_comercio_file" accept=".pdf,image/*" {{ $profile?->camara_comercio_path ? '' : 'required' }}
-            class="w-full text-sm text-on-surface-variant file:mr-4 file:py-2.5 file:px-5 file:rounded-xl file:border-0 file:font-bold file:bg-primary file:text-white hover:file:opacity-90 file:cursor-pointer">
+          <input type="file" name="camara_comercio_file" accept=".pdf,image/*"
+            class="w-full text-xs text-slate-700 file:mr-3 file:py-2 file:px-3 file:rounded-xl file:border-0 file:font-bold file:bg-blue-700 file:text-white hover:file:opacity-90 file:cursor-pointer">
           @error('camara_comercio_file') <p class="text-xs text-[#ba1a1a] mt-1">{{ $message }}</p> @enderror
           @if($profile?->camara_comercio_path)
-            <p class="text-xs mt-3 text-primary font-bold flex items-center gap-1">
-              <span class="material-symbols-outlined text-[14px]">check_circle</span> Cámara de Comercio cargada
+            <p class="text-xs mt-3 text-blue-800 font-bold flex items-center gap-1">
+              <span class="material-symbols-outlined text-[15px] text-blue-600">verified</span> Cámara de Comercio cargada
             </p>
           @endif
         </div>

@@ -210,10 +210,37 @@
           </div>
         </div>
 
-        {{-- Inspección de Documentos (RUT DIAN y Cámara de Comercio) --}}
+        {{-- Inspección de Documentos (Cédula, RUT DIAN y Cámara de Comercio) --}}
         <div class="space-y-2">
           <h3 class="text-xs font-extrabold text-slate-800 uppercase tracking-wider">Documentos de Identificación y Formalidad Mercantil</h3>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+            {{-- Cédula de Identidad --}}
+            @if($merchantProfile && $merchantProfile->id_document_path)
+              <a href="{{ url('/admin/users/' . $user->id . '/documents/id_document') }}" target="_blank" rel="noopener"
+                 class="flex items-center justify-between p-4 bg-white border border-emerald-300 rounded-xl hover:border-emerald-500 hover:shadow-xs transition-all group">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 rounded-xl bg-emerald-50 text-[#006c47] flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                    <span class="material-symbols-outlined text-2xl">badge</span>
+                  </div>
+                  <div>
+                    <span class="text-xs font-extrabold text-slate-900 block group-hover:text-emerald-700">Ver Cédula de Identidad</span>
+                    <span class="text-[10px] text-emerald-700 font-bold">Obligatorio para Vender</span>
+                  </div>
+                </div>
+                <span class="material-symbols-outlined text-emerald-600 text-lg">open_in_new</span>
+              </a>
+            @else
+              <div class="p-4 bg-rose-50/70 border border-rose-200 rounded-xl flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-rose-100 text-rose-700 flex items-center justify-center shrink-0">
+                  <span class="material-symbols-outlined text-2xl">error</span>
+                </div>
+                <div>
+                  <span class="text-xs font-extrabold text-rose-950 block">Cédula no adjuntada</span>
+                  <span class="text-[10px] text-rose-700">Requerida para habilitar ventas</span>
+                </div>
+              </div>
+            @endif
 
             {{-- RUT DIAN --}}
             @if($merchantProfile && $merchantProfile->rut_path)
@@ -314,11 +341,18 @@
             </div>
           </div>
 
+          <div class="p-3 bg-white border border-slate-200 rounded-xl flex items-center gap-2">
+            <input type="checkbox" name="grant_verified_badge" id="grant_verified_badge" value="1" {{ $merchantProfile?->is_verified ? 'checked' : '' }} class="w-4 h-4 text-[#006c47] rounded border-slate-300">
+            <label for="grant_verified_badge" class="text-xs font-bold text-slate-800 cursor-pointer">
+              Otorgar Sello de Comercio Verificado (✓) <span class="text-slate-500 font-normal">(Solo después de revisar RUT o Cámara de Comercio. Sin estos documentos, aprueba para vender sin el sello.)</span>
+            </label>
+          </div>
+
           <div class="flex flex-wrap gap-3 pt-1">
             <button type="submit" name="kyc_status" value="approved"
                     class="flex-1 min-w-[200px] py-3 bg-[#006c47] hover:bg-[#10B981] text-white font-extrabold rounded-xl text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-sm">
-              <span class="material-symbols-outlined text-base" style="font-variation-settings: 'FILL' 1">verified</span>
-              <span>Dar Chulito de Verificación (Aprobar KYC)</span>
+              <span class="material-symbols-outlined text-base" style="font-variation-settings: 'FILL' 1">storefront</span>
+              <span>Aprobar Negocio para Vender</span>
             </button>
 
             @if($isVerifiedMerchant)
