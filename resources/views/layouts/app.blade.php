@@ -8,11 +8,39 @@
 <link rel="icon" type="image/png" href="{{ asset('logo.png') }}?v={{ substr(md5((string) @filemtime(public_path('logo.png'))), 0, 8) }}">
 <script>
 window.fusaShopPageTitle = document.title;
-document.addEventListener('visibilitychange', function() {
-  document.title = document.hidden
-    ? 'Regresa, no te pierdas de las ofertas | FusaShop'
-    : (window.fusaShopPageTitle || document.title);
-});
+(function() {
+  var marqueeChars = Array.from('🛍️ Regresa, no te pierdas las ofertas de FusaShop — Productos locales de Fusagasugá, envíos rápidos y FusaCoins esperándote 🪙   ');
+  var marqueeInterval = null;
+  var marqueePos = 0;
+  function stopMarquee() {
+    if (marqueeInterval !== null) {
+      clearInterval(marqueeInterval);
+      marqueeInterval = null;
+    }
+  }
+  function startMarquee() {
+    if (marqueeInterval !== null) return;
+    marqueePos = 0;
+    var renderFrame = function() {
+      document.title = marqueeChars.slice(marqueePos).concat(marqueeChars.slice(0, marqueePos)).join('');
+      marqueePos = (marqueePos + 1) % marqueeChars.length;
+    };
+    renderFrame();
+    marqueeInterval = setInterval(renderFrame, 500);
+  }
+  window.setFusaShopPageTitle = function(title) {
+    if (title) window.fusaShopPageTitle = title;
+    if (document.hidden) startMarquee();
+    else {
+      stopMarquee();
+      document.title = window.fusaShopPageTitle || document.title;
+    }
+  };
+  document.addEventListener('visibilitychange', function() {
+    window.setFusaShopPageTitle();
+  });
+  if (document.hidden) startMarquee();
+})();
 </script>
 
 {{-- Optimizaciones de carga --}}
@@ -2189,8 +2217,12 @@ document.addEventListener('submit', (event) => {
 
     // Actualizar título del documento
     if (doc.title) {
-      window.fusaShopPageTitle = doc.title;
-      document.title = document.hidden ? 'Regresa, no te pierdas de las ofertas | FusaShop' : doc.title;
+      if (typeof window.setFusaShopPageTitle === 'function') {
+        window.setFusaShopPageTitle(doc.title);
+      } else {
+        window.fusaShopPageTitle = doc.title;
+        document.title = doc.title;
+      }
     }
 
     // Actualizar token CSRF si viene en el nuevo documento
