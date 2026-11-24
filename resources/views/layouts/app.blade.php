@@ -9,7 +9,7 @@
 <script>
 window.fusaShopPageTitle = document.title;
 (function() {
-  var marqueeChars = Array.from('FusaShop — Regresa por ofertas locales del Sumapaz   ');
+  var marqueeChars = Array.from('¡Vuelve, no te pierdas estas ofertas!   ');
   var marqueeInterval = null;
   var marqueePos = 0;
   function stopMarquee() {
@@ -23,10 +23,10 @@ window.fusaShopPageTitle = document.title;
     marqueePos = 0;
     var renderFrame = function() {
       document.title = marqueeChars.slice(marqueePos).concat(marqueeChars.slice(0, marqueePos)).join('');
-      marqueePos = (marqueePos + 2) % marqueeChars.length;
+      marqueePos = (marqueePos + 3) % marqueeChars.length;
     };
     renderFrame();
-    marqueeInterval = setInterval(renderFrame, 100);
+    marqueeInterval = setInterval(renderFrame, 70);
   }
   window.setFusaShopPageTitle = function(title) {
     if (title) window.fusaShopPageTitle = title;
