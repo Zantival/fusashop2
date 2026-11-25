@@ -26,32 +26,33 @@ class GenerateEnviaShipment implements ShouldQueue
 
     public function handle(EnviaService $envia): void
     {
-        $order = Order::findOrFail($this->orderId);
+        $result = DB::transaction(function () use ($envia) {
+            $order = Order::whereKey($this->orderId)->lockForUpdate()->firstOrFail();
 
-        if ($order->payment_status !== 'paid' || $order->tracking_number || !$order->hasShippableItems()) {
-            return; // idempotente: ya tiene guía o no está pagado
-        }
-
-        $result = $envia->generate($order);
-
-        // Bloqueo para evitar doble guía si dos workers coinciden.
-        DB::transaction(function () use ($order, $result) {
-            $fresh = Order::whereKey($order->id)->lockForUpdate()->first();
-            if ($fresh->tracking_number) {
-                return;
+            if ($order->payment_status !== 'paid' || $order->tracking_number || !$order->hasShippableItems()) {
+                return null;
             }
-            $fresh->update([
+
+            // El proveedor se consulta mientras el pedido está bloqueado. Así dos workers
+            // no pueden emitir guías externas distintas para el mismo pedido.
+            $result = $envia->generate($order);
+            $order->update([
                 'tracking_number'  => $result['tracking_number'],
                 'label_url'        => $result['label_url'],
                 'tracking_url'     => $result['tracking_url'],
                 'shipping_carrier' => $result['carrier'],
                 'tracking_status'  => 'label_created',
-                'packed_at'        => $fresh->packed_at ?? now(),
+                'packed_at'        => $order->packed_at ?? now(),
             ]);
+            return $result;
         });
 
-        SendOrderShippedEmail::dispatch($order->id);
+        if (!$result) {
+            return;
+        }
 
-        IntegrationLog::success('envia', 'ship.generate', $order->id, $result['payload'], $result['raw']);
+        SendOrderShippedEmail::dispatch($this->orderId);
+
+        IntegrationLog::success('envia', 'ship.generate', $this->orderId, $result['payload'], $result['raw']);
     }
 }

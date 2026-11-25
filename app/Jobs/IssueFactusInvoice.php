@@ -11,6 +11,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Throwable;
 
@@ -27,20 +28,34 @@ class IssueFactusInvoice implements ShouldQueue
 
     public function handle(FactusService $factus): void
     {
+        // Serializa la emisión y guarda CUFE antes de liberar el bloqueo. Sin esta
+        // protección dos workers concurrentes podían pedir dos facturas a Factus.
+        $issueResult = DB::transaction(function () use ($factus) {
+            $order = Order::whereKey($this->orderId)->lockForUpdate()->firstOrFail();
+            if ($order->payment_status !== 'paid') {
+                return null;
+            }
+
+            if ($order->invoice_cufe) {
+                return null;
+            }
+
+            $result = $factus->issue($order);
+            $order->update([
+                'invoice_number' => $result['number'],
+                'invoice_cufe' => $result['cufe'],
+                'invoiced_at' => now(),
+            ]);
+
+            return $result;
+        });
+
         $order = Order::findOrFail($this->orderId);
         if ($order->payment_status !== 'paid') {
             return;
         }
-
-        // Paso 1: emitir (solo si aún no existe CUFE). Se persiste de inmediato para no duplicar facturas en reintentos.
-        if (!$order->invoice_cufe) {
-            $r = $factus->issue($order);
-            $order->update([
-                'invoice_number' => $r['number'],
-                'invoice_cufe' => $r['cufe'],
-                'invoiced_at' => now(),
-            ]);
-            IntegrationLog::success('factus', 'bill.validate', $order->id, $r['payload'], $r['raw']);
+        if ($issueResult) {
+            IntegrationLog::success('factus', 'bill.validate', $order->id, $issueResult['payload'], $issueResult['raw']);
         }
 
         // Paso 2: PDF/XML (si fallan, el reintento solo repite la descarga).

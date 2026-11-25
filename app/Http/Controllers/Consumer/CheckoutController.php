@@ -29,15 +29,15 @@ class CheckoutController extends Controller
         }
 
         // Leer ítems seleccionados desde request o session
-        $selectedItemIds = $request->input('selected_items');
-        if (is_array($selectedItemIds) && !empty($selectedItemIds)) {
+        $selectedItemIds = $request->exists('selected_items')
+            ? $request->input('selected_items', [])
+            : session('checkout_selected_items');
+        if (is_array($selectedItemIds)) {
             $selectedItemIds = array_map('intval', $selectedItemIds);
             session(['checkout_selected_items' => $selectedItemIds]);
-        } else {
-            $selectedItemIds = session('checkout_selected_items');
         }
 
-        if (!empty($selectedItemIds)) {
+        if ($selectedItemIds !== null) {
             $filtered = $this->selectedItems($cart, $selectedItemIds);
             if ($filtered->isEmpty()) {
                 return redirect()->route('consumer.cart')->with('error', 'Selecciona al menos un producto para proceder al pago.');
@@ -117,7 +117,7 @@ class CheckoutController extends Controller
     private function selectedItems($cart, ?array $selectedItemIds)
     {
         $items = $cart->items;
-        if (!empty($selectedItemIds)) {
+        if ($selectedItemIds !== null) {
             $items = $items->whereIn('id', array_map('intval', $selectedItemIds));
             abort_if($items->count() !== count(array_unique(array_map('intval', $selectedItemIds))), 422, 'La selección del carrito ya no está disponible.');
         }

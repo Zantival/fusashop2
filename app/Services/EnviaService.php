@@ -250,8 +250,13 @@ class EnviaService
             'settings' => ['printFormat' => 'PDF', 'printSize' => 'STOCK_4X6', 'currency' => 'COP', 'comments' => $order->reference],
         ];
 
-        // Sin token configurado o en entorno sandbox/testing sin token: generar guía simulada
+        // Solo simular guías en entornos explícitamente no productivos. En producción,
+        // una credencial ausente debe fallar para evitar mostrar una guía ficticia.
         if (empty(config('services.envia.token'))) {
+            if (!in_array(config('services.envia.env'), ['sandbox', 'testing'], true)) {
+                throw new RuntimeException('Envia requiere un token configurado en producción.');
+            }
+
             $tracking = 'SANDBOX-' . strtoupper(substr(md5($order->reference . time()), 0, 10));
             return [
                 'payload' => $payload,
