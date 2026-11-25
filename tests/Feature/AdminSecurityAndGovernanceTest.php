@@ -256,6 +256,8 @@ class AdminSecurityAndGovernanceTest extends TestCase
 
         // 4. Admin Notifications: verify rendering in admin layout
         $notificationsResponse = $this->actingAs($admin)->get('/admin/notifications');
+        $notificationsResponse->assertRedirect(route('notifications.index'));
+        $notificationsResponse = $this->actingAs($admin)->get(route('notifications.index'));
         $notificationsResponse->assertStatus(200)
             ->assertSee('Panel de Notificaciones y Alertas')
             ->assertSee('aria-label="Barra lateral de administración"', false);

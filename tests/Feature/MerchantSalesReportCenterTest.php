@@ -206,7 +206,7 @@ class MerchantSalesReportCenterTest extends TestCase
         $this->assertTrue(in_array($res2->status(), [403, 302]));
     }
 
-    public function test_notification_is_clickable_and_disappears_from_notifications_once_viewed(): void
+    public function test_opening_notification_marks_it_read_but_keeps_it_in_history(): void
     {
         $merchant = $this->createMerchantWithStore('Tienda Andina', 'andina@test.com');
 
@@ -233,13 +233,13 @@ class MerchantSalesReportCenterTest extends TestCase
         $openResponse->assertRedirect();
         $this->assertNotNull($notif->fresh()->read_at);
 
-        // 3. Una vez vista, ya NO debe aparecer en las notificaciones del menú ni en /notifications
+        // 3. Una vez vista, deja de aparecer entre las pendientes, pero sigue en el historial.
         $dashboardAfter = $this->actingAs($merchant)->get(route('merchant.dashboard'));
         $dashboardAfter->assertOk();
         $dashboardAfter->assertDontSee('Alerta única de variación en ventas para verificar lectura.');
 
         $notifsPageAfter = $this->actingAs($merchant)->get(route('notifications.index'));
         $notifsPageAfter->assertOk();
-        $notifsPageAfter->assertDontSee('Alerta única de variación en ventas para verificar lectura.');
+        $notifsPageAfter->assertSee('Alerta única de variación en ventas para verificar lectura.');
     }
 }

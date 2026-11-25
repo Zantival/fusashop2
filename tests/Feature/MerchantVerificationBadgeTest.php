@@ -29,6 +29,7 @@ class MerchantVerificationBadgeTest extends TestCase
         Storage::fake('local');
         Storage::disk('local')->put('ruts/test.pdf', '%PDF RUT');
         Storage::disk('local')->put('camara/test.pdf', '%PDF CAMARA');
+        Storage::disk('local')->put('identifications/test.pdf', '%PDF CEDULA');
 
         $analyst = $this->createUser([
             'name'          => 'Analista Principal',
@@ -45,6 +46,8 @@ class MerchantVerificationBadgeTest extends TestCase
             'merchant_id'   => $merchant->id,
             'company_name'  => 'Café Sumapaz Especial',
             'phone'         => '3101234567',
+            'address'       => 'Centro, Fusagasugá',
+            'id_document_path' => 'identifications/test.pdf',
             'rut_path'      => 'ruts/test.pdf',
             'camara_comercio_path' => 'camara/test.pdf',
             'business_type' => 'Alimentos',
@@ -101,7 +104,7 @@ class MerchantVerificationBadgeTest extends TestCase
         $usersPageUnverified->assertSee('Dar Verificación ✓');
     }
 
-    public function test_analyst_cannot_approve_without_both_documents_and_can_approve_after_review(): void
+    public function test_analyst_cannot_approve_without_identity_and_address_but_can_after_review(): void
     {
         Storage::fake('local');
         $analyst = $this->createUser([
@@ -133,11 +136,14 @@ class MerchantVerificationBadgeTest extends TestCase
 
         Storage::disk('local')->put('kyc/rut.pdf', '%PDF RUT');
         Storage::disk('local')->put('kyc/camara.pdf', '%PDF CAMARA');
+        Storage::disk('local')->put('kyc/cedula.pdf', '%PDF CEDULA');
         CompanyProfile::create([
             'merchant_id' => $merchantWithoutProfile->id,
             'company_name' => 'Artesanías del Sumapaz',
             'phone' => '3101234567',
             'business_type' => 'Artesanías',
+            'address' => 'Centro, Fusagasugá',
+            'id_document_path' => 'kyc/cedula.pdf',
             'rut_path' => 'kyc/rut.pdf',
             'camara_comercio_path' => 'kyc/camara.pdf',
             'kyc_status' => 'pending',

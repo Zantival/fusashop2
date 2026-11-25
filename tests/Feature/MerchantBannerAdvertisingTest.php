@@ -98,7 +98,7 @@ class MerchantBannerAdvertisingTest extends TestCase
         $response->assertDontSee('Número de Tarjeta');
     }
 
-    public function test_merchant_can_submit_banner_request_targeting_store(): void
+    public function test_merchant_can_publish_a_free_banner_directly_to_their_store(): void
     {
         $image = UploadedFile::fake()->create('banner_vivero.png', 500, 'image/png');
 
@@ -110,19 +110,17 @@ class MerchantBannerAdvertisingTest extends TestCase
             'payment_mode' => 'wompi_checkout',
         ]);
 
-        $response->assertRedirectContains(route('wompi.sandbox.checkout', [], false));
-        $this->assertDatabaseHas('banner_requests', [
+        $response->assertRedirect(route('merchant.banner.request'));
+        $response->assertSessionHas('success');
+        $this->assertDatabaseMissing('banner_requests', [
             'user_id' => $this->merchant->id,
             'title' => 'Festival Floral de Fusagasugá',
-            'target_type' => 'store',
-            'notes' => 'Favor publicar con aviso de envíos gratis en la cabecera municipal.',
-            'status' => 'pending',
         ]);
 
-        $bannerRequest = BannerRequest::where('user_id', $this->merchant->id)->first();
-        $this->assertNotNull($bannerRequest);
-        $this->assertSame(route('consumer.merchant.profile', $this->merchant->id), $bannerRequest->target_url);
-        Storage::disk('public')->assertExists($bannerRequest->image_path);
+        $banner = $this->merchant->companyProfile->fresh()->banners_path[0];
+        $this->assertSame('Festival Floral de Fusagasugá', $banner['title']);
+        $this->assertSame('Favor publicar con aviso de envíos gratis en la cabecera municipal.', $banner['subtitle']);
+        Storage::disk('public')->assertExists($banner['path']);
     }
 
     public function test_merchant_can_submit_banner_request_targeting_offer_products(): void

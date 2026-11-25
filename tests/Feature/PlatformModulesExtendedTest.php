@@ -81,7 +81,7 @@ class PlatformModulesExtendedTest extends TestCase
             'recipient' => 'Consumidor Fusa',
             'phone' => '3001234567',
             'street' => 'Carrera 6 # 7-15',
-            'city' => 'Fusagasugá',
+            'city' => 'Fusagasuga',
             'state' => 'CU',
             'postal_code' => '252211',
             'is_default' => 1,
@@ -91,7 +91,7 @@ class PlatformModulesExtendedTest extends TestCase
         $this->assertDatabaseHas('shipping_addresses', [
             'user_id' => $this->consumer->id,
             'label' => 'Casa Principal',
-            'city' => 'Fusagasugá',
+            'city' => 'Fusagasuga',
             'is_default' => true,
         ]);
 

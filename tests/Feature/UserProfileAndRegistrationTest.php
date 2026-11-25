@@ -50,7 +50,7 @@ class UserProfileAndRegistrationTest extends TestCase
 
         $this->assertDatabaseHas('users', [
             'email' => 'maria@example.com',
-            'phone' => '3101234567',
+            'phone' => '+573101234567',
             'role'  => 'consumer',
             'email_verified_at' => null,
         ]);
@@ -201,6 +201,7 @@ class UserProfileAndRegistrationTest extends TestCase
             'name'    => 'Juan Actualizado',
             'email'   => 'juan@example.com',
             'phone'   => '3157778899',
+            'billing_document' => '12345678',
             'address' => 'Carrera 6 # 10-20, Fusagasugá',
             'avatar'  => $avatarFile,
         ]);
@@ -214,7 +215,7 @@ class UserProfileAndRegistrationTest extends TestCase
         $this->assertSame('Carrera 6 # 10-20, Fusagasugá', $user->address);
         $this->assertNotNull($user->avatar);
         $this->assertTrue(Storage::disk('public')->exists($user->avatar));
-        $this->assertStringContainsString('storage/', $user->avatarUrl());
+        $this->assertStringContainsString('/user-avatars/', $user->avatarUrl());
     }
 
     public function test_user_can_view_edit_profile_dashboard(): void
@@ -255,6 +256,7 @@ class UserProfileAndRegistrationTest extends TestCase
             'name'          => $user->name,
             'email'         => $user->email,
             'phone'         => '3000000000',
+            'billing_document' => '12345678',
             'remove_avatar' => 1,
         ]);
 

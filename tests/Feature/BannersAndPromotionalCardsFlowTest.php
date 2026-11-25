@@ -117,6 +117,14 @@ class BannersAndPromotionalCardsFlowTest extends TestCase
         Storage::fake('public');
         $merchant = $this->createMerchant('Café Real Sumapaz');
         $analyst = $this->createAnalyst();
+        $product = Product::create([
+            'merchant_id' => $merchant->id,
+            'name' => 'Café Real Sumapaz',
+            'slug' => 'cafe-real-sumapaz-' . $merchant->id,
+            'price' => 25000,
+            'stock' => 20,
+            'is_active' => true,
+        ]);
 
         $file = UploadedFile::fake()->create('banner-tienda.jpg', 200, 'image/jpeg');
 
@@ -124,14 +132,16 @@ class BannersAndPromotionalCardsFlowTest extends TestCase
             'image'        => $file,
             'title'        => 'Gran Feria Café Real Sumapaz',
             'description'  => 'Por favor enlazar este banner directamente a nuestra tienda oficial.',
-            'target_type'  => 'store',
+            'target_type'  => 'products',
+            'product_ids'  => [$product->id],
             'payment_mode' => 'wompi_checkout',
         ])->assertRedirectContains(route('wompi.sandbox.checkout', [], false));
 
         $bannerReq = BannerRequest::first();
         $this->assertNotNull($bannerReq);
+        $expectedProductUrl = route('consumer.product', $product->id);
         $expectedStoreUrl = route('consumer.merchant.profile', $merchant->id);
-        $this->assertSame($expectedStoreUrl, $bannerReq->target_url);
+        $this->assertSame($expectedProductUrl, $bannerReq->target_url);
 
         // Simula la confirmación de pago que llega desde el webhook de Wompi.
         $bannerReq->update(['payment_status' => 'paid']);
@@ -141,7 +151,7 @@ class BannersAndPromotionalCardsFlowTest extends TestCase
         $analystPage->assertOk();
         $analystPage->assertSee('Gran Feria Café Real Sumapaz');
         $analystPage->assertSee('Por favor enlazar este banner directamente a nuestra tienda oficial.');
-        $analystPage->assertSee($expectedStoreUrl, false);
+        $analystPage->assertSee($expectedProductUrl, false);
 
         // Analyst approves the banner request
         $this->actingAs($analyst)->post(route('analyst.banner-requests.approve', $bannerReq->id), [

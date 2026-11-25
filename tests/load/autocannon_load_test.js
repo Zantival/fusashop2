@@ -179,10 +179,11 @@ console.log(`⚠️  Respuestas no 2xx:        ${results.non2xx}`);
 console.log(`🌐 Volumen de datos:         ${(results.bytes / 1024 / 1024).toFixed(2)} MB`);
 console.log('='.repeat(70));
 
-if (results.errors === 0 && results.completed > 0) {
-  console.log('🎉 RESULTADO: Prueba aprobada con éxito. Cero errores de conexión.');
+if (results.errors === 0 && results.non2xx === 0 && results.completed > 0) {
+  console.log('🎉 RESULTADO: Prueba aprobada. Sin errores de conexión ni respuestas HTTP fallidas.');
 } else if (results.completed > 0) {
-  console.log('⚠️  RESULTADO: Prueba completada con observaciones de concurrencia.');
+  console.log('⚠️  RESULTADO: Prueba con fallos; revisa los errores de conexión y las respuestas no 2xx.');
+  process.exitCode = 1;
 } else {
   console.log('❌ RESULTADO: No se completaron peticiones.');
   process.exitCode = 1;
