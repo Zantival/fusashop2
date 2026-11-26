@@ -15,6 +15,30 @@ use Illuminate\Support\Facades\Storage;
 
 class ConsumerController extends Controller
 {
+    /** Categorías admitidas por el formulario, más cualquier categoría ya guardada. */
+    private function catalogCategories()
+    {
+        $supportedCategories = [
+            'Ropa', 'Calzado', 'Electrónica', 'Hogar', 'Deportes', 'Alimentos', 'Belleza', 'Juguetes', 'Libros', 'Otros',
+            'Medicamentos y Farmacia', 'Droguería', 'Tienda Verde y Naturista',
+            'Hoteles y Alojamientos', 'Spa, Estética y Bienestar', 'Restaurantes y Gastronomía',
+            'Turismo y Experiencias', 'Servicios profesionales',
+        ];
+        $storedCategories = Product::query()
+            ->whereNotNull('category')
+            ->whereRaw("TRIM(category) <> ''")
+            ->distinct()
+            ->pluck('category');
+
+        return collect($supportedCategories)
+            ->merge($storedCategories)
+            ->map(fn ($category) => trim((string) $category))
+            ->filter()
+            ->unique(fn ($category) => mb_strtolower($category, 'UTF-8'))
+            ->sort(fn ($left, $right) => strnatcasecmp($left, $right))
+            ->values();
+    }
+
     public function home()
     {
         $featured = Product::active()->with('merchant.companyProfile')->latest()->take(8)->get();
@@ -41,7 +65,7 @@ class ConsumerController extends Controller
             ->map(fn ($id) => $flashDealProducts->get($id))
             ->filter()
             ->values();
-        $categories = Product::active()->select('category')->distinct()->pluck('category');
+        $categories = $this->catalogCategories();
         $now = now();
         $globalBanners = GlobalBanner::where('is_active', true)
             ->where(fn ($query) => $query->whereNull('starts_at')->orWhere('starts_at', '<=', $now))
@@ -57,7 +81,7 @@ class ConsumerController extends Controller
         $q = Product::active()->with('merchant.companyProfile');
         
         if ($request->filled('search'))        $q->search(strip_tags((string) $request->search));
-        if ($request->filled('category'))      $q->where('category', strip_tags((string) $request->category));
+        if ($request->filled('category'))      $q->whereRaw('LOWER(category) = ?', [mb_strtolower(strip_tags((string) $request->category), 'UTF-8')]);
         if ($request->filled('min_price') && is_numeric($request->min_price))     $q->where('price', '>=', max(0, (float) $request->min_price));
         if ($request->filled('max_price') && is_numeric($request->max_price))     $q->where('price', '<=', max(0, (float) $request->max_price));
         if ($request->boolean('on_sale'))      $q->where('discount_percent', '>', 0);
@@ -71,7 +95,7 @@ class ConsumerController extends Controller
         }
         
         $products = $q->paginate(12)->withQueryString();
-        $categories = Product::active()->select('category')->distinct()->pluck('category');
+        $categories = $this->catalogCategories();
 
         // Solo los primeros 10 para el carrusel de vendedores
         $directory = CompanyProfile::where('kyc_status', 'approved')->select('id','merchant_id','company_name','logo_path')->take(10)->get();
