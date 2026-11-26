@@ -35,6 +35,11 @@
   transition: all 0.2s ease; overflow: hidden;
 }
 .input-wrap:focus-within { background: white; border-color: var(--primary); box-shadow: 0 0 0 4px rgba(0,108,71,0.08); }
+.input-wrap.invalid { background: #fff8f8; border-color: #dc2626; box-shadow: 0 0 0 3px rgba(220,38,38,0.10); }
+.input-wrap.invalid .input-icon-box { color: #dc2626; border-right-color: rgba(220,38,38,0.18); }
+.input-field.invalid { background: #fff8f8; box-shadow: inset 0 0 0 2px #dc2626; border-radius: .75rem; }
+.role-input.invalid + .role-box { border-color: #dc2626 !important; background-color: #fff8f8 !important; }
+input[type="checkbox"].invalid { outline: 2px solid #dc2626; outline-offset: 2px; }
 .input-icon-box {
   display: flex; align-items: center; justify-content: center;
   width: 3rem; min-width: 3rem; height: 100%;
@@ -211,10 +216,10 @@
             <div class="input-wrap">
               <span class="material-symbols-outlined input-icon-box">cake</span>
               <input type="date" id="date-of-birth" name="date_of_birth" value="{{ old('date_of_birth') }}"
-                min="{{ now()->subYears(120)->toDateString() }}" max="{{ now()->subYears(18)->toDateString() }}" required
+                max="{{ now()->subYears(18)->toDateString() }}" required
                 class="input-field" autocomplete="bday" aria-describedby="birth-date-help">
             </div>
-            <p id="birth-date-help" class="mt-1 text-xs text-on-surface-variant">Debes tener entre 18 y 120 años para crear una cuenta. La fecha no se muestra en tu tienda.</p>
+            <p id="birth-date-help" class="mt-1 text-xs text-on-surface-variant">Debes tener 18 años o más para crear una cuenta. La fecha no se muestra en tu tienda.</p>
           </div>
 
           <div class="form-enter md:col-span-2">
@@ -344,6 +349,24 @@ const businessNameInput = document.getElementById('business-name');
 const passwordInput = document.getElementById('password');
 const passwordConfirmationInput = document.getElementById('password_confirmation');
 
+function refreshRegistrationFieldValidity(field, markTouched = false) {
+  if (!field || !registerForm || field.disabled || field.type === 'hidden') return;
+  if (markTouched) field.dataset.validationTouched = 'true';
+  const hasValue = field.type === 'checkbox' || field.type === 'radio' ? field.checked : field.value.trim() !== '';
+  const invalid = !field.checkValidity();
+  const shouldShow = invalid && (hasValue || field.dataset.validationTouched === 'true');
+  const wrapper = field.closest('.input-wrap');
+  wrapper?.classList.toggle('invalid', shouldShow);
+  field.classList.toggle('invalid', shouldShow && !wrapper);
+  if (shouldShow) field.setAttribute('aria-invalid', 'true');
+  else field.removeAttribute('aria-invalid');
+}
+
+registerForm?.addEventListener('input', event => refreshRegistrationFieldValidity(event.target));
+registerForm?.addEventListener('change', event => refreshRegistrationFieldValidity(event.target));
+registerForm?.addEventListener('focusout', event => refreshRegistrationFieldValidity(event.target, true));
+registerForm?.addEventListener('invalid', event => refreshRegistrationFieldValidity(event.target, true), true);
+
 function syncMerchantRegistrationFields() {
   const isMerchant = document.querySelector('input[name="role"]:checked')?.value === 'merchant';
   const businessNameField = document.getElementById('business-name-field');
@@ -395,6 +418,11 @@ function validateRegistrationPasswords() {
     confirmationError.textContent = confirmationMessage;
     confirmationError.classList.toggle('hidden', !confirmationMessage);
   }
+
+  passwordInput.setCustomValidity(passwordMessage);
+  passwordConfirmationInput.setCustomValidity(confirmationMessage);
+  refreshRegistrationFieldValidity(passwordInput);
+  refreshRegistrationFieldValidity(passwordConfirmationInput);
 
   return !passwordMessage && !confirmationMessage;
 }

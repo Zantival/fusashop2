@@ -33,7 +33,7 @@ class ApiController extends Controller
             'email'    => 'required|email|unique:users,email',
             'password' => ['required', 'confirmed', PasswordPolicy::rule()],
             'role'     => 'required|in:consumer,merchant',
-            'date_of_birth' => ['required', 'date_format:Y-m-d', 'before_or_equal:' . now()->subYears(18)->toDateString(), 'after_or_equal:' . now()->subYears(120)->toDateString()],
+            'date_of_birth' => ['required', 'date_format:Y-m-d', 'before_or_equal:' . now()->subYears(18)->toDateString()],
             'accepted_terms' => ['required', 'accepted'],
             'accepted_privacy' => ['required', 'accepted'],
             'age_or_guardian_confirmed' => ['required', 'accepted'],

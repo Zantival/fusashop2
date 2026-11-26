@@ -32,13 +32,12 @@ class UserProfileAndRegistrationTest extends TestCase
         $this->assertDatabaseMissing('users', ['email' => 'carlos@example.com']);
     }
 
-    public function test_registration_rejects_minor_future_and_unrealistic_birth_dates(): void
+    public function test_registration_rejects_minor_and_future_birth_dates(): void
     {
         $this->withoutMiddleware(\Illuminate\Routing\Middleware\ThrottleRequests::class);
         $invalidDates = [
             now()->subYears(17)->toDateString(),
             now()->addDay()->toDateString(),
-            now()->subYears(121)->toDateString(),
         ];
 
         foreach ($invalidDates as $index => $date) {
@@ -58,6 +57,29 @@ class UserProfileAndRegistrationTest extends TestCase
 
             $this->assertDatabaseMissing('users', ['email' => $email]);
         }
+    }
+
+    public function test_registration_accepts_birth_dates_older_than_120_years_when_adult(): void
+    {
+        $this->withoutMiddleware(\Illuminate\Routing\Middleware\ThrottleRequests::class);
+
+        $this->post(route('register.post'), [
+            'name' => 'Persona adulta',
+            'email' => 'adult-over-120@example.com',
+            'phone' => '3101234567',
+            'date_of_birth' => '1900-01-01',
+            'password' => 'Password123!',
+            'password_confirmation' => 'Password123!',
+            'role' => 'consumer',
+            'accepted_terms' => 1,
+            'accepted_privacy' => 1,
+            'age_or_guardian_confirmed' => 1,
+        ])->assertRedirect(route('verification.notice'));
+
+        $this->assertDatabaseHas('users', [
+            'email' => 'adult-over-120@example.com',
+            'date_of_birth' => '1900-01-01',
+        ]);
     }
 
     public function test_consumer_registration_succeeds_with_phone(): void
