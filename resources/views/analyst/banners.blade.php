@@ -351,15 +351,19 @@
         </div>
 
         <div>
-          <label class="block text-xs font-bold text-slate-700 mb-1">Buscar comercio de destino (opcional)</label>
-          <input id="banner-merchant-search" type="search" list="banner-merchant-options" autocomplete="off" class="w-full rounded-xl border border-slate-200 px-3.5 py-2 text-xs focus:ring-2 focus:ring-[#10B981] outline-none" placeholder="Escribe el nombre y selecciona un comercio">
-          <input id="banner-merchant-id" type="hidden" name="merchant_id" value="">
-          <datalist id="banner-merchant-options">
-            @foreach($bannerMerchants as $merchant)
-              <option value="{{ $merchant['label'] }}" data-merchant-id="{{ $merchant['id'] }}"></option>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Destino del banner *</label>
+          <input id="banner-destination-search" type="search" name="destination_label" list="banner-destination-options" autocomplete="off" required
+                 value="{{ old('destination_label', 'Catálogo completo') }}"
+                 class="w-full rounded-xl border border-slate-200 px-3.5 py-2 text-xs focus:ring-2 focus:ring-[#10B981] outline-none"
+                 placeholder="Busca una categoría, tienda o producto">
+          <input id="banner-destination-type" type="hidden" name="destination_type" value="{{ old('destination_type', 'catalog') }}">
+          <input id="banner-destination-id" type="hidden" name="destination_id" value="{{ old('destination_id') }}">
+          <datalist id="banner-destination-options">
+            @foreach($bannerDestinationOptions as $destination)
+              <option value="{{ $destination['label'] }}" data-destination-type="{{ $destination['type'] }}" data-destination-id="{{ $destination['id'] }}"></option>
             @endforeach
           </datalist>
-          <p class="mt-1 text-[10px] text-slate-500">Si no eliges un comercio, el banner abrirá el catálogo.</p>
+          <p id="banner-destination-help" class="mt-1 text-[10px] text-slate-500">Elige el catálogo, una categoría, un comercio o un producto. Puedes escribir para buscar.</p>
         </div>
 
         <div>
@@ -371,6 +375,16 @@
         <div>
           <label class="block text-xs font-bold text-slate-700 mb-1">Orden de Posición (1-4: Espacio Arriba · 5-8: Espacio Abajo)</label>
           <input type="number" name="sort_order" value="{{ $banners->count() + 1 }}" min="0" class="w-full rounded-xl border border-slate-200 px-3.5 py-2 text-xs focus:ring-2 focus:ring-[#10B981] outline-none">
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Fecha de inicio (opcional)</label>
+          <input type="date" name="starts_at" min="{{ now()->toDateString() }}" class="w-full rounded-xl border border-slate-200 px-3.5 py-2 text-xs focus:ring-2 focus:ring-[#10B981] outline-none">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Fecha de vencimiento (opcional)</label>
+          <input type="date" name="ends_at" min="{{ now()->toDateString() }}" class="w-full rounded-xl border border-slate-200 px-3.5 py-2 text-xs focus:ring-2 focus:ring-[#10B981] outline-none">
+          <p class="mt-1 text-[10px] text-slate-500">Si eliges una fecha, el banner estará activo hasta el final de ese día.</p>
         </div>
 
         <div class="md:col-span-2 pt-2 flex flex-col items-start gap-2">
@@ -1098,12 +1112,12 @@ if (bannerUploadForm) {
       if (banner.merchant_name) {
         const merchant = document.createElement('p');
         merchant.className = 'text-[11px] font-semibold text-emerald-700';
-        merchant.textContent = 'Destino: ' + banner.merchant_name;
+        merchant.textContent = 'Destino: ' + (banner.destination_label || banner.merchant_name);
         details.appendChild(merchant);
       } else {
         const merchant = document.createElement('p');
         merchant.className = 'text-[11px] font-semibold text-slate-500';
-        merchant.textContent = 'Destino: Catálogo';
+        merchant.textContent = 'Destino: ' + (banner.destination_label || 'Catálogo completo');
         details.appendChild(merchant);
       }
       if (banner.description) {
@@ -1137,15 +1151,28 @@ if (bannerUploadForm) {
   });
 }
 
-const bannerMerchantSearch = document.getElementById('banner-merchant-search');
-const bannerMerchantId = document.getElementById('banner-merchant-id');
-const bannerMerchantOptions = document.getElementById('banner-merchant-options');
-if (bannerMerchantSearch && bannerMerchantId && bannerMerchantOptions) {
-  bannerMerchantSearch.addEventListener('input', function () {
-    const selectedOption = Array.from(bannerMerchantOptions.options)
-      .find(option => option.value === bannerMerchantSearch.value);
-    bannerMerchantId.value = selectedOption?.dataset.merchantId || '';
-  });
+const bannerDestinationSearch = document.getElementById('banner-destination-search');
+const bannerDestinationType = document.getElementById('banner-destination-type');
+const bannerDestinationId = document.getElementById('banner-destination-id');
+const bannerDestinationOptions = document.getElementById('banner-destination-options');
+const bannerDestinationHelp = document.getElementById('banner-destination-help');
+if (bannerDestinationSearch && bannerDestinationType && bannerDestinationId && bannerDestinationOptions) {
+  const syncBannerDestination = () => {
+    const selectedOption = Array.from(bannerDestinationOptions.options)
+      .find(option => option.value === bannerDestinationSearch.value);
+    bannerDestinationType.value = selectedOption?.dataset.destinationType || '';
+    bannerDestinationId.value = selectedOption?.dataset.destinationId || '';
+    if (bannerDestinationHelp) {
+      bannerDestinationHelp.textContent = selectedOption
+        ? 'Destino seleccionado: ' + selectedOption.value
+        : 'Selecciona un destino de la lista para que el banner abra la página correcta.';
+      bannerDestinationHelp.className = selectedOption
+        ? 'mt-1 text-[10px] text-emerald-700'
+        : 'mt-1 text-[10px] text-amber-700';
+    }
+  };
+  bannerDestinationSearch.addEventListener('input', syncBannerDestination);
+  bannerDestinationSearch.addEventListener('change', syncBannerDestination);
 }
 </script>
 @endsection

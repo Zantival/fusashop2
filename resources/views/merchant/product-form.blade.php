@@ -457,6 +457,7 @@
   let optionCount = {{ $product && $product->available_options ? count($product->available_options) : 0 }};
   let currentOptionIndex = null;
   const existingSpecs = {!! json_encode($product?->specifications ?? []) !!};
+  const productExpiryMinDate = @json(now()->toDateString());
   const existingVariants = {!! json_encode($product?->variants ?? []) !!};
   const isEditingProduct = {{ $product ? 'true' : 'false' }};
   const variantsHidden = document.getElementById('variants-json');
@@ -682,7 +683,12 @@
   function renderSpecs(cat, customSchema = null) {
     const schema = customSchema || specSchemas[cat] || [], cont = document.getElementById('specs-container');
     let h = '';
-    schema.forEach(s => { const v = existingSpecs[s.key] || ''; h += `<div class="bg-surface-container-highest/50 p-4 rounded-2xl border border-outline-variant/10"><label class="text-[10px] font-black uppercase text-on-surface-variant mb-1 block">${s.label}</label><input type="text" name="specs[${s.key}]" value="${v}" class="w-full bg-transparent border-0 text-sm p-0 outline-none focus:ring-0 font-bold text-on-surface"></div>`; });
+    schema.forEach(s => {
+      const v = existingSpecs[s.key] || '';
+      const isExpiry = s.key === 'exp';
+      const minDate = isExpiry && (!v || v >= productExpiryMinDate) ? `min="${productExpiryMinDate}"` : '';
+      h += `<div class="bg-surface-container-highest/50 p-4 rounded-2xl border border-outline-variant/10"><label class="text-[10px] font-black uppercase text-on-surface-variant mb-1 block">${s.label}</label><input type="${isExpiry ? 'date' : 'text'}" name="specs[${s.key}]" value="${v}" ${minDate} class="w-full bg-transparent border-0 text-sm p-0 outline-none focus:ring-0 font-bold text-on-surface"></div>`;
+    });
     Object.keys(existingSpecs).forEach(k => { if(!schema.find(s=>s.key===k)) h += createCustomSpecHtml(k, existingSpecs[k]); });
     cont.innerHTML = h;
   }

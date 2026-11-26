@@ -7,7 +7,7 @@
   <div class="rounded-3xl border border-emerald-100 bg-white p-6 shadow-sm md:p-10">
     <p class="mb-2 text-xs font-extrabold uppercase tracking-wider text-emerald-800">FusaShop · Fusagasugá, Colombia</p>
     <h1 class="mb-3 text-3xl font-black text-emerald-950 md:text-4xl">Política de privacidad y tratamiento de datos</h1>
-    <p class="mb-8 text-sm text-slate-500">Versión 2026-10-25 · Última actualización: 25 de octubre de 2026</p>
+    <p class="mb-8 text-sm text-slate-500">Versión 2026-11-26 · Última actualización: 26 de noviembre de 2026</p>
 
     <div class="space-y-7 text-sm leading-7 text-slate-700">
       <section>
@@ -19,7 +19,7 @@
       <section>
         <h2 class="mb-2 text-xl font-extrabold text-slate-900">2. Datos que tratamos y por qué</h2>
         <ul class="list-disc space-y-2 pl-6">
-          <li><strong>Cuenta:</strong> nombre, correo, contraseña protegida, rol y teléfono que aportas para crear, verificar y proteger la cuenta.</li>
+          <li><strong>Cuenta:</strong> nombre, correo, contraseña protegida, rol, teléfono y fecha de nacimiento que aportas para crear y proteger la cuenta y confirmar que cumples la edad mínima de 18 años. La fecha de nacimiento no se muestra públicamente.</li>
           <li><strong>Compras:</strong> productos, cantidades, dirección y datos de contacto de entrega, cotización de envío, pagos, pedidos y comprobantes para completar la compra y atender soporte.</li>
           <li><strong>Comerciantes:</strong> datos de tienda, contacto, documentos KYC/RUT y datos de pago que se requieren para revisión y operación comercial.</li>
           <li><strong>Uso de la plataforma:</strong> mensajes, reseñas, PQRS, notificaciones y registros técnicos necesarios para prestar el servicio, prevenir abuso y resolver incidentes.</li>
@@ -61,7 +61,7 @@
 
       <section>
         <h2 class="mb-2 text-xl font-extrabold text-slate-900">8. Niñas, niños y adolescentes</h2>
-        <p>El registro de una persona menor de edad requiere conocimiento y autorización de su madre, padre o representante legal y debe realizarse bajo su acompañamiento. No solicitamos fecha de nacimiento como requisito general. Si un representante considera que se creó una cuenta de un menor sin autorización, debe contactarnos para revisar y limitar el tratamiento.</p>
+        <p>FusaShop no permite crear cuentas a personas menores de 18 años. Durante el registro solicitamos la fecha de nacimiento únicamente para validar la edad mínima; no se muestra públicamente en el perfil ni en la tienda. Si detectamos que una cuenta pertenece a una persona menor de edad, podremos restringirla y contactar al titular para revisar el caso.</p>
       </section>
 
       <section>

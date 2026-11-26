@@ -32,6 +32,34 @@ class UserProfileAndRegistrationTest extends TestCase
         $this->assertDatabaseMissing('users', ['email' => 'carlos@example.com']);
     }
 
+    public function test_registration_rejects_minor_future_and_unrealistic_birth_dates(): void
+    {
+        $this->withoutMiddleware(\Illuminate\Routing\Middleware\ThrottleRequests::class);
+        $invalidDates = [
+            now()->subYears(17)->toDateString(),
+            now()->addDay()->toDateString(),
+            now()->subYears(121)->toDateString(),
+        ];
+
+        foreach ($invalidDates as $index => $date) {
+            $email = 'invalid-birth-' . $index . '@example.com';
+            $this->post(route('register.post'), [
+                'name' => 'Persona de prueba',
+                'email' => $email,
+                'phone' => '3101234567',
+                'date_of_birth' => $date,
+                'password' => 'Password123!',
+                'password_confirmation' => 'Password123!',
+                'role' => 'consumer',
+                'accepted_terms' => 1,
+                'accepted_privacy' => 1,
+                'age_or_guardian_confirmed' => 1,
+            ])->assertSessionHasErrors('date_of_birth');
+
+            $this->assertDatabaseMissing('users', ['email' => $email]);
+        }
+    }
+
     public function test_consumer_registration_succeeds_with_phone(): void
     {
         $this->withoutMiddleware(\Illuminate\Routing\Middleware\ThrottleRequests::class);
@@ -40,6 +68,7 @@ class UserProfileAndRegistrationTest extends TestCase
             'name'                      => 'Maria Gomez',
             'email'                     => 'maria@example.com',
             'phone'                     => '3101234567',
+            'date_of_birth'             => '1990-05-12',
             'password'                  => 'Password123!',
             'password_confirmation'     => 'Password123!',
             'role'                      => 'consumer',
@@ -51,6 +80,7 @@ class UserProfileAndRegistrationTest extends TestCase
         $this->assertDatabaseHas('users', [
             'email' => 'maria@example.com',
             'phone' => '+573101234567',
+            'date_of_birth' => '1990-05-12',
             'role'  => 'consumer',
             'email_verified_at' => null,
         ]);
@@ -75,6 +105,7 @@ class UserProfileAndRegistrationTest extends TestCase
             'name' => 'Maria Gomez',
             'email' => 'maria-borrada@example.com',
             'phone' => '3101234567',
+            'date_of_birth' => '1990-05-12',
             'password' => 'Password123!',
             'password_confirmation' => 'Password123!',
             'role' => 'consumer',
@@ -103,6 +134,7 @@ class UserProfileAndRegistrationTest extends TestCase
             'name' => 'Altered Name',
             'email' => 'tampered@example.com',
             'phone' => '3101234567',
+            'date_of_birth' => '1990-05-12',
             'role' => 'consumer',
             'accepted_terms' => 1,
             'accepted_privacy' => 1,
@@ -126,6 +158,7 @@ class UserProfileAndRegistrationTest extends TestCase
             'name'                      => '123456789',
             'email'                     => 'numeric-name@example.com',
             'phone'                     => '3101234567',
+            'date_of_birth'             => '1990-05-12',
             'password'                  => 'Password123!',
             'password_confirmation'     => 'Password123!',
             'role'                      => 'consumer',
@@ -145,6 +178,7 @@ class UserProfileAndRegistrationTest extends TestCase
             'name'                      => 'Don Pedro',
             'email'                     => 'pedro-missing-biz@example.com',
             'phone'                     => '3209876543',
+            'date_of_birth'             => '1990-05-12',
             'password'                  => 'Password123!',
             'password_confirmation'     => 'Password123!',
             'role'                      => 'merchant',
@@ -158,6 +192,7 @@ class UserProfileAndRegistrationTest extends TestCase
             'business_name'             => 'Café Sumapaz',
             'email'                     => 'pedro@example.com',
             'phone'                     => '3209876543',
+            'date_of_birth'             => '1990-05-12',
             'password'                  => 'Password123!',
             'password_confirmation'     => 'Password123!',
             'role'                      => 'merchant',

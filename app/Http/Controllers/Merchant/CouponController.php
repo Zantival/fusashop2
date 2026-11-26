@@ -22,11 +22,14 @@ class CouponController extends Controller
             'type'             => 'required|in:fixed,percentage',
             'value'            => 'required|numeric|min:0',
             'min_order_amount' => 'nullable|numeric|min:0',
-            'expires_at'       => 'nullable|date|after:today',
+            'expires_at'       => 'nullable|date|after_or_equal:today',
             'usage_limit'      => 'nullable|integer|min:1',
         ]);
 
         $data['merchant_id'] = Auth::id();
+        if (!empty($data['expires_at'])) {
+            $data['expires_at'] = \Illuminate\Support\Carbon::parse($data['expires_at'])->endOfDay();
+        }
         Coupon::create($data);
 
         return redirect()->back()->with('success', 'Cupón creado correctamente.');

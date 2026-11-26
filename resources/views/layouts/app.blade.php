@@ -1269,6 +1269,7 @@ document.addEventListener('click', function(e) {
 
   <div class="border-t border-slate-900 py-6 text-center text-slate-600 text-[11px]">
     <p>© {{ date('Y') }} FusaShop · Fusagasugá, Cundinamarca, Colombia</p>
+    <p class="mt-1">Desarrollado por Alba Yadira Nova Sierra y Jarvey Santiago Valbuena Garzón</p>
   </div>
 </footer>
 

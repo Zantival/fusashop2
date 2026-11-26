@@ -156,6 +156,7 @@ class AnalystController extends Controller
             'email'         => 'required|email|unique:users',
             'password'      => ['required', PasswordPolicy::rule()],
             'role'          => 'required|in:consumer,merchant,analyst',
+            'date_of_birth' => ['required', 'date_format:Y-m-d', 'before_or_equal:' . now()->subYears(18)->toDateString(), 'after_or_equal:' . now()->subYears(120)->toDateString()],
             'admin_subrole' => 'nullable|in:super_admin,analyst_readonly,support',
             'phone'         => 'nullable|string|max:20',
             'avatar'        => 'nullable|image|max:4096',
@@ -176,6 +177,7 @@ class AnalystController extends Controller
             'role'              => $data['role'],
             'admin_subrole'     => $data['role'] === 'analyst' ? ($data['admin_subrole'] ?? 'super_admin') : 'super_admin',
             'phone'             => $data['phone'] ?? null,
+            'date_of_birth'     => $data['date_of_birth'],
             'avatar'            => $avatarPath,
             'email_verified_at' => now(),
         ]);
@@ -206,6 +208,7 @@ class AnalystController extends Controller
             'company_name'  => 'nullable|string|max:255',
             'email'         => 'required|email|unique:users,email,' . $user->id,
             'role'          => 'nullable|in:consumer,merchant,analyst',
+            'date_of_birth' => ['nullable', 'date_format:Y-m-d', 'before_or_equal:' . now()->subYears(18)->toDateString(), 'after_or_equal:' . now()->subYears(120)->toDateString()],
             'admin_subrole' => 'nullable|in:super_admin,analyst_readonly,support',
             'phone'         => 'nullable|string|max:20',
             'password'      => ['nullable', PasswordPolicy::rule()],
@@ -228,6 +231,9 @@ class AnalystController extends Controller
             'admin_subrole' => $newRole === 'analyst' ? ($data['admin_subrole'] ?? $user->admin_subrole ?? 'super_admin') : 'super_admin',
             'phone'         => $data['phone'] ?? null,
         ];
+        if (!empty($data['date_of_birth'])) {
+            $update['date_of_birth'] = $data['date_of_birth'];
+        }
         if (!empty($data['password'])) {
             $update['password'] = Hash::make($data['password']);
         }
@@ -870,6 +876,22 @@ class AnalystController extends Controller
             ->where('is_active', true)
             ->orderByDesc('discount_percent')
             ->get();
+
+        $bannerDestinationOptions = collect([
+            ['type' => 'catalog', 'id' => '', 'label' => 'Catálogo completo'],
+        ])
+            ->concat(Product::query()->where('is_active', true)->whereNotNull('category')->where('category', '!=', '')
+                ->distinct()->orderBy('category')->pluck('category')
+                ->map(fn ($category) => ['type' => 'category', 'id' => $category, 'label' => 'Categoría · ' . $category]))
+            ->concat($bannerMerchants->map(fn ($merchant) => [
+                'type' => 'merchant', 'id' => (string) $merchant['id'], 'label' => 'Tienda · ' . $merchant['label'],
+            ]))
+            ->concat($allActiveProducts->map(fn ($product) => [
+                'type' => 'product',
+                'id' => (string) $product->id,
+                'label' => 'Producto · ' . $product->name . ' — ' . ($product->merchant?->companyProfile?->company_name ?? $product->merchant?->name ?? 'Comercio'),
+            ]))
+            ->values();
         
         $discountedProducts = $allActiveProducts->filter(function ($prod) {
             if ($prod->hasDiscount()) {
@@ -919,6 +941,7 @@ class AnalystController extends Controller
             'pendingRequests', 
             'bannerFee', 
             'bannerMerchants',
+            'bannerDestinationOptions',
             'allActiveProducts',
             'discountedProducts', 
             'categoriesWithDiscounts', 
@@ -1091,27 +1114,69 @@ class AnalystController extends Controller
 
     public function bannerStore(Request $request)
     {
+        $endDateRules = ['nullable', 'date', 'after_or_equal:today'];
+        if ($request->filled('starts_at')) {
+            $endDateRules[] = 'after_or_equal:starts_at';
+        }
         $request->validate([
             'title'      => 'required|string|max:255',
             'description'=> 'required|string|max:1500',
             'image'      => 'required|file|mimes:jpg,jpeg,png,webp,mp4,webm,mov|max:10240',
             'merchant_id'=> 'nullable|integer|exists:users,id',
+            'destination_type' => 'nullable|in:catalog,category,merchant,product',
+            'destination_id' => 'nullable|string|max:255',
             'sort_order' => 'nullable|integer|min:0',
             'starts_at'  => 'nullable|date',
-            'ends_at'    => 'nullable|date|after_or_equal:starts_at',
+            'ends_at'    => $endDateRules,
         ]);
 
         $targetMerchant = null;
-        if ($request->filled('merchant_id')) {
+        $destinationType = $request->input('destination_type');
+        $destinationId = $request->input('destination_id');
+        $linkUrl = route('consumer.catalog');
+        $destinationLabel = 'Catálogo completo';
+
+        if (!$destinationType && $request->filled('destination_label')) {
+            $message = 'Selecciona un destino disponible de la lista de búsqueda.';
+            if ($request->expectsJson()) {
+                return response()->json(['errors' => ['destination' => [$message]]], 422);
+            }
+            return back()->withInput()->withErrors(['destination' => $message]);
+        }
+
+        if ($destinationType === 'category') {
+            $category = Product::query()->where('is_active', true)->where('category', $destinationId)->value('category');
+            if (!$category) {
+                return back()->withInput()->withErrors(['destination' => 'Selecciona una categoría disponible del catálogo.']);
+            }
+            $linkUrl = route('consumer.catalog', ['category' => $category]);
+            $destinationLabel = 'Categoría · ' . $category;
+        } elseif ($destinationType === 'merchant' || (!$destinationType && $request->filled('merchant_id'))) {
+            $merchantId = $destinationType === 'merchant' ? (int) $destinationId : $request->integer('merchant_id');
             $targetMerchant = User::where('role', 'merchant')
                 ->where('is_blocked', false)
-                ->find($request->integer('merchant_id'));
+                ->find($merchantId);
             if (!$targetMerchant) {
                 if ($request->expectsJson()) {
                     return response()->json(['message' => 'Selecciona un comercio activo de la lista.'], 422);
                 }
                 return back()->withInput()->withErrors(['merchant_id' => 'Selecciona un comercio activo de la lista.']);
             }
+            $linkUrl = route('consumer.merchant.profile', $targetMerchant->id);
+            $destinationLabel = 'Tienda · ' . ($targetMerchant->companyProfile?->company_name ?: $targetMerchant->name);
+        } elseif ($destinationType === 'product') {
+            $product = Product::where('is_active', true)->find($destinationId);
+            if (!$product) {
+                return back()->withInput()->withErrors(['destination' => 'Selecciona un producto activo del catálogo.']);
+            }
+            $targetMerchant = $product->merchant;
+            $linkUrl = route('consumer.product', $product->id);
+            $destinationLabel = 'Producto · ' . $product->name;
+        } elseif ($destinationType && $destinationType !== 'catalog') {
+            return back()->withInput()->withErrors(['destination' => 'El destino seleccionado no es válido.']);
+        }
+        if ($destinationType === 'catalog') {
+            $destinationLabel = 'Catálogo completo';
         }
 
         $activeCount = GlobalBanner::where('is_active', true)->count();
@@ -1127,13 +1192,15 @@ class AnalystController extends Controller
             'title'      => strip_tags($request->title ?? ''),
             'description'=> strip_tags($request->description ?? ''),
             'image_path' => $path,
-            'link_url'   => $targetMerchant
-                ? route('consumer.merchant.profile', $targetMerchant->id)
-                : route('consumer.catalog'),
+            'link_url'   => $linkUrl,
             'is_active'  => true,
             'sort_order' => $request->sort_order ?? ((int) GlobalBanner::max('sort_order') + 1),
             'starts_at'  => $request->starts_at,
-            'ends_at'    => $request->ends_at,
+            'ends_at'    => $request->filled('ends_at')
+                ? (preg_match('/^\d{4}-\d{2}-\d{2}$/', (string) $request->ends_at)
+                    ? \Illuminate\Support\Carbon::parse($request->ends_at)->endOfDay()
+                    : $request->ends_at)
+                : null,
         ]);
 
         AdminAuditLog::record('banner.created', $banner, 'Nuevo banner global subido');
@@ -1147,6 +1214,7 @@ class AnalystController extends Controller
                     'image_url' => $banner->image_url,
                     'is_video' => $banner->is_video,
                     'link_url' => $banner->link_url,
+                    'destination_label' => $destinationLabel,
                     'merchant_name' => $targetMerchant?->companyProfile?->company_name ?: $targetMerchant?->name,
                     'sort_order' => $banner->sort_order,
                 ],

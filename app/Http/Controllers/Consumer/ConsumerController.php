@@ -42,7 +42,11 @@ class ConsumerController extends Controller
             ->filter()
             ->values();
         $categories = Product::active()->select('category')->distinct()->pluck('category');
-        $globalBanners = GlobalBanner::where('is_active', true)->orderBy('sort_order')->take(8)->get();
+        $now = now();
+        $globalBanners = GlobalBanner::where('is_active', true)
+            ->where(fn ($query) => $query->whereNull('starts_at')->orWhere('starts_at', '<=', $now))
+            ->where(fn ($query) => $query->whereNull('ends_at')->orWhere('ends_at', '>=', $now))
+            ->orderBy('sort_order')->take(8)->get();
         $topBanners = $globalBanners->take(4)->values();
         $bottomBanners = $globalBanners->slice(4, 4)->values();
         return view('consumer.home', compact('featured', 'flashDeals', 'categories', 'globalBanners', 'topBanners', 'bottomBanners'));

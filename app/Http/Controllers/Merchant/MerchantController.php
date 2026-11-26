@@ -473,6 +473,7 @@ class MerchantController extends Controller
             'allows_points'    => 'nullable|boolean',
             'options'          => 'nullable|array',
             'specs'            => 'nullable|array',
+            'specs.exp'        => ['nullable', 'date_format:Y-m-d', 'after_or_equal:today'],
             'variants'         => 'nullable|string|max:1000000',
         ], [
             'image.max' => 'La imagen principal no puede superar los 5 MB.',
@@ -573,6 +574,11 @@ class MerchantController extends Controller
     {
         if ($product->merchant_id !== Auth::id()) abort(403);
 
+        $expiryRules = ['nullable', 'date_format:Y-m-d'];
+        if ($request->input('specs.exp') !== data_get($product->specifications ?? [], 'exp')) {
+            $expiryRules[] = 'after_or_equal:today';
+        }
+
         $data = $request->validate([
             'name'             => 'required|string|max:255',
             'description'      => 'nullable|string|max:2000',
@@ -590,6 +596,7 @@ class MerchantController extends Controller
             'allows_points'    => 'nullable|boolean',
             'options'          => 'nullable|array',
             'specs'            => 'nullable|array',
+            'specs.exp'        => $expiryRules,
             'variants'         => 'nullable|string|max:1000000',
         ], [
             'image.max' => 'La imagen principal no puede superar los 5 MB.',

@@ -59,6 +59,9 @@
 </head>
 <body class="bg-surface text-on-surface min-h-screen">
     @yield('content')
+    <footer class="border-t border-slate-200 bg-white px-4 py-4 text-center text-xs text-slate-500">
+        © {{ date('Y') }} FusaShop · Desarrollado por Alba Yadira Nova Sierra y Jarvey Santiago Valbuena Garzón
+    </footer>
     @yield('scripts')
 </body>
 </html>

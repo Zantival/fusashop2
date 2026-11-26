@@ -26,6 +26,7 @@ class SixDigitEmailVerificationAndNotificationsTest extends TestCase
             'name'                      => 'Alejandro Rojas',
             'email'                     => 'alejandro@fusagasuga.com',
             'phone'                     => '3123456789',
+            'date_of_birth'             => '1990-05-12',
             'password'                  => 'Password123!',
             'password_confirmation'     => 'Password123!',
             'role'                      => 'consumer',

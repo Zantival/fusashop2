@@ -116,6 +116,13 @@
             class="w-full px-4 py-3 bg-[#f0eded] rounded-xl border-0 outline-none focus:ring-2 focus:ring-[#006c47]" placeholder="+57 300 000 0000"/>
         </div>
         <div>
+          <label class="block text-sm font-semibold text-[#1b1c1c] mb-2">Fecha de nacimiento {{ $user ? '' : '*' }}</label>
+          <input type="date" name="date_of_birth" value="{{ old('date_of_birth', $user?->date_of_birth?->format('Y-m-d')) }}"
+            min="{{ now()->subYears(120)->toDateString() }}" max="{{ now()->subYears(18)->toDateString() }}" {{ $user ? '' : 'required' }}
+            class="w-full px-4 py-3 bg-[#f0eded] rounded-xl border-0 outline-none focus:ring-2 focus:ring-[#006c47]"/>
+          <p class="mt-1 text-xs text-slate-500">Solo se pueden crear cuentas para personas de 18 años o más.</p>
+        </div>
+        <div>
           <label class="block text-sm font-semibold text-[#1b1c1c] mb-2">
             Contraseña {{ $user ? '(dejar vacío para no cambiar)' : '*' }}
           </label>

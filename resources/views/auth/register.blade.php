@@ -94,7 +94,7 @@
           {{ session('social_registration') ? 'Completa tu registro' : 'Crea tu cuenta' }}
         </h1>
         <p class="text-on-surface-variant">
-          {{ session('social_registration') ? 'Selecciona tu tipo de cuenta y añade tu teléfono para continuar' : 'Regístrate para empezar a usar FusaShop' }}
+          {{ session('social_registration') ? 'Selecciona tu tipo de cuenta, confirma tu edad y añade tu teléfono para continuar' : 'Regístrate para empezar a usar FusaShop' }}
         </p>
       </div>
 
@@ -102,7 +102,7 @@
       @if(session('info'))
         <div class="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-2xl flex items-start gap-3 form-enter shadow-xs">
           <span class="material-symbols-outlined text-amber-600 text-[22px] shrink-0 mt-0.5">info</span>
-          <p class="text-sm text-amber-900 font-medium leading-relaxed">{{ session('info') }}@if(session('social_registration')) Google ya completó tu nombre y correo; selecciona el tipo de cuenta, agrega tu teléfono y acepta los consentimientos para continuar.@endif</p>
+          <p class="text-sm text-amber-900 font-medium leading-relaxed">{{ session('info') }}@if(session('social_registration')) Google ya completó tu nombre y correo; selecciona el tipo de cuenta, ingresa tu fecha de nacimiento, agrega tu teléfono y acepta los consentimientos para continuar.@endif</p>
         </div>
       @endif
 
@@ -207,6 +207,17 @@
           </div>
 
           <div class="form-enter md:col-span-2">
+            <label for="date-of-birth" class="block text-sm font-semibold text-on-surface mb-1.5">Fecha de nacimiento <span class="text-error">*</span></label>
+            <div class="input-wrap">
+              <span class="material-symbols-outlined input-icon-box">cake</span>
+              <input type="date" id="date-of-birth" name="date_of_birth" value="{{ old('date_of_birth') }}"
+                min="{{ now()->subYears(120)->toDateString() }}" max="{{ now()->subYears(18)->toDateString() }}" required
+                class="input-field" autocomplete="bday" aria-describedby="birth-date-help">
+            </div>
+            <p id="birth-date-help" class="mt-1 text-xs text-on-surface-variant">Debes tener entre 18 y 120 años para crear una cuenta. La fecha no se muestra en tu tienda.</p>
+          </div>
+
+          <div class="form-enter md:col-span-2">
             <label class="block text-sm font-semibold text-on-surface mb-1.5">Número de teléfono / WhatsApp <span class="text-error">*</span></label>
             <div class="input-wrap">
               <span class="material-symbols-outlined input-icon-box">call</span>
@@ -284,7 +295,7 @@
           </label>
           <label class="flex items-start gap-2.5 text-xs leading-relaxed text-slate-700">
             <input type="checkbox" name="age_or_guardian_confirmed" value="1" required {{ old('age_or_guardian_confirmed') ? 'checked' : '' }} class="mt-0.5 rounded border-slate-300 text-emerald-700 focus:ring-emerald-600">
-            <span>Confirmo que soy mayor de edad o que mi madre, padre o representante legal conoce y autoriza este registro.</span>
+            <span>Confirmo que tengo 18 años o más.</span>
           </label>
           <label class="flex items-start gap-2.5 border-t border-slate-200 pt-3 text-xs leading-relaxed text-slate-600">
             <input type="checkbox" name="marketing_opt_in" value="1" {{ old('marketing_opt_in') ? 'checked' : '' }} class="mt-0.5 rounded border-slate-300 text-emerald-700 focus:ring-emerald-600">

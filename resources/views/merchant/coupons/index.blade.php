@@ -127,7 +127,7 @@
                     </div>
                     <div>
                         <label class="block text-sm font-bold text-on-surface-variant mb-2">Expira</label>
-                        <input type="date" name="expires_at" class="w-full px-4 py-3 bg-surface-container-high rounded-2xl border-0 ring-1 ring-outline-variant/30 focus:ring-2 focus:ring-primary outline-none transition-all">
+                        <input type="date" name="expires_at" min="{{ now()->toDateString() }}" class="w-full px-4 py-3 bg-surface-container-high rounded-2xl border-0 ring-1 ring-outline-variant/30 focus:ring-2 focus:ring-primary outline-none transition-all">
                     </div>
                 </div>
 
