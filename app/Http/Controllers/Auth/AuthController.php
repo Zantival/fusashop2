@@ -62,7 +62,7 @@ class AuthController extends Controller
                         Mail::to($user->email)->send(new VerifyEmailCodeMail($user, $code));
                     } catch (\Throwable $e) {
                         Log::error('Error enviando código de verificación al login: ' . $e->getMessage());
-                        session()->flash('verification-email-error', 'Revisa la configuración y el remitente verificado de Resend; luego solicita un nuevo código.');
+                        session()->flash('verification-email-error', 'Revisa la configuración SMTP y la cuenta de correo remitente; luego solicita un nuevo código.');
                     }
                 }
                 return redirect()->route('verification.notice');
@@ -268,7 +268,7 @@ class AuthController extends Controller
         $response = redirect()->route('verification.notice');
         return $verificationEmailSent
             ? $response->with('status', 'verification-code-sent')
-            : $response->with('verification-email-error', 'No se pudo enviar a tu correo. Configura un remitente y dominio verificados en Resend y vuelve a reenviar el código.');
+            : $response->with('verification-email-error', 'No se pudo enviar a tu correo. Revisa el servidor SMTP, la contraseña de la casilla y el correo remitente configurado.');
     }
 
     public function verifyEmailCode(Request $request)
@@ -296,12 +296,15 @@ class AuthController extends Controller
             ]);
         }
 
+        $welcomeEmailSent = false;
         try {
             Mail::to($user->email)->send(new WelcomeMail($user));
+            $welcomeEmailSent = true;
         } catch (\Throwable $e) {
             Log::error('No fue posible enviar el correo de bienvenida posterior a la verificación.', [
                 'user_id' => $user->id,
                 'exception' => $e::class,
+                'message' => $e->getMessage(),
             ]);
         }
 
@@ -316,8 +319,30 @@ class AuthController extends Controller
 
         session()->flash('welcome_new_user', true);
         session()->flash('success', '¡Excelente! Tu correo electrónico ha sido verificado con éxito.');
+        if (!$welcomeEmailSent) {
+            session()->flash('welcome-email-error', 'Tu cuenta quedó verificada, pero no pudimos enviar el correo de bienvenida. Revisa el correo no deseado o inténtalo de nuevo.');
+        }
 
         return $this->recordLoginAndRedirect($user);
+    }
+
+    public function resendWelcomeEmail(Request $request)
+    {
+        $user = Auth::user();
+        abort_unless($user && $user->hasVerifiedEmail(), 403);
+
+        try {
+            Mail::to($user->email)->send(new WelcomeMail($user));
+        } catch (\Throwable $e) {
+            Log::error('No fue posible reenviar el correo de bienvenida.', [
+                'user_id' => $user->id,
+                'exception' => $e::class,
+                'message' => $e->getMessage(),
+            ]);
+            return back()->with('welcome-email-error', 'No se pudo enviar el correo. Revisa la configuración SMTP y vuelve a intentarlo.');
+        }
+
+        return back()->with('success', 'Enviamos de nuevo el correo de bienvenida a ' . $user->email . '.');
     }
 
     public function resendVerificationCode(Request $request)
@@ -338,7 +363,7 @@ class AuthController extends Controller
             Mail::to($user->email)->send(new VerifyEmailCodeMail($user, $code));
         } catch (\Throwable $e) {
             Log::error('Error reenviando código de verificación: ' . $e->getMessage());
-            return back()->with('verification-email-error', 'No se pudo enviar a tu correo. Configura un remitente y dominio verificados en Resend y vuelve a intentarlo.');
+            return back()->with('verification-email-error', 'No se pudo enviar a tu correo. Revisa la conexión SMTP y la contraseña de la casilla remitente.');
         }
 
         return back()->with('status', 'verification-code-sent');

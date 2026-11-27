@@ -71,6 +71,7 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middl
 // --- Verificación de Correo (Código OTP 6 dígitos) ---
 Route::post('/email/verify-code', [\App\Http\Controllers\Auth\AuthController::class, 'verifyEmailCode'])->middleware(['auth', 'throttle:10,1'])->name('verification.verify-code');
 Route::post('/email/resend-code', [\App\Http\Controllers\Auth\AuthController::class, 'resendVerificationCode'])->middleware(['auth', 'throttle:6,1'])->name('verification.resend-code');
+Route::post('/email/resend-welcome', [\App\Http\Controllers\Auth\AuthController::class, 'resendWelcomeEmail'])->middleware(['auth', 'throttle:3,10'])->name('verification.resend-welcome');
 
 // --- Verificación de Correo ---
 Route::get('/email/verify', function () {

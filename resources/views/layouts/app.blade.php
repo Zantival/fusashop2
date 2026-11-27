@@ -1210,6 +1210,17 @@ document.addEventListener('click', function(e) {
       </div>
     </div>
   @endif
+  @if(session('welcome-email-error') && auth()->check() && auth()->user()->hasVerifiedEmail())
+    <div class="max-w-7xl mx-auto px-4 md:px-6 pt-4" data-flash-container>
+      <div role="alert" class="p-3.5 bg-amber-50 border border-amber-200 text-amber-900 rounded-2xl flex flex-wrap items-center justify-between gap-3 text-xs font-bold shadow-sm">
+        <span>{{ session('welcome-email-error') }}</span>
+        <form method="POST" action="{{ route('verification.resend-welcome') }}">
+          @csrf
+          <button type="submit" class="rounded-lg bg-[#006c47] px-3 py-2 text-white hover:bg-emerald-700">Reenviar bienvenida</button>
+        </form>
+      </div>
+    </div>
+  @endif
 
   @yield('content')
 </main>

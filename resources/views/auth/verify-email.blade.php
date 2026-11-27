@@ -72,7 +72,7 @@
         </h1>
         <p class="text-slate-600 text-sm mt-2 leading-relaxed">
           @if (app()->environment('local') && config('mail.always_to'))
-            En local, el código de prueba se envía al correo configurado para Resend: <strong class="text-slate-900 font-semibold">{{ config('mail.always_to') }}</strong>.
+            En local, el código de prueba se envía al correo de prueba configurado: <strong class="text-slate-900 font-semibold">{{ config('mail.always_to') }}</strong>.
           @else
             Enviamos un código de seguridad al correo <strong class="text-slate-900 font-semibold">{{ auth()->user()->email }}</strong>.
           @endif
