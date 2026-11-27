@@ -77,7 +77,7 @@ class AddressController extends Controller
             'label' => 'required|string|max:60',
             'recipient' => 'required|string|max:120',
             'phone' => ['required', 'regex:/^[0-9+\s\-]{7,20}$/'],
-            'street' => ['required', 'string', 'max:160', 'regex:/^(calle|cl\.?|carrera|cra\.?|kr\.?|avenida|av\.?|diagonal|diag\.?|transversal|transv\.?|tv\.?|circular|vereda|vía|via|kilómetro|kilometro)(?:\s|$)/iu'],
+            'street' => ['required', 'string', 'max:160', 'regex:/^(calle|cl\.?|carrera|cra\.?|kr\.?|avenida|av\.?|diagonal|diag\.?|transversal|transv\.?|tv\.?|circular|vereda|vía|via|kilómetro|kilometro|autopista|carretera|camino|sendero|ruta|lote|sector)(?:\s|$)/iu'],
             'number' => 'nullable|string|max:30',
             'district' => 'nullable|string|max:100',
             'city' => 'required|string|max:100',
