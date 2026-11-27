@@ -75,9 +75,6 @@
         <div class="flex items-center gap-2 flex-wrap mb-1">
           <h1 class="text-2xl font-black text-on-surface flex items-center gap-1.5">
             <span>{{ e($profile->company_name) }}</span>
-            @if($profile->kyc_status === 'approved')
-              <span class="material-symbols-outlined text-[#006c47] text-[22px] shrink-0" style="font-variation-settings: 'FILL' 1" title="Comercio Verificado Oficialmente">verified</span>
-            @endif
           </h1>
           @if($profile->kyc_status === 'approved')
             <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-[#6efcb9]/20 text-primary text-[10px] font-black rounded-full uppercase tracking-wider">

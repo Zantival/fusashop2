@@ -13,6 +13,26 @@ use Illuminate\Support\Facades\Auth;
 
 class ChatController extends Controller
 {
+    public function unreadCount()
+    {
+        $user = Auth::user();
+        $unreadNotificationCount = $user->unreadNotifications()->count();
+        $chatNotificationCount = $user->unreadNotifications()
+            ->where('type', NewMessageNotification::class)
+            ->count();
+        $otherNotificationCount = $unreadNotificationCount - $chatNotificationCount;
+        $unreadMessageCount = Message::where('receiver_id', $user->id)->where('is_read', false)->count();
+
+        // Prefer the message rows for chats, while retaining notifications that are not chat messages.
+        $count = $otherNotificationCount + max($chatNotificationCount, $unreadMessageCount);
+        if ($user->isMerchant()) {
+            $count += \App\Models\Reservation::where('merchant_id', $user->id)->where('status', 'pending')->count();
+        }
+
+        return response()->json(['count' => $count])
+            ->header('Cache-Control', 'private, no-store, max-age=0');
+    }
+
     public function index()
     {
         if (Auth::user()?->isMerchant()) {

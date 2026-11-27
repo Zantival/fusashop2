@@ -188,11 +188,9 @@
                 title="Notificaciones y Alertas del Negocio">
           <span class="material-symbols-outlined text-[18px] text-[#006c47]">notifications</span>
           <span>Alertas</span>
-          @if($totalAlertsCount > 0)
-            <span class="bg-[#F97316] text-white text-[10px] font-black px-1.5 py-0.5 rounded-full leading-none">
-              {{ $totalAlertsCount > 99 ? '99+' : $totalAlertsCount }}
-            </span>
-          @endif
+          <span id="merchant-notification-count" class="bg-[#F97316] text-white text-[10px] font-black px-1.5 py-0.5 rounded-full leading-none {{ $totalAlertsCount > 0 ? '' : 'hidden' }}">
+            {{ $totalAlertsCount > 99 ? '99+' : $totalAlertsCount }}
+          </span>
         </button>
 
         <!-- Atajo directo Pedidos -->

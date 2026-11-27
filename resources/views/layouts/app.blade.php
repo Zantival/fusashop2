@@ -369,11 +369,9 @@ document.addEventListener('click', function(e) {
             <button id="notification-menu-toggle" aria-expanded="false" aria-controls="notif-dropdown" type="button" class="relative p-2 rounded-full hover:bg-slate-100 text-slate-600 hover:text-slate-900 transition-colors" title="Notificaciones">
               <span class="material-symbols-outlined text-2xl">notifications</span>
               @php $unreadCount = auth()->user()->unreadNotifications()->count(); @endphp
-              @if($unreadCount > 0)
-                <span class="absolute top-1 right-1 bg-[#F97316] text-white text-[9px] font-black w-4 h-4 flex items-center justify-center rounded-full border-2 border-white leading-none">
-                  {{ $unreadCount > 9 ? '9+' : $unreadCount }}
-                </span>
-              @endif
+              <span id="consumer-notification-count" class="absolute top-1 right-1 bg-[#F97316] text-white text-[9px] font-black min-w-4 h-4 px-1 flex items-center justify-center rounded-full border-2 border-white leading-none {{ $unreadCount > 0 ? '' : 'hidden' }}">
+                {{ $unreadCount > 9 ? '9+' : $unreadCount }}
+              </span>
             </button>
 
             <!-- Dropdown Notificaciones con pestañas -->
@@ -2700,5 +2698,30 @@ document.addEventListener('submit', (event) => {
 @stack('scripts')
 </div>
 @include('partials.cookie-banner')
+@auth
+<script>
+(() => {
+  const endpoint = @json(route('chat.unread-count'));
+  const refreshUnreadCounter = async () => {
+    try {
+      const response = await fetch(endpoint, { headers: { 'Accept': 'application/json' }, cache: 'no-store' });
+      if (!response.ok) return;
+      const data = await response.json();
+      const count = Math.max(0, Number(data.count) || 0);
+      ['consumer-notification-count', 'merchant-notification-count'].forEach(id => {
+        const badge = document.getElementById(id);
+        if (!badge) return;
+        badge.textContent = count > 99 ? '99+' : String(count);
+        badge.classList.toggle('hidden', count === 0);
+      });
+    } catch (error) {
+      // El contador conserva su último valor si la conexión está temporalmente caída.
+    }
+  };
+  refreshUnreadCounter();
+  window.setInterval(refreshUnreadCounter, 15000);
+})();
+</script>
+@endauth
 </body>
 </html>

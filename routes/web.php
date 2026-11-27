@@ -250,6 +250,7 @@ Route::middleware('auth')->group(function () {
     Route::put('/account/profile',      [ConsumerController::class, 'updateProfile'])->name('account.profile.update');
 
     // Chat
+    Route::get('/chat/unread-count', [\App\Http\Controllers\ChatController::class, 'unreadCount'])->name('chat.unread-count');
     Route::get('/chat', [\App\Http\Controllers\ChatController::class, 'index'])->name('chat.index');
     Route::get('/chat/inbox/poll', [\App\Http\Controllers\ChatController::class, 'inboxPoll'])->name('chat.inbox.poll');
     Route::get('/chat/{user}', [\App\Http\Controllers\ChatController::class, 'show'])->name('chat.show');
