@@ -338,10 +338,21 @@ const merchantAddress = @json(trim(($profile->address ?? '') . ', Colombia'));
 async function resolveMerchantCoordinates() {
   if (!merchantAddress || merchantAddress === ', Colombia') return;
 
+  const normalizePlace = value => value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]/g, '');
+  // Centroides de respaldo para los municipios indicados en la dirección.
+  // Evitan reutilizar coordenadas antiguas (por ejemplo, Fusagasugá) si falla el geocodificador.
+  const municipalityFallbacks = {
+    cucunuba: { name: 'Cucunubá', lat: 5.2495, lng: -73.7667 },
+    ubate: { name: 'Ubaté', lat: 5.3094, lng: -73.8156 },
+    fusagasuga: { name: 'Fusagasugá', lat: 4.33646, lng: -74.36378 }
+  };
+  const normalizedAddress = normalizePlace(merchantAddress);
+  const municipality = Object.entries(municipalityFallbacks).find(([key]) => normalizedAddress.includes(key))?.[1];
   const parts = merchantAddress.replace(/,\s*Colombia$/i, '').split(',').map(part => part.trim()).filter(Boolean);
   const withoutCommas = parts.length === 1 ? parts[0].split(/\s+/) : [];
   const queries = [parts.join(', ') + ', Colombia'];
-  if (parts.length > 1) queries.push(parts[parts.length - 1] + ', Colombia');
+  if (municipality) queries.push(`${municipality.name}, Cundinamarca, Colombia`);
+  else if (parts.length > 1) queries.push(parts[parts.length - 1] + ', Colombia');
   else if (withoutCommas.length > 1) {
     queries.push(withoutCommas.slice(-2).join(' ') + ', Colombia');
     queries.push(withoutCommas[withoutCommas.length - 1] + ', Colombia');
@@ -356,7 +367,9 @@ async function resolveMerchantCoordinates() {
       const results = await response.json();
       const result = results.find(item => {
         const lat = Number(item.lat), lon = Number(item.lon);
-        return Number.isFinite(lat) && Number.isFinite(lon) && lat >= -4.5 && lat <= 13.7 && lon >= -82 && lon <= -66;
+        const placeText = normalizePlace(`${item.display_name ?? ''} ${JSON.stringify(item.address ?? {})}`);
+        const matchesMunicipality = !municipality || placeText.includes(normalizePlace(municipality.name));
+        return matchesMunicipality && Number.isFinite(lat) && Number.isFinite(lon) && lat >= -4.5 && lat <= 13.7 && lon >= -82 && lon <= -66;
       });
       if (result) {
         mLat = Number(result.lat);
@@ -368,6 +381,15 @@ async function resolveMerchantCoordinates() {
     } catch (error) {
       console.warn('No fue posible localizar la dirección del comercio:', error);
     }
+  }
+
+  // Ante una falla de red, mover al menos el destino al municipio escrito.
+  // Nunca se conserva una coordenada guardada de otro municipio en ese caso.
+  if (municipality) {
+    mLat = municipality.lat;
+    mLng = municipality.lng;
+    const mapsLink = document.getElementById('btn-maps-app');
+    if (mapsLink) mapsLink.href = `https://www.google.com/maps/dir/?api=1&destination=${mLat},${mLng}`;
   }
 }
 
