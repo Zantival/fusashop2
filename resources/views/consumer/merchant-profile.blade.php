@@ -247,7 +247,7 @@
                 WhatsApp
               </a>
               @endif
-              <a id="btn-maps-app" href="https://www.google.com/maps/dir/?api=1&destination={{ $profile->latitude ?: '4.33646' }},{{ $profile->longitude ?: '-74.36378' }}" 
+              <a id="btn-maps-app" href="https://www.google.com/maps/search/?api=1&query={{ rawurlencode($profile->address . ', Colombia') }}"
                  target="_blank"
                  class="w-full py-2.5 border-2 border-surface-container text-on-surface-variant font-bold rounded-2xl hover:bg-surface-container-low transition-all flex items-center justify-center gap-2 text-xs">
                 <span class="material-symbols-outlined text-[16px]">open_in_new</span>
@@ -331,26 +331,68 @@ if (slides.length > 1) setInterval(nextSlide, 5000);
 
 // --- GEOLOCATION LOGIC (Leaflet + OpenStreetMap con Fallback Iframe 100% Confiable) ---
 let map, merchantMarker, routeLayer;
-const mLat = {{ $profile->latitude ?: 4.33646 }};
-const mLng = {{ $profile->longitude ?: -74.36378 }};
+let mLat = @json($profile->latitude ? (float) $profile->latitude : null);
+let mLng = @json($profile->longitude ? (float) $profile->longitude : null);
+const merchantAddress = @json(trim(($profile->address ?? '') . ', Colombia'));
+
+async function resolveMerchantCoordinates() {
+  if (!merchantAddress || merchantAddress === ', Colombia') return;
+
+  const parts = merchantAddress.replace(/,\s*Colombia$/i, '').split(',').map(part => part.trim()).filter(Boolean);
+  const withoutCommas = parts.length === 1 ? parts[0].split(/\s+/) : [];
+  const queries = [parts.join(', ') + ', Colombia'];
+  if (parts.length > 1) queries.push(parts[parts.length - 1] + ', Colombia');
+  else if (withoutCommas.length > 1) {
+    queries.push(withoutCommas.slice(-2).join(' ') + ', Colombia');
+    queries.push(withoutCommas[withoutCommas.length - 1] + ', Colombia');
+  }
+
+  for (const query of [...new Set(queries)]) {
+    try {
+      const response = await fetch(`https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&countrycodes=co&limit=5&q=${encodeURIComponent(query)}`, {
+        headers: { 'Accept': 'application/json' }
+      });
+      if (!response.ok) continue;
+      const results = await response.json();
+      const result = results.find(item => {
+        const lat = Number(item.lat), lon = Number(item.lon);
+        return Number.isFinite(lat) && Number.isFinite(lon) && lat >= -4.5 && lat <= 13.7 && lon >= -82 && lon <= -66;
+      });
+      if (result) {
+        mLat = Number(result.lat);
+        mLng = Number(result.lon);
+        const mapsLink = document.getElementById('btn-maps-app');
+        if (mapsLink) mapsLink.href = `https://www.google.com/maps/dir/?api=1&destination=${mLat},${mLng}`;
+        return;
+      }
+    } catch (error) {
+      console.warn('No fue posible localizar la dirección del comercio:', error);
+    }
+  }
+}
 
 function initStoreMap(retries = 0) {
   const mapEl = document.getElementById('consumer-map');
   if (!mapEl) return;
   
+  const hasMerchantCoordinates = Number.isFinite(mLat) && Number.isFinite(mLng);
+  const mapLat = hasMerchantCoordinates ? mLat : 4.5709;
+  const mapLng = hasMerchantCoordinates ? mLng : -74.2973;
+
   if (typeof L === 'undefined') {
     if (retries < 25) {
       setTimeout(() => initStoreMap(retries + 1), 120);
       return;
     }
     // Fallback Infalible: Si Leaflet CDN no cargó, renderizar mapa nativo embebido OpenStreetMap en iframe
-    mapEl.innerHTML = `<iframe width="100%" height="100%" style="border:0; border-radius: 1rem; width:100%; height:100%; min-height: 220px;" loading="lazy" src="https://www.openstreetmap.org/export/embed.html?bbox=${mLng-0.008}%2C${mLat-0.008}%2C${mLng+0.008}%2C${mLat+0.008}&layer=mapnik&marker=${mLat}%2C${mLng}"></iframe>`;
+    const marker = hasMerchantCoordinates ? `&marker=${mapLat}%2C${mapLng}` : '';
+    mapEl.innerHTML = `<iframe width="100%" height="100%" style="border:0; border-radius: 1rem; width:100%; height:100%; min-height: 220px;" loading="lazy" src="https://www.openstreetmap.org/export/embed.html?bbox=${mapLng-0.08}%2C${mapLat-0.08}%2C${mapLng+0.08}%2C${mapLat+0.08}&layer=mapnik${marker}"></iframe>`;
     return;
   }
 
   try {
     if (map) { map.remove(); }
-    map = L.map('consumer-map', { zoomControl: false }).setView([mLat, mLng], 15);
+    map = L.map('consumer-map', { zoomControl: false }).setView([mapLat, mapLng], hasMerchantCoordinates ? 15 : 6);
     L.control.zoom({ position: 'bottomright' }).addTo(map);
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -366,13 +408,19 @@ function initStoreMap(retries = 0) {
       iconAnchor: [18, 36],
     });
 
-    merchantMarker = L.marker([mLat, mLng], { icon: customIcon }).addTo(map)
-      .bindPopup('<b>{{ e($profile->company_name) }}</b>').openPopup();
+    if (hasMerchantCoordinates) {
+      merchantMarker = L.marker([mLat, mLng], { icon: customIcon }).addTo(map)
+        .bindPopup('<b>{{ e($profile->company_name) }}</b>').openPopup();
+    } else {
+      const status = document.getElementById('location-status');
+      if (status) status.textContent = 'No se pudo ubicar esta dirección';
+    }
 
     setTimeout(function() { if (map) map.invalidateSize(); }, 300);
   } catch (err) {
     console.warn('Error inicializando Leaflet, usando fallback iframe:', err);
-    mapEl.innerHTML = `<iframe width="100%" height="100%" style="border:0; border-radius: 1rem; width:100%; height:100%; min-height: 220px;" loading="lazy" src="https://www.openstreetmap.org/export/embed.html?bbox=${mLng-0.008}%2C${mLat-0.008}%2C${mLng+0.008}%2C${mLat+0.008}&layer=mapnik&marker=${mLat}%2C${mLng}"></iframe>`;
+    const marker = hasMerchantCoordinates ? `&marker=${mapLat}%2C${mapLng}` : '';
+    mapEl.innerHTML = `<iframe width="100%" height="100%" style="border:0; border-radius: 1rem; width:100%; height:100%; min-height: 220px;" loading="lazy" src="https://www.openstreetmap.org/export/embed.html?bbox=${mapLng-0.08}%2C${mapLat-0.08}%2C${mapLng+0.08}%2C${mapLat+0.08}&layer=mapnik${marker}"></iframe>`;
   }
 }
 
@@ -492,6 +540,11 @@ function processAndRenderRoute(route, mode, uLat, uLng) {
 }
 
 function calculateRoute(mode = 'DRIVING') {
+  if (!Number.isFinite(mLat) || !Number.isFinite(mLng)) {
+    alert('No se pudo ubicar la dirección del comercio. Verifica que incluya el municipio y departamento.');
+    return;
+  }
+
   // Si ya tenemos la ruta trazada y coordenadas, cambiar de modo al instante sin recargar ni esperar
   if (cachedRoute && userCoords) {
     processAndRenderRoute(cachedRoute, mode, userCoords.lat, userCoords.lng);
@@ -568,9 +621,9 @@ function resetBtn() {
 }
 
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initStoreMap);
+  document.addEventListener('DOMContentLoaded', () => resolveMerchantCoordinates().finally(initStoreMap));
 } else {
-  initStoreMap();
+  resolveMerchantCoordinates().finally(initStoreMap);
 }
 </script>
 @endpush
